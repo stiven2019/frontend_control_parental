@@ -1,0 +1,109 @@
+import { NavLink } from 'react-router-dom';
+
+const NAV_ITEMS = [
+  { to: '/inicio', label: 'Inicio', icon: HomeIcon },
+  { to: '/calendario', label: 'Calendario', icon: CalendarIcon },
+  { to: '/mi-bebe', label: 'Mi Bebé', icon: BabyIcon },
+  { to: '/album', label: 'Álbum', icon: AlbumIcon },
+  { to: '/perfil', label: 'Perfil', icon: ProfileIcon },
+];
+
+export default function AppNav() {
+  return (
+    <>
+      {/* Móvil: barra inferior flotante con glassmorphism */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2">
+        <div className="mx-auto max-w-md flex items-center justify-between bg-white/70 backdrop-blur-xl rounded-full shadow-cloud px-2 py-2 border border-white/60">
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-full transition-colors ${
+                  isActive ? 'text-primary' : 'text-outline'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon filled={isActive} className="w-6 h-6" />
+                  <span className="text-[10px] font-semibold">{label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+
+      {/* Desktop / tablet: sidebar lateral */}
+      <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:h-screen md:sticky md:top-0 border-r border-outline-variant/40 px-6 py-8 bg-surface-low">
+        <div className="flex items-center gap-2 mb-10 px-2">
+          <span className="text-2xl">❤️</span>
+          <span className="font-display text-xl font-semibold text-primary">Mi Bebé</span>
+        </div>
+        <nav className="flex flex-col gap-1">
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-full font-body font-medium text-sm transition-colors ${
+                  isActive ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-container'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon filled={isActive} className="w-5 h-5" />
+                  {label}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}
+
+function HomeIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 11.5 12 4l9 7.5" />
+      <path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" fill={filled ? 'currentColor' : 'none'} />
+    </svg>
+  );
+}
+function CalendarIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.5" y="5" width="17" height="16" rx="3" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+      <path d="M8 3v4M16 3v4M3.5 10h17" />
+    </svg>
+  );
+}
+function BabyIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="9" r="5" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+      <path d="M6 20c0-3 2.7-5 6-5s6 2 6 5" />
+    </svg>
+  );
+}
+function AlbumIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.5" y="4.5" width="17" height="15" rx="3" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="M5 17l4.5-4.5a2 2 0 0 1 2.8 0L18 18" />
+    </svg>
+  );
+}
+function ProfileIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="3.5" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+      <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+    </svg>
+  );
+}
