@@ -7,6 +7,7 @@ import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 const QUICK_ACTIONS = [
+  { to: '/bienestar-emocional', label: 'Test Emocional', icon: '🌸', bg: 'bg-primary-container' },
   { to: '/controles', label: 'Control médico', icon: '🩺', bg: 'bg-secondary-container' },
   { to: '/medicamentos', label: 'Medicamentos', icon: '💊', bg: 'bg-primary-container' },
   { to: '/recordatorios', label: 'Recordatorios', icon: '⏰', bg: 'bg-tertiary-container' },
@@ -113,6 +114,29 @@ export default function Dashboard() {
         <p className="font-body text-sm text-on-surface-variant mb-4">{weeklyDevelopment.note}</p>
         <Link to="/mi-embarazo" className="btn-secondary block text-center">
           Ver desarrollo completo
+        </Link>
+      </section>
+
+      {/* Bienestar Emocional Materno */}
+      <section className="card mb-6 bg-primary-container/25 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-start gap-3 text-center sm:text-left">
+          <span className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shrink-0 shadow-cloud-sm">
+            🌸
+          </span>
+          <div>
+            <h3 className="font-display text-base font-bold text-on-surface">
+              ¿Cómo te sientes hoy, mamá?
+            </h3>
+            <p className="font-body text-xs text-on-surface-variant mt-0.5 leading-relaxed">
+              Evalúa tu estado emocional en 2 minutos y accede a tips asertivos para soltar culpas y cultivar calma.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/bienestar-emocional"
+          className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud-sm"
+        >
+          Hacer Test Emocional
         </Link>
       </section>
 

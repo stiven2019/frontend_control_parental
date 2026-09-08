@@ -106,6 +106,7 @@ export const api = {
   // Diario
   listJournal: () => request('/diario'),
   createJournal: (payload) => request('/diario', { method: 'POST', body: payload }),
+  updateJournal: (id, payload) => request(`/diario/${id}`, { method: 'PUT', body: payload }),
   deleteJournal: (id) => request(`/diario/${id}`, { method: 'DELETE' }),
 
   // Síntomas

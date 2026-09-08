@@ -40,9 +40,14 @@ export default function Welcome() {
           </button>
         </div>
       </div>
-      <p className="font-body text-xs text-outline text-center max-w-xs">
-        Para guardar y consultar tu información personal, deberás crear una cuenta.
-      </p>
+      <div className="text-center font-body text-xs text-outline max-w-xs space-y-1">
+        <p>Para guardar y consultar tu información personal, deberás crear una cuenta.</p>
+        <p>
+          <a href="/terminos-y-condiciones" className="text-primary hover:underline font-medium">
+            Términos y Condiciones (Colombia)
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

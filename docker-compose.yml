@@ -1,0 +1,24 @@
+services:
+  frontend:
+    container_name: mibebe-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    environment:
+      - BACKEND_URL=${BACKEND_URL:-http://backend:4000}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mibebe-network
+
+networks:
+  mibebe-network:
+    name: mibebe-network
+    driver: bridge

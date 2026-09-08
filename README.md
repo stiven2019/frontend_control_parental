@@ -169,8 +169,62 @@ frontend_control_prenatal/
 
 ---
 
+## 🐳 Despliegue con Docker y Docker Compose
+
+### 1. Variables de Entorno (Opcional)
+
+Copia el archivo de ejemplo para configurar el puerto o la URL del backend si es necesario:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Descripción | Valor por Defecto |
+|---|---|---|
+| `FRONTEND_PORT` | Puerto público del frontend | `80` |
+| `BACKEND_URL` | URL del backend para proxy inverso (`/api` y `/uploads`) | `http://backend:4000` |
+
+> [!TIP]
+> Si el backend corre fuera de Docker en tu máquina local, establece `BACKEND_URL=http://host.docker.internal:4000`.
+
+### 2. Despliegue con Docker Compose (Recomendado)
+
+Construye y levanta el contenedor en segundo plano:
+
+```bash
+docker compose up -d --build
+```
+
+Para ver los logs en tiempo real:
+
+```bash
+docker compose logs -f
+```
+
+Para detener el servicio:
+
+```bash
+docker compose down
+```
+
+### 3. Construcción Manual con Dockerfile
+
+```bash
+# Construir imagen
+docker build -t mibebe-frontend:latest .
+
+# Ejecutar contenedor
+docker run -d -p 80:80 \
+  -e BACKEND_URL=http://host.docker.internal:4000 \
+  --name mibebe-frontend \
+  mibebe-frontend:latest
+```
+
+---
+
 ## 💡 Guía de Pruebas Rápidas
 
 - **Probar Alarma Sonora**: Haz clic en el icono de la campana 🔔 en la barra superior y presiona **"🔊 Probar"**, o dirígete a **Mi Perfil > Alarmas y Sonido** y haz clic en **"🔔 Probar Alarma Ahora"**.
 - **Probar Formato de Tablas**: Visita la **Guía de Desarrollo** y navega a las **Semanas 35-37** para observar la tabla comparativa de _Braxton-Hicks vs Trabajo de Parto_.
 - **Probar Recordatorio con Alarma**: Crea un recordatorio con la fecha de hoy y hora a +1 minuto para verificar el sonido automático y la notificación.
+

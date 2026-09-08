@@ -24,6 +24,8 @@ import Countdown from './pages/Countdown';
 import Profile from './pages/Profile';
 import { MomCarePage, BabyCarePage } from './pages/ContentPages';
 import BabyDevelopmentGuide from './pages/BabyDevelopmentGuide';
+import TermsPage from './pages/TermsPage';
+import EmotionalWellbeingPage from './pages/EmotionalWellbeingPage';
 
 export default function App() {
   return (
@@ -34,6 +36,7 @@ export default function App() {
             <Route path="/" element={<Welcome />} />
             <Route path="/iniciar-sesion" element={<Login />} />
             <Route path="/crear-cuenta" element={<Register />} />
+            <Route path="/terminos-y-condiciones" element={<TermsPage />} />
             <Route path="/explorar/*" element={<GuestExplore />} />
 
             <Route path="/configuracion-inicial" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
@@ -52,6 +55,8 @@ export default function App() {
             <Route path="/cuenta-regresiva" element={<ProtectedRoute><Countdown /></ProtectedRoute>} />
             <Route path="/cuidados-mama" element={<ProtectedRoute><MomCarePage /></ProtectedRoute>} />
             <Route path="/cuidados-bebe" element={<ProtectedRoute><BabyCarePage /></ProtectedRoute>} />
+            <Route path="/bienestar-emocional" element={<ProtectedRoute><EmotionalWellbeingPage /></ProtectedRoute>} />
+            <Route path="/test-emocional" element={<ProtectedRoute><EmotionalWellbeingPage /></ProtectedRoute>} />
             <Route path="/guia-desarrollo" element={<ProtectedRoute><BabyDevelopmentGuide /></ProtectedRoute>} />
             <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 

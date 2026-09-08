@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import TermsModal from '../components/TermsModal';
 
 export default function Register() {
   const { register } = useAuth();
@@ -12,15 +13,32 @@ export default function Register() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const set = (field) => (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setForm((f) => ({ ...f, [field]: value }));
+    if (field === 'consentAccepted' && value) {
+      setError('');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validación de coincidencia de contraseñas
+    if (form.password !== form.confirmPassword) {
+      setError('Las contraseñas no coinciden. Por favor verifica.');
+      return;
+    }
+
+    // Validación estricta de Términos y Condiciones bajo la ley colombiana
+    if (!form.consentAccepted) {
+      setError('Debes leer y aceptar los Términos y Condiciones y la Política de Tratamiento de Datos Personales (Leyes 1581 de 2012 y 1480 de 2011) para poder crear tu cuenta.');
+      return;
+    }
+
     setLoading(true);
     try {
       await register(form);
@@ -89,14 +107,60 @@ export default function Register() {
             </div>
           </div>
 
-          <label className="flex items-start gap-3 mt-2 cursor-pointer">
-            <input type="checkbox" required checked={form.consentAccepted} onChange={set('consentAccepted')} className="mt-1 w-4 h-4 accent-primary" />
-            <span className="font-body text-xs text-on-surface-variant">
-              Doy mi consentimiento para el manejo de mi información personal y médica dentro de esta aplicación.
-            </span>
-          </label>
+          {/* Bloque Destacado de Términos y Condiciones */}
+          <div className={`p-3.5 rounded-xl border transition-all ${
+            form.consentAccepted
+              ? 'bg-secondary-container/25 border-secondary/30'
+              : 'bg-surface-container/70 border-surface-container'
+          }`}>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                id="consentAcceptedCheckbox"
+                checked={form.consentAccepted}
+                onChange={set('consentAccepted')}
+                className="mt-1 w-4 h-4 accent-primary rounded cursor-pointer shrink-0"
+              />
+              <span className="font-body text-xs text-on-surface leading-relaxed">
+                He leído y acepto los{' '}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowTermsModal(true);
+                  }}
+                  className="text-primary font-semibold underline hover:text-primary/80 transition-colors"
+                >
+                  Términos y Condiciones y la Política de Protección de Datos
+                </button>{' '}
+                (Ley 1581 de 2012 y Res. 3280 de 2018 de Colombia).
+              </span>
+            </label>
 
-          {error && <p className="text-sm text-error font-body">{error}</p>}
+            <div className="mt-2 pl-7 flex items-center justify-between gap-2 flex-wrap text-[11px]">
+              <button
+                type="button"
+                onClick={() => setShowTermsModal(true)}
+                className="text-primary hover:underline font-semibold flex items-center gap-1"
+              >
+                <span>🔍</span> Ver documento y confirmar en ventana emergente
+              </button>
+
+              {form.consentAccepted && (
+                <span className="pill-chip !py-0.5 !px-2 bg-secondary-container text-on-secondary-container font-semibold">
+                  ✓ Aceptado
+                </span>
+              )}
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-lg bg-error-container/30 border border-error/20 flex items-start gap-2">
+              <span className="text-error text-sm shrink-0 mt-0.5">⚠️</span>
+              <p className="text-xs text-error font-body leading-relaxed">{error}</p>
+            </div>
+          )}
 
           <button type="submit" disabled={loading} className="btn-primary mt-2">
             {loading ? 'Creando cuenta...' : 'Comenzar mi seguimiento'}
@@ -109,7 +173,24 @@ export default function Register() {
             Iniciar sesión
           </Link>
         </p>
+
+        <p className="text-center font-body text-xs text-on-surface-variant mt-3">
+          <Link to="/terminos-y-condiciones" className="text-outline hover:text-primary hover:underline">
+            Consultar Términos y Condiciones completos
+          </Link>
+        </p>
       </div>
+
+      {/* Modal Popup Interactivo de Términos y Condiciones */}
+      <TermsModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        onConfirm={() => {
+          setForm((f) => ({ ...f, consentAccepted: true }));
+          setError('');
+        }}
+        initiallyAccepted={form.consentAccepted}
+      />
     </div>
   );
 }

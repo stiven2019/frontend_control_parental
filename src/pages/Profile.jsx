@@ -146,6 +146,16 @@ function PrivacySection({ logout, navigate }) {
         <button disabled className="btn-secondary opacity-50">Exportar mis datos</button>
       </div>
 
+      <div className="card">
+        <h3 className="font-display text-lg font-semibold mb-2">Términos y Tratamiento de Datos</h3>
+        <p className="font-body text-sm text-on-surface-variant mb-4">
+          Consulta las políticas de protección de datos personales (Ley 1581 de 2012), Habeas Data y condiciones de uso de Mi Bebé en Colombia.
+        </p>
+        <Link to="/terminos-y-condiciones" className="btn-secondary text-center block text-sm font-semibold !py-3">
+          Ver Términos y Condiciones
+        </Link>
+      </div>
+
       <div className="card border border-error-container">
         <h3 className="font-display text-lg font-semibold mb-2 text-error">Eliminar cuenta</h3>
         <p className="font-body text-sm text-on-surface-variant mb-4">
