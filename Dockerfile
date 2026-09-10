@@ -25,19 +25,18 @@ RUN pnpm run build
 # ==========================================
 FROM nginx:1.27-alpine AS runner
 
-# Filtrar para que envsubst reemplace únicamente ${BACKEND_URL}
-# evitando que sobreescriba variables nativas de Nginx como $uri o $host
+# Variables para envsubst
 ENV NGINX_ENVSUBST_FILTER="BACKEND_URL"
 ENV BACKEND_URL="http://backend:4000"
 
-# Copiar artefactos compilados desde el builder
+# Copiar aplicación compilada
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copiar plantilla de configuración de Nginx
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+# Copiar configuración como plantilla
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
-# Exponer el puerto HTTP
+# Exponer HTTP
 EXPOSE 80
 
-# Comando para iniciar Nginx
+# Iniciar Nginx
 CMD ["nginx", "-g", "daemon off;"]

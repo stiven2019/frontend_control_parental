@@ -5,16 +5,18 @@ import ProgressRing from '../components/ProgressRing';
 import { LoadingState, ErrorState } from '../components/States';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { hasModuleAccess } from '../components/SubscriptionGuard';
+import SubscriptionModal from '../components/SubscriptionModal';
 
 const QUICK_ACTIONS = [
-  { to: '/bienestar-emocional', label: 'Test Emocional', icon: '🌸', bg: 'bg-primary-container' },
-  { to: '/controles', label: 'Control médico', icon: '🩺', bg: 'bg-secondary-container' },
+  { to: '/bienestar-emocional', label: 'Test Emocional', icon: '🧠', bg: 'bg-primary-container', moduleKey: 'test_emocional' },
+  { to: '/controles', label: 'Control médico', icon: '🩺', bg: 'bg-secondary-container', moduleKey: 'control_medico' },
   { to: '/medicamentos', label: 'Medicamentos', icon: '💊', bg: 'bg-primary-container' },
-  { to: '/recordatorios', label: 'Recordatorios', icon: '⏰', bg: 'bg-tertiary-container' },
-  { to: '/documentos', label: 'Documentos', icon: '📄', bg: 'bg-surface-highest' },
-  { to: '/diario', label: 'Diario', icon: '📔', bg: 'bg-primary-container' },
-  { to: '/sintomas', label: 'Síntomas', icon: '🌡️', bg: 'bg-secondary-container' },
-  { to: '/guia-desarrollo', label: 'Guía desarrollo', icon: '📚', bg: 'bg-tertiary-container' },
+  { to: '/recordatorios', label: 'Recordatorios', icon: '⏰', bg: 'bg-tertiary-container', moduleKey: 'recordatorios' },
+  { to: '/documentos', label: 'Documentos', icon: '📁', bg: 'bg-surface-highest', moduleKey: 'documentos' },
+  { to: '/diario', label: 'Diario', icon: '📖', bg: 'bg-primary-container', moduleKey: 'diario' },
+  { to: '/sintomas', label: 'Síntomas', icon: '📋', bg: 'bg-secondary-container' },
+  { to: '/guia-desarrollo', label: 'Guía desarrollo', icon: '🌱', bg: 'bg-tertiary-container' },
 ];
 
 export default function Dashboard() {
@@ -23,6 +25,8 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [subModalOpen, setSubModalOpen] = useState(false);
+  const [selectedLockedModule, setSelectedLockedModule] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -46,6 +50,19 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleActionClick = (e, action) => {
+    if (action.moduleKey && !hasModuleAccess(user, action.moduleKey)) {
+      e.preventDefault();
+      setSelectedLockedModule(action.moduleKey);
+      setSubModalOpen(true);
+    }
+  };
+
+  const isModuleLocked = (moduleKey) => {
+    if (!moduleKey) return false;
+    return !hasModuleAccess(user, moduleKey);
+  };
+
   if (loading) return <AppLayout><LoadingState label="Cargando tu embarazo..." /></AppLayout>;
   if (error) return <AppLayout><ErrorState message={error} onRetry={load} /></AppLayout>;
   if (!data) return null;
@@ -55,13 +72,32 @@ export default function Dashboard() {
     day: 'numeric', month: 'long', year: 'numeric',
   });
 
+  const isTestEmocionalLocked = isModuleLocked('test_emocional');
+  const isFreePlan = (user?.plan === 'free' || !user?.plan) && !user?.isVip;
+
   return (
     <AppLayout>
-      <header className="mb-6">
-        <h1 className="font-display text-2xl md:text-3xl font-semibold">
-          Hola, {user?.firstName} <span>❤️</span>
-        </h1>
-        <p className="font-body text-on-surface-variant mt-1">Tu bebé está creciendo cada día.</p>
+      <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-semibold">
+            Hola, {user?.firstName} <span>👶</span>
+          </h1>
+          <p className="font-body text-on-surface-variant mt-1">Tu bebé está creciendo cada día.</p>
+        </div>
+
+        {isFreePlan && (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedLockedModule(null);
+              setSubModalOpen(true);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-primary-container text-white font-body text-xs font-semibold shadow-cloud hover:opacity-95 transition-opacity self-start sm:self-auto"
+          >
+            <span>💎</span>
+            <span>Planes Mensuales</span>
+          </button>
+        )}
       </header>
 
       {/* Tarjeta principal del embarazo */}
@@ -121,23 +157,44 @@ export default function Dashboard() {
       <section className="card mb-6 bg-primary-container/25 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-start gap-3 text-center sm:text-left">
           <span className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shrink-0 shadow-cloud-sm">
-            🌸
+            🧠
           </span>
           <div>
-            <h3 className="font-display text-base font-bold text-on-surface">
-              ¿Cómo te sientes hoy, mamá?
-            </h3>
+            <div className="flex items-center gap-2 justify-center sm:justify-start">
+              <h3 className="font-display text-base font-bold text-on-surface">
+                ¿Cómo te sientes hoy, mamá?
+              </h3>
+              {isTestEmocionalLocked && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary text-white">
+                  🔒 Suscripción
+                </span>
+              )}
+            </div>
             <p className="font-body text-xs text-on-surface-variant mt-0.5 leading-relaxed">
               Evalúa tu estado emocional en 2 minutos y accede a tips asertivos para soltar culpas y cultivar calma.
             </p>
           </div>
         </div>
-        <Link
-          to="/bienestar-emocional"
-          className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud-sm"
-        >
-          Hacer Test Emocional
-        </Link>
+        {isTestEmocionalLocked ? (
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedLockedModule('test_emocional');
+              setSubModalOpen(true);
+            }}
+            className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud-sm flex items-center justify-center gap-1.5"
+          >
+            <span>🔒</span>
+            <span>Desbloquear Test</span>
+          </button>
+        ) : (
+          <Link
+            to="/bienestar-emocional"
+            className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud-sm"
+          >
+            Hacer Test Emocional
+          </Link>
+        )}
       </section>
 
       {/* Próximos eventos */}
@@ -158,15 +215,44 @@ export default function Dashboard() {
       {/* Acciones rápidas */}
       <section>
         <h3 className="font-display text-lg font-semibold mb-3">Acciones rápidas</h3>
-        <div className="grid grid-cols-2 gap-4">
-          {QUICK_ACTIONS.map((a) => (
-            <Link key={a.to} to={a.to} className="card flex flex-col items-center gap-2 !p-5 hover:shadow-cloud transition-shadow">
-              <div className={`w-11 h-11 rounded-full ${a.bg} flex items-center justify-center text-xl`}>{a.icon}</div>
-              <span className="font-body text-sm font-medium">{a.label}</span>
-            </Link>
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {QUICK_ACTIONS.map((a) => {
+            const locked = isModuleLocked(a.moduleKey);
+            return (
+              <Link
+                key={a.to}
+                to={a.to}
+                onClick={(e) => handleActionClick(e, a)}
+                className="relative card flex flex-col items-center gap-2 !p-5 hover:shadow-cloud transition-all group hover:scale-[1.02]"
+              >
+                {locked && (
+                  <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">
+                    🔒
+                  </span>
+                )}
+                <div className={`w-11 h-11 rounded-full ${a.bg} flex items-center justify-center text-xl`}>
+                  {a.icon}
+                </div>
+                <span className="font-body text-sm font-medium text-center">
+                  {a.label}
+                </span>
+                {locked && (
+                  <span className="text-[10px] text-primary font-semibold">
+                    Plan requerido
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </div>
       </section>
+
+      {/* Modal de planes de suscripción */}
+      <SubscriptionModal
+        isOpen={subModalOpen}
+        onClose={() => setSubModalOpen(false)}
+        requestedModule={selectedLockedModule}
+      />
     </AppLayout>
   );
 }

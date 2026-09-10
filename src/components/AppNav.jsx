@@ -1,67 +1,112 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { hasModuleAccess } from './SubscriptionGuard';
+import SubscriptionModal from './SubscriptionModal';
 
 const NAV_ITEMS = [
   { to: '/inicio', label: 'Inicio', icon: HomeIcon },
   { to: '/calendario', label: 'Calendario', icon: CalendarIcon },
   { to: '/mi-bebe', label: 'Mi Bebé', icon: BabyIcon },
-  { to: '/album', label: 'Álbum', icon: AlbumIcon },
+  { to: '/album', label: 'Álbum', icon: AlbumIcon, moduleKey: 'album' },
   { to: '/perfil', label: 'Perfil', icon: ProfileIcon },
 ];
 
 export default function AppNav() {
+  const { user } = useAuth();
+  const [subModalOpen, setSubModalOpen] = useState(false);
+
+  const handleNavClick = (e, item) => {
+    if (item.moduleKey && !hasModuleAccess(user, item.moduleKey)) {
+      e.preventDefault();
+      setSubModalOpen(true);
+    }
+  };
+
   return (
     <>
       {/* Móvil: barra inferior flotante con glassmorphism */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-2">
         <div className="mx-auto max-w-md flex items-center justify-between bg-white/70 backdrop-blur-xl rounded-full shadow-cloud px-2 py-2 border border-white/60">
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive ? 'text-primary' : 'text-outline'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <Icon filled={isActive} className="w-6 h-6" />
-                  <span className="text-[10px] font-semibold">{label}</span>
-                </>
-              )}
-            </NavLink>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isLocked = item.moduleKey && !hasModuleAccess(user, item.moduleKey);
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={(e) => handleNavClick(e, item)}
+                className={({ isActive }) =>
+                  `relative flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive ? 'text-primary' : 'text-outline'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className="relative">
+                      <Icon filled={isActive} className="w-6 h-6" />
+                      {isLocked && (
+                        <span className="absolute -top-1 -right-1.5 text-[10px]">
+                          🔒
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-semibold">{item.label}</span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
 
       {/* Desktop / tablet: sidebar lateral */}
       <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:h-screen md:sticky md:top-0 border-r border-outline-variant/40 px-6 py-8 bg-surface-low">
         <div className="flex items-center gap-2 mb-10 px-2">
-          <span className="text-2xl">❤️</span>
+          <span className="text-2xl">👶</span>
           <span className="font-display text-xl font-semibold text-primary">Mi Bebé</span>
         </div>
         <nav className="flex flex-col gap-1">
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-full font-body font-medium text-sm transition-colors ${
-                  isActive ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-container'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <Icon filled={isActive} className="w-5 h-5" />
-                  {label}
-                </>
-              )}
-            </NavLink>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isLocked = item.moduleKey && !hasModuleAccess(user, item.moduleKey);
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={(e) => handleNavClick(e, item)}
+                className={({ isActive }) =>
+                  `flex items-center justify-between px-4 py-3 rounded-full font-body font-medium text-sm transition-colors ${
+                    isActive ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-container'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <Icon filled={isActive} className="w-5 h-5" />
+                      <span>{item.label}</span>
+                    </div>
+                    {isLocked && (
+                      <span className="text-xs" title="Requiere suscripción">
+                        🔒
+                      </span>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
       </aside>
+
+      {/* Modal de suscripción al intentar entrar a Álbum si está bloqueado */}
+      <SubscriptionModal
+        isOpen={subModalOpen}
+        onClose={() => setSubModalOpen(false)}
+        requestedModule="album"
+      />
     </>
   );
 }

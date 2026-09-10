@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AlarmProvider } from './context/AlarmContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import SubscriptionGuard from './components/SubscriptionGuard';
 
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
@@ -45,18 +46,85 @@ export default function App() {
             <Route path="/mi-embarazo" element={<ProtectedRoute><PregnancyTimeline /></ProtectedRoute>} />
             <Route path="/mi-bebe" element={<ProtectedRoute><BabyPage /></ProtectedRoute>} />
             <Route path="/papa" element={<ProtectedRoute><PartnerPage /></ProtectedRoute>} />
-            <Route path="/album" element={<ProtectedRoute><Album /></ProtectedRoute>} />
-            <Route path="/diario" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
-            <Route path="/sintomas" element={<ProtectedRoute><Symptoms /></ProtectedRoute>} />
-            <Route path="/controles" element={<ProtectedRoute><MedicalControls /></ProtectedRoute>} />
+
+            {/* Módulos con restricción de suscripción para nuevos usuarios */}
+            <Route
+              path="/album"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="album" moduleName="Álbum de Fotos">
+                    <Album />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/diario"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="diario" moduleName="Diario de Emociones">
+                    <Journal />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/controles"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="control_medico" moduleName="Control Médico">
+                    <MedicalControls />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recordatorios"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="recordatorios" moduleName="Recordatorios">
+                    <Reminders />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/documentos"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="documentos" moduleName="Documentos y Ecografías">
+                    <Documents />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bienestar-emocional"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="test_emocional" moduleName="Test Emocional">
+                    <EmotionalWellbeingPage />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/test-emocional"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="test_emocional" moduleName="Test Emocional">
+                    <EmotionalWellbeingPage />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Módulos estándar */}
             <Route path="/medicamentos" element={<ProtectedRoute><Medications /></ProtectedRoute>} />
-            <Route path="/recordatorios" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
-            <Route path="/documentos" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+            <Route path="/sintomas" element={<ProtectedRoute><Symptoms /></ProtectedRoute>} />
             <Route path="/cuenta-regresiva" element={<ProtectedRoute><Countdown /></ProtectedRoute>} />
             <Route path="/cuidados-mama" element={<ProtectedRoute><MomCarePage /></ProtectedRoute>} />
             <Route path="/cuidados-bebe" element={<ProtectedRoute><BabyCarePage /></ProtectedRoute>} />
-            <Route path="/bienestar-emocional" element={<ProtectedRoute><EmotionalWellbeingPage /></ProtectedRoute>} />
-            <Route path="/test-emocional" element={<ProtectedRoute><EmotionalWellbeingPage /></ProtectedRoute>} />
             <Route path="/guia-desarrollo" element={<ProtectedRoute><BabyDevelopmentGuide /></ProtectedRoute>} />
             <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
@@ -67,4 +135,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
