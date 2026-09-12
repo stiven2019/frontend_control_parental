@@ -18,7 +18,10 @@ El proyecto está compuesto por:
 ## 🏛️ Arquitectura Técnica y Flujo de Datos
 
 ### 1. Autenticación, Seguridad y Recuperación (`src/context/AuthContext.jsx` & `src/api/client.js`)
-- **Almacenamiento de Token**: El JWT se almacena en `localStorage` bajo `mibebe_token`.
+- **Persistencia Permanente de Sesión**:
+  - El JWT se almacena en `localStorage` bajo `mibebe_token` con vigencia prolongada (`JWT_EXPIRES_IN=365d`).
+  - El perfil del usuario se respalda en `localStorage` (`mibebe_user`) para inicialización instantánea sin parpadeo de carga.
+  - La sesión **se mantiene abierta indefinidamente** mientras la usuaria no presione voluntariamente el botón de *"Cerrar sesión"*. Si ocurren fallos temporales de red, caídas de señal o reinicios del servidor, la app mantiene la sesión local activa sin cerrar la cuenta. Solo una respuesta explícita `401 Unauthorized` o la acción de logout elimina el token.
 - **Inyección Automática**: `client.js` inyecta `Authorization: Bearer <token>` en todas las peticiones autenticadas.
 - **Onboarding Obligatorio**: Si la API retorna `{ needsSetup: true }`, la aplicación redirige de inmediato a `/configuracion-inicial`.
 - **Recuperación de Contraseña con Caducidad (15 min)**:
@@ -26,6 +29,7 @@ El proyecto está compuesto por:
   - Tokens JWT estrictos con vigencia de 15 minutos (`expiresIn: '15m'`).
   - Frontend (`ForgotPassword.jsx` & `ResetPassword.jsx`) con temporizador regresivo dinámico en vivo.
   - Envío automático de correo con **Gmail SMTP** sanitizado en backend (`pass.replace(/\s+/g, '')`).
+
 
 ### 2. Sistema de Suscripción y Módulos (`SubscriptionGuard.jsx` & `SubscriptionModal.jsx`)
 La aplicación cuenta con control de acceso por suscripción a nivel de ruta y navegación.
@@ -91,13 +95,17 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 
 ---
 
-### 4. Sistema de Alarmas y Recordatorios en Segundo Plano (`AlarmContext.jsx`, Web Workers y `soundAlarm.js`)
+### 4. Sistema de Alarmas y Recordatorios en Segundo Plano (`AlarmContext.jsx`, Service Worker, Web Push y `soundAlarm.js`)
 
-- **Web Worker Anti-Throttling**: Ejecuta un temporizador continuo en segundo plano independiente para evitar que el navegador reduzca la frecuencia de los temporizadores cuando la pestaña está minimizada o inactiva.
+- **Notificaciones Push en Segundo Plano (Fuera de la App / Navegador Cerrado)**:
+  - **Service Worker (`public/sw.js`)**: Escucha eventos `push` y despliega alertas a través de `self.registration.showNotification(...)` con sonido, vibración y retención (`requireInteraction: true`). Al pulsar la alerta (`notificationclick`), abre o enfoca la aplicación en la ruta correspondiente (`/recordatorios`, `/medicamentos`, etc.).
+  - **Web Push API + VAPID**: Llaves criptográficas VAPID configuradas en backend y frontend. Las suscripciones de los dispositivos se guardan en PostgreSQL (`push_subscriptions`).
+  - **Servicio Cron en Backend (`reminderCron.js`)**: Monitorea de manera autónoma cada 45 segundos los recordatorios, medicamentos activos y citas médicas del día y despacha notificaciones push nativas al sistema operativo del usuario.
+- **Web Worker Anti-Throttling (Pestaña en uso/minimizada)**: Ejecuta un temporizador continuo en segundo plano independiente para evitar que el navegador reduzca la frecuencia de los temporizadores cuando la pestaña está minimizada o inactiva.
 - **Web Audio API + Melodías PCM**: Generación de tonos armónicos mediante osciladores sintetizados y buffer WAV para alertar con el sonido de cuna o campana seleccionada.
-- **Notificaciones Nativas**: Utiliza la `Notification API` con opción `requireInteraction: true` y parpadeo del título de la ventana.
 - **Categorías de Alarmas Soportadas**:
   - `vacuna_bebe` (💉), `control_pediatrico` (🩺), `cuidado_bebe` (👶), `vitamina_bebe` (🥄), `medicamento` (💊), `control_medico` (🩺), `ecografia` (📷), `cita` (📅).
+
 
 ---
 
@@ -150,12 +158,48 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 
 ---
 
-## 🚀 Guía Rápida para Continuar el Desarrollo
+## 🚀 Guía Rápida para Continuar el Desarrollo y Despliegue en Servidores
 
-1. **Para desbloquear todos los módulos en desarrollo**:
-   - En la base de datos: `UPDATE users SET plan = 'full', unlocked_modules = '["*"]'::jsonb WHERE email = 'tu_correo@gmail.com';`
-   - O activa `is_vip = true` en el usuario.
-2. **Para probar alarmas audibles fuera de la app**:
-   - Entra a `/perfil` o `/recordatorios` y pulsa el botón *"Probar fuera (5s)"*. Cambia de pestaña o minimiza el navegador; a los 5 segundos sonará el timbre continuo y se activará la notificación del sistema.
-3. **Para registrar una nueva vacuna o control pediátrico**:
-   - En `/carnet-bebe`, usa el botón *"+ Nuevo Control Pediátrico"* o pulsa *`🔔 Poner Alarma`* en cualquiera de las 20 vacunas del PAI.
+### 1. Despliegue en Servidor (VPS / Docker / Producción)
+- **Error habitual**: `{ error: "column \"is_born\" does not exist" }` en endpoints como `/api/embarazo/dashboard`.
+  - **Causa**: La tabla `babies` en PostgreSQL se creó antes de añadir las métricas del recién nacido.
+  - **Solución Automática**: `backend_control_prenatal/src/server.js` ahora ejecuta automáticamente las migraciones `ALTER TABLE babies ADD COLUMN IF NOT EXISTS ...` y `ALTER TABLE users ...` en el arranque del servidor.
+  - **Solución Manual Inmediata (Docker en Servidor)**:
+    ```bash
+    docker exec -i mibebe-postgres psql -U postgres -d mi_bebe -f /app/migration_postnatal_babies.sql
+    # O directamente con una sola línea:
+    docker exec -i mibebe-postgres psql -U postgres -d mi_bebe -c "
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS is_born BOOLEAN DEFAULT false;
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_date DATE;
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_time VARCHAR(10);
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_weight_g INTEGER;
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_length_cm NUMERIC(5,2);
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_head_circ_cm NUMERIC(5,2);
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS delivery_type VARCHAR(50);
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS blood_type VARCHAR(10);
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_place VARCHAR(150);
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS postnatal_controls JSONB DEFAULT '[]'::jsonb;
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS vaccines JSONB DEFAULT '[]'::jsonb;
+    ALTER TABLE babies ADD COLUMN IF NOT EXISTS developmental_milestones JSONB DEFAULT '[]'::jsonb;
+    "
+    ```
+- **Conexión Frontend -> Backend (`VITE_API_URL`)**:
+  - `src/api/client.js` soporta `VITE_API_URL`. Si el frontend corre desacoplado del backend, define en `.env`:
+    ```env
+    VITE_API_URL=http://38.242.149.219:4000
+    ```
+  - Si pasa por el Nginx del contenedor en el puerto `3011` (proxy inverso), las peticiones a `/api/` y `/uploads/` se redirigen automáticamente.
+
+### 2. Para desbloquear todos los módulos en desarrollo / producción:
+- En la base de datos PostgreSQL:
+  ```sql
+  UPDATE users SET plan = 'full', custom_unlocked_modules = '["*"]'::jsonb WHERE email = 'tu_correo@gmail.com';
+  ```
+- O activa `is_vip = true` en el usuario.
+
+### 3. Para probar alarmas audibles fuera de la app:
+- Entra a `/perfil` o `/recordatorios` y pulsa el botón *"Probar fuera (5s)"*. Cambia de pestaña o minimiza el navegador; a los 5 segundos sonará el timbre continuo y se activará la notificación del sistema.
+
+### 4. Para registrar una nueva vacuna o control pediátrico:
+- En `/carnet-bebe`, usa el botón *"+ Nuevo Control Pediátrico"* o pulsa *`🔔 Poner Alarma`* en cualquiera de las 20 vacunas del PAI.
+

@@ -9,6 +9,11 @@ import {
   playAlarmPulse,
   unlockAudio,
 } from '../utils/soundAlarm';
+import {
+  subscribeToPushNotifications,
+  triggerServerPushTest,
+  isPushSupported,
+} from '../utils/pushNotifications';
 
 const STORAGE_PREFS_KEY = 'mibebe_alarm_prefs';
 const STORAGE_ACK_KEY = 'mibebe_alarm_acknowledged';
@@ -45,6 +50,9 @@ export function AlarmProvider({ children }) {
   const [hasNotificationPermission, setHasNotificationPermission] = useState(
     typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
   );
+
+  // Estado de suscripción push en segundo plano
+  const [isPushActive, setIsPushActive] = useState(false);
 
   // Cuenta regresiva para prueba con retardo (permite probar fuera de la app)
   const [testCountdown, setTestCountdown] = useState(null);
@@ -99,44 +107,81 @@ export function AlarmProvider({ children }) {
     }
   };
 
-  // Solicitar permiso de notificaciones del navegador
-  const requestNotificationPermission = async () => {
+  // Solicitar permiso de notificaciones del navegador y registrar Web Push en segundo plano
+  const requestNotificationPermission = useCallback(async () => {
     if (typeof window === 'undefined' || !('Notification' in window)) return false;
     try {
       const result = await Notification.requestPermission();
       const granted = result === 'granted';
       setHasNotificationPermission(granted);
+
+      if (granted && user) {
+        try {
+          const sub = await subscribeToPushNotifications();
+          setIsPushActive(Boolean(sub));
+        } catch (subErr) {
+          console.warn('No se pudo registrar Web Push tras permiso:', subErr);
+        }
+      }
       return granted;
     } catch (e) {
       console.error('Error requesting notification permission', e);
       return false;
     }
-  };
+  }, [user]);
 
-  // Enviar notificación del sistema (escritorio / móvil) con sonido y foco
-  const sendSystemNotification = useCallback((title, options = {}) => {
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+  // Si el usuario ya había otorgado permiso previamente, asegurar suscripción Push al iniciar sesión
+  useEffect(() => {
+    if (user && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      subscribeToPushNotifications().then((sub) => {
+        if (sub) setIsPushActive(true);
+      }).catch(() => {});
+    }
+  }, [user]);
+
+  // Enviar notificación del sistema (compatible con Service Worker en Android/PC y fallback nativo)
+  const sendSystemNotification = useCallback(async (title, options = {}) => {
+    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
+      return;
+    }
+
+    const defaultOptions = {
+      icon: '/favicon.ico',
+      badge: '/favicon.ico',
+      requireInteraction: true,
+      silent: false,
+      vibrate: [300, 150, 300, 150, 450],
+      data: { url: options.url || '/recordatorios' },
+      ...options,
+    };
+
+    // 1. Prioridad: Service Worker (funciona en segundo plano y en dispositivos móviles Android)
+    if ('serviceWorker' in navigator) {
       try {
-        const notif = new Notification(title, {
-          icon: '/favicon.ico',
-          badge: '/favicon.ico',
-          requireInteraction: true, // No desaparece hasta que la usuaria interactúe
-          silent: false, // Reproduce el sonido de alerta del sistema operativo
-          vibrate: [300, 150, 300, 150, 450],
-          ...options,
-        });
-
-        notif.onclick = () => {
-          try {
-            window.focus();
-          } catch (_) {}
-          notif.close();
-        };
-      } catch (e) {
-        console.error('Error sending system notification', e);
+        const reg = await navigator.serviceWorker.ready;
+        if (reg && reg.showNotification) {
+          await reg.showNotification(title, defaultOptions);
+          return;
+        }
+      } catch (swErr) {
+        console.warn('Fallo en Service Worker showNotification, intentando constructor nativo:', swErr);
       }
     }
+
+    // 2. Fallback estándar para escritorio
+    try {
+      const notif = new Notification(title, defaultOptions);
+      notif.onclick = () => {
+        try {
+          window.focus();
+        } catch (_) {}
+        notif.close();
+      };
+    } catch (e) {
+      console.error('Error enviando notificación del sistema:', e);
+    }
   }, []);
+
 
   // Parar el parpadeo del título
   const stopTitleFlashing = useCallback(() => {
@@ -274,7 +319,37 @@ export function AlarmProvider({ children }) {
         testAlarm();
       }
     }, 1000);
-  }, [testAlarm]);
+  }, [testAlarm, requestNotificationPermission]);
+
+  // Probar Notificación Push real desde el servidor (funciona incluso con la app/navegador cerrado)
+  const testBackgroundPush = useCallback(async (delaySeconds = 4) => {
+    try {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        alert('Por favor concede permiso de notificaciones en tu navegador para activar las alertas en segundo plano.');
+        return false;
+      }
+
+      setTestCountdown(delaySeconds);
+      let left = delaySeconds;
+      const interval = setInterval(() => {
+        left -= 1;
+        setTestCountdown(left);
+        if (left <= 0) {
+          clearInterval(interval);
+          setTestCountdown(null);
+        }
+      }, 1000);
+
+      await triggerServerPushTest(delaySeconds);
+      return true;
+    } catch (err) {
+      console.error('Error enviando prueba de push:', err);
+      setTestCountdown(null);
+      return false;
+    }
+  }, [requestNotificationPermission]);
+
 
   // Chequeo de alarmas y sincronización de eventos próximos
   const checkAlarms = useCallback(async () => {
@@ -592,16 +667,20 @@ export function AlarmProvider({ children }) {
         completeAlarmAction,
         testAlarm,
         testAlarmWithDelay,
+        testBackgroundPush,
         testCountdown,
         testSound: (toneId) => testAlarmSound(toneId || prefs.selectedTone, prefs.volume),
         hasNotificationPermission,
         requestNotificationPermission,
+        isPushActive,
+        isPushSupported: isPushSupported(),
         refreshAlarms: checkAlarms,
       }}
     >
       {children}
     </AlarmContext.Provider>
   );
+
 }
 
 export function useAlarm() {

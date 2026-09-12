@@ -181,29 +181,45 @@ function AlarmSettingsSection() {
     tones,
     testSound,
     testAlarm,
+    testBackgroundPush,
+    testCountdown,
     hasNotificationPermission,
     requestNotificationPermission,
   } = useAlarm();
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Tarjeta de Prueba Rápida */}
+      {/* Tarjeta de Pruebas Rápidas */}
       <div className="card bg-primary-container/30 border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="font-display text-lg font-semibold text-on-surface flex items-center gap-2">
-            <span>🔊</span> Alarmas Sonoras Activas
+            <span>🔊</span> Alarmas y Recordatorios Activos
           </h3>
           <p className="font-body text-sm text-on-surface-variant mt-1">
-            Tus recordatorios, tomas de medicamentos y citas médicas sonarán con audio cuando se cumplan o estén por cumplirse.
+            Tus recordatorios, tomas de medicamentos y controles médicos sonarán con audio en la app y te enviarán alertas al sistema operativo incluso si el navegador o la app están cerrados.
           </p>
         </div>
-        <button
-          onClick={testAlarm}
-          className="btn-primary shrink-0 !w-auto !py-2.5 !px-6 text-sm flex items-center gap-2"
-        >
-          <span>🔔</span> Probar Alarma Ahora
-        </button>
+        <div className="flex flex-wrap gap-2 w-full md:w-auto shrink-0">
+          <button
+            onClick={testAlarm}
+            className="btn-outline shrink-0 !w-auto !py-2.5 !px-4 text-xs font-semibold flex items-center gap-1.5"
+          >
+            <span>🔔</span> Probar Alarma Ahora
+          </button>
+          <button
+            onClick={() => testBackgroundPush(4)}
+            disabled={Boolean(testCountdown)}
+            className="btn-primary shrink-0 !w-auto !py-2.5 !px-4 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+          >
+            {testCountdown ? (
+              <span>⏳ ¡Cierra o minimiza! ({testCountdown}s)</span>
+            ) : (
+              <span>🚀 Probar fuera de la app</span>
+            )}
+          </button>
+        </div>
       </div>
+
 
       {/* Tarjeta de Configuración de Sonido */}
       <div className="card flex flex-col gap-5">
@@ -293,12 +309,12 @@ function AlarmSettingsSection() {
           </select>
         </div>
 
-        {/* Notificaciones del Navegador */}
+        {/* Notificaciones del Navegador y Segundo Plano */}
         <div className="p-4 rounded-xl bg-surface-low border border-surface-container flex items-center justify-between gap-4">
           <div>
-            <p className="font-body font-semibold text-sm text-on-surface">Notificaciones del Sistema / Navegador</p>
+            <p className="font-body font-semibold text-sm text-on-surface">Notificaciones del Sistema y Segundo Plano (Push)</p>
             <p className="font-body text-xs text-on-surface-variant mt-0.5">
-              Recibe avisos visuales incluso si estás en otra pestaña o minimizaste la aplicación.
+              Recibe avisos en la barra de tareas de tu PC o móvil incluso si tienes la aplicación minimizada o el navegador cerrado.
             </p>
           </div>
           {!hasNotificationPermission ? (
@@ -310,11 +326,12 @@ function AlarmSettingsSection() {
               Permitir Notificaciones
             </button>
           ) : (
-            <span className="pill-chip bg-secondary-container text-on-secondary-container text-xs shrink-0">
-              ✓ Activadas
+            <span className="pill-chip bg-secondary-container text-on-secondary-container text-xs shrink-0 flex items-center gap-1">
+              <span>✓</span> Alertas activas
             </span>
           )}
         </div>
+
       </div>
     </div>
   );
