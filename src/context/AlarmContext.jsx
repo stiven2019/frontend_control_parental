@@ -6,7 +6,7 @@ import {
   startAlarmLoop,
   stopAlarmLoop,
   testAlarmSound,
-  playMelody,
+  playAlarmPulse,
   unlockAudio,
 } from '../utils/soundAlarm';
 
@@ -40,16 +40,20 @@ export function AlarmProvider({ children }) {
 
   // Lista consolidada de eventos próximos para el panel
   const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [loadingEvents, setLoadingEvents] = useState(false);
 
   // Permiso de notificaciones del sistema
   const [hasNotificationPermission, setHasNotificationPermission] = useState(
     typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
   );
 
-  // Registro de alarmas reconocidas/pospuestas en memoria y localStorage
+  // Cuenta regresiva para prueba con retardo (permite probar fuera de la app)
+  const [testCountdown, setTestCountdown] = useState(null);
+
+  // Referencias para timers, Web Worker y título
   const acknowledgedRef = useRef(new Map());
-  const checkTimerRef = useRef(null);
+  const workerRef = useRef(null);
+  const titleFlashTimerRef = useRef(null);
+  const originalTitleRef = useRef(typeof document !== 'undefined' ? document.title : 'Mi Bebé');
 
   // Guardar cambios de preferencias
   const updatePrefs = useCallback((newPrefs) => {
@@ -109,17 +113,23 @@ export function AlarmProvider({ children }) {
     }
   };
 
-  // Enviar notificación del sistema (escritorio / móvil)
+  // Enviar notificación del sistema (escritorio / móvil) con sonido y foco
   const sendSystemNotification = useCallback((title, options = {}) => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       try {
         const notif = new Notification(title, {
           icon: '/favicon.ico',
           badge: '/favicon.ico',
+          requireInteraction: true, // No desaparece hasta que la usuaria interactúe
+          silent: false, // Reproduce el sonido de alerta del sistema operativo
+          vibrate: [300, 150, 300, 150, 450],
           ...options,
         });
+
         notif.onclick = () => {
-          window.focus();
+          try {
+            window.focus();
+          } catch (_) {}
           notif.close();
         };
       } catch (e) {
@@ -128,48 +138,91 @@ export function AlarmProvider({ children }) {
     }
   }, []);
 
-  // Disparar alarma sonora y modal
+  // Parar el parpadeo del título
+  const stopTitleFlashing = useCallback(() => {
+    if (titleFlashTimerRef.current) {
+      clearInterval(titleFlashTimerRef.current);
+      titleFlashTimerRef.current = null;
+    }
+    if (typeof document !== 'undefined') {
+      document.title = originalTitleRef.current || 'Mi Bebé';
+    }
+  }, []);
+
+  // Iniciar parpadeo del título en la barra de tareas / pestaña
+  const startTitleFlashing = useCallback((alarmTitle) => {
+    stopTitleFlashing();
+    if (typeof document === 'undefined') return;
+    originalTitleRef.current = document.title;
+    let toggle = false;
+    titleFlashTimerRef.current = setInterval(() => {
+      toggle = !toggle;
+      document.title = toggle ? `🔔 ¡ALARMA! ${alarmTitle}` : `⏰ Mi Bebé`;
+    }, 1000);
+  }, [stopTitleFlashing]);
+
+  // Disparar alarma sonora, modal y notificación en segundo plano
   const triggerAlarm = useCallback((alarmData) => {
     setActiveAlarm(alarmData);
+    unlockAudio();
 
-    // Reproducir bucle sonoro si está habilitado
+    // Iniciar bucle sonoro
     if (prefs.soundEnabled) {
       startAlarmLoop(prefs.selectedTone, prefs.volume);
+      // Solicitar al Web Worker que envíe pulsos sonoros constantes sin verse afectado por el throttling
+      if (workerRef.current) {
+        workerRef.current.postMessage({ action: 'start_alarm_pulse' });
+      }
     }
 
-    // Notificación del sistema
+    // Parpadeo visual en pestaña
+    startTitleFlashing(alarmData.title);
+
+    // Notificación del sistema que salta sobre cualquier ventana o escritorio
     const tag = `alarm_${alarmData.id}_${alarmData.type}`;
     sendSystemNotification(alarmData.title, {
-      body: alarmData.subtitle || `Alarma programada a las ${alarmData.time || 'hoy'}`,
+      body: alarmData.subtitle || `Recordatorio: ${alarmData.time || 'ahora'}`,
       tag,
       requireInteraction: true,
     });
-  }, [prefs.soundEnabled, prefs.selectedTone, prefs.volume, sendSystemNotification]);
+  }, [prefs.soundEnabled, prefs.selectedTone, prefs.volume, sendSystemNotification, startTitleFlashing]);
 
   // Silenciar y descartar alarma activa
   const dismissAlarm = useCallback(() => {
     stopAlarmLoop();
+    stopTitleFlashing();
+    if (workerRef.current) {
+      workerRef.current.postMessage({ action: 'stop_alarm_pulse' });
+    }
     if (activeAlarm) {
       const ackKey = `ack_${activeAlarm.type}_${activeAlarm.id}_${activeAlarm.date}_${activeAlarm.time || 'allday'}`;
       saveAcknowledged(ackKey, Date.now());
       setActiveAlarm(null);
     }
-  }, [activeAlarm]);
+  }, [activeAlarm, stopTitleFlashing]);
 
   // Posponer alarma por X minutos (por defecto 5 minutos)
   const snoozeAlarm = useCallback((minutes = 5) => {
     stopAlarmLoop();
+    stopTitleFlashing();
+    if (workerRef.current) {
+      workerRef.current.postMessage({ action: 'stop_alarm_pulse' });
+    }
     if (activeAlarm) {
       const snoozeKey = `snooze_${activeAlarm.type}_${activeAlarm.id}`;
       const wakeTime = Date.now() + minutes * 60 * 1000;
       saveAcknowledged(snoozeKey, wakeTime);
       setActiveAlarm(null);
     }
-  }, [activeAlarm]);
+  }, [activeAlarm, stopTitleFlashing]);
 
   // Completar acción asociada (ej. marcar medicamento como tomado o recordatorio completado)
   const completeAlarmAction = useCallback(async (alarm) => {
     stopAlarmLoop();
+    stopTitleFlashing();
+    if (workerRef.current) {
+      workerRef.current.postMessage({ action: 'stop_alarm_pulse' });
+    }
     const target = alarm || activeAlarm;
     if (!target) return;
 
@@ -186,9 +239,9 @@ export function AlarmProvider({ children }) {
     const ackKey = `ack_${target.type}_${target.id}_${target.date}_${target.time || 'allday'}`;
     saveAcknowledged(ackKey, Date.now());
     setActiveAlarm(null);
-  }, [activeAlarm]);
+  }, [activeAlarm, stopTitleFlashing]);
 
-  // Función para probar la alarma de inmediato (para testing del usuario)
+  // Función para probar la alarma de inmediato
   const testAlarm = useCallback(() => {
     unlockAudio();
     const mockAlarm = {
@@ -196,7 +249,7 @@ export function AlarmProvider({ children }) {
       type: 'recordatorio',
       icon: '⏰',
       title: '¡Prueba de Alarma Sonora!',
-      subtitle: 'Así sonarán tus recordatorios y eventos cuando se cumplan.',
+      subtitle: 'Así sonarán tus recordatorios aunque estés fuera de la aplicación.',
       date: new Date().toISOString().split('T')[0],
       time: new Date().toTimeString().slice(0, 5),
       isDueNow: true,
@@ -205,12 +258,29 @@ export function AlarmProvider({ children }) {
     triggerAlarm(mockAlarm);
   }, [triggerAlarm]);
 
+  // Probar alarma con retardo de 5 segundos para que la usuaria pueda minimizar y verificar fuera de la app
+  const testAlarmWithDelay = useCallback((delaySeconds = 5) => {
+    unlockAudio();
+    requestNotificationPermission();
+    setTestCountdown(delaySeconds);
+
+    let left = delaySeconds;
+    const interval = setInterval(() => {
+      left -= 1;
+      setTestCountdown(left);
+      if (left <= 0) {
+        clearInterval(interval);
+        setTestCountdown(null);
+        testAlarm();
+      }
+    }, 1000);
+  }, [testAlarm]);
+
   // Chequeo de alarmas y sincronización de eventos próximos
   const checkAlarms = useCallback(async () => {
     if (!user) return;
 
     try {
-      // 1. Obtener datos en paralelo
       const [remindersRes, medsRes, controlsRes] = await Promise.allSettled([
         api.listReminders(),
         api.listMedications(),
@@ -263,7 +333,6 @@ export function AlarmProvider({ children }) {
           upcoming.push(eventItem);
         }
 
-        // Revisar si está pospuesto y llegó el momento
         if (snoozedUntil && Date.now() >= snoozedUntil && !activeAlarm) {
           acknowledgedRef.current.delete(snoozeKey);
           alarmToTrigger = { ...eventItem, isDueNow: true, subtitle: `(Pospuesto) ${eventItem.subtitle}` };
@@ -278,7 +347,7 @@ export function AlarmProvider({ children }) {
             if (diffMins <= 0 && diffMins >= -15 && !activeAlarm && !alarmToTrigger) {
               alarmToTrigger = { ...eventItem, isDueNow: true };
             }
-            // Aviso anticipado si configurado (ej. 15 minutos antes)
+            // Aviso anticipado si configurado
             else if (
               prefs.advanceNoticeMinutes > 0 &&
               diffMins > 0 &&
@@ -303,7 +372,6 @@ export function AlarmProvider({ children }) {
       medications.forEach((m) => {
         if (!m.time) return;
 
-        // Comprobar rango de fechas
         const start = m.startDate ? new Date(`${m.startDate}T00:00:00`) : null;
         const end = m.endDate ? new Date(`${m.endDate}T23:59:59`) : null;
         if (start && now < start) return;
@@ -383,9 +451,6 @@ export function AlarmProvider({ children }) {
 
         if (isToday) {
           upcoming.push(controlItem);
-        }
-
-        if (isToday) {
           const [h, min] = (c.time || '09:00').split(':').map(Number);
           const eventTotalMins = h * 60 + min;
           const diffMins = eventTotalMins - currentTotalMins;
@@ -416,11 +481,9 @@ export function AlarmProvider({ children }) {
         }
       });
 
-      // Ordenar próximos eventos por hora
       upcoming.sort((a, b) => (a.time || '23:59').localeCompare(b.time || '23:59'));
       setUpcomingEvents(upcoming);
 
-      // Si se detectó una alarma que debe sonar y no hay ninguna sonando actualmente
       if (alarmToTrigger && !activeAlarm) {
         triggerAlarm(alarmToTrigger);
       }
@@ -429,13 +492,61 @@ export function AlarmProvider({ children }) {
     }
   }, [user, activeAlarm, prefs.advanceNoticeMinutes, triggerAlarm]);
 
-  // Inicializar verificación periódica cada 20 segundos
+  // Inicializar Web Worker para garantizar chequeos y sonido constante en segundo plano
   useEffect(() => {
     if (!user) return;
 
+    // Código del Web Worker en Blob URL (resistente al throttling en segundo plano)
+    const workerScript = `
+      let checkTimer = null;
+      let pulseTimer = null;
+
+      self.onmessage = function(e) {
+        var data = e.data || {};
+        if (data.action === 'start_check') {
+          if (checkTimer) clearInterval(checkTimer);
+          checkTimer = setInterval(function() {
+            self.postMessage({ type: 'check_tick' });
+          }, data.interval || 12000);
+        } else if (data.action === 'stop_check') {
+          if (checkTimer) { clearInterval(checkTimer); checkTimer = null; }
+        } else if (data.action === 'start_alarm_pulse') {
+          if (pulseTimer) clearInterval(pulseTimer);
+          pulseTimer = setInterval(function() {
+            self.postMessage({ type: 'alarm_pulse' });
+          }, 2800);
+        } else if (data.action === 'stop_alarm_pulse') {
+          if (pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; }
+        }
+      };
+    `;
+
+    let worker = null;
+    try {
+      const blob = new Blob([workerScript], { type: 'application/javascript' });
+      worker = new Worker(URL.createObjectURL(blob));
+      workerRef.current = worker;
+
+      worker.onmessage = (e) => {
+        if (e.data?.type === 'check_tick') {
+          checkAlarms();
+        } else if (e.data?.type === 'alarm_pulse') {
+          // Pulso de sonido desde hilo de fondo
+          playAlarmPulse(prefs.selectedTone, prefs.volume);
+        }
+      };
+
+      // Iniciar chequeo cada 12 segundos
+      worker.postMessage({ action: 'start_check', interval: 12000 });
+    } catch (err) {
+      console.warn('Web Worker no soportado, usando fallback setInterval:', err);
+    }
+
+    // Chequeo inicial
     checkAlarms();
 
-    const intervalId = setInterval(() => {
+    // Fallback de intervalo en hilo principal
+    const mainInterval = setInterval(() => {
       checkAlarms();
     }, 20000);
 
@@ -455,12 +566,18 @@ export function AlarmProvider({ children }) {
     window.addEventListener('keydown', onUserInteraction, { once: true });
 
     return () => {
-      clearInterval(intervalId);
+      clearInterval(mainInterval);
+      if (worker) {
+        worker.postMessage({ action: 'stop_check' });
+        worker.postMessage({ action: 'stop_alarm_pulse' });
+        worker.terminate();
+      }
+      workerRef.current = null;
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('click', onUserInteraction);
       window.removeEventListener('keydown', onUserInteraction);
     };
-  }, [user, checkAlarms]);
+  }, [user, checkAlarms, prefs.selectedTone, prefs.volume]);
 
   return (
     <AlarmContext.Provider
@@ -474,6 +591,8 @@ export function AlarmProvider({ children }) {
         snoozeAlarm,
         completeAlarmAction,
         testAlarm,
+        testAlarmWithDelay,
+        testCountdown,
         testSound: (toneId) => testAlarmSound(toneId || prefs.selectedTone, prefs.volume),
         hasNotificationPermission,
         requestNotificationPermission,

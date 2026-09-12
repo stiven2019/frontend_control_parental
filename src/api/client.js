@@ -61,6 +61,9 @@ export const api = {
   me: () => request('/auth/me'),
   updateMe: (payload) => request('/auth/me', { method: 'PATCH', body: payload }),
   changePassword: (payload) => request('/auth/change-password', { method: 'POST', body: payload }),
+  requestPasswordResetEmail: (payload) => request('/auth/forgot-password-email', { method: 'POST', body: payload, auth: false }),
+  requestPasswordResetWhatsApp: (payload) => request('/auth/forgot-password-whatsapp', { method: 'POST', body: payload, auth: false }),
+  resetPassword: (payload) => request('/auth/reset-password', { method: 'POST', body: payload, auth: false }),
   deleteAccount: () => request('/auth/me', { method: 'DELETE' }),
 
   // Embarazo

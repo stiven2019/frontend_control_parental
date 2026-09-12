@@ -10,6 +10,8 @@ export default function NotificationBell() {
     upcomingEvents,
     testSound,
     testAlarm,
+    testAlarmWithDelay,
+    testCountdown,
     hasNotificationPermission,
     requestNotificationPermission,
   } = useAlarm();
@@ -62,13 +64,26 @@ export default function NotificationBell() {
               <span className="text-xl">🔔</span>
               <h3 className="font-display font-semibold text-base text-on-surface">Alarmas y Avisos</h3>
             </div>
-            <button
-              onClick={testAlarm}
-              className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-container text-on-primary-container hover:opacity-80 transition-opacity flex items-center gap-1"
-              title="Probar sonido y modal de alarma"
-            >
-              <span>🔊</span> Probar
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => testAlarmWithDelay(5)}
+                disabled={testCountdown !== null}
+                className="text-[11px] font-semibold px-2 py-1 rounded-full bg-secondary-container text-on-secondary-container hover:opacity-80 transition-opacity flex items-center gap-1"
+                title="Prueba con 5 segundos de retardo: minimiza o cambia de pestaña para escuchar la alarma sonando fuera"
+              >
+                <span>⏱️</span>
+                <span>{testCountdown !== null ? `En ${testCountdown}s...` : 'Probar fuera (5s)'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={testAlarm}
+                className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-container text-on-primary-container hover:opacity-80 transition-opacity flex items-center gap-1"
+                title="Probar sonido y modal de alarma"
+              >
+                <span>🔊</span> Probar
+              </button>
+            </div>
           </div>
 
           {/* Selector de pestañas */}

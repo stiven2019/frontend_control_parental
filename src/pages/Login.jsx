@@ -54,6 +54,15 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <div className="flex justify-end mt-1.5">
+              <Link
+                to="/recuperar-contrasena"
+                className="text-xs text-primary font-semibold hover:underline flex items-center gap-1"
+              >
+                <span>🔐</span>
+                <span>¿Olvidaste tu contraseña?</span>
+              </Link>
+            </div>
           </div>
 
           {error && <p className="text-sm text-error font-body">{error}</p>}
