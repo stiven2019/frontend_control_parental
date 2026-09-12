@@ -9,6 +9,17 @@ export function setToken(token) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
+export function getFileUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
+    return path;
+  }
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return API_BASE ? `${API_BASE}${cleanPath}` : cleanPath;
+}
+
 async function request(path, { method = 'GET', body, auth = true } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (auth) {
@@ -16,7 +27,10 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`/api${path}`, {
+  const endpoint = path.startsWith('/') ? path : `/${path}`;
+  const url = API_BASE ? `${API_BASE}/api${endpoint}` : `/api${endpoint}`;
+
+  const res = await fetch(url, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -44,7 +58,8 @@ export async function uploadFile(file) {
   const token = getToken();
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch('/api/upload', {
+  const url = API_BASE ? `${API_BASE}/api/upload` : '/api/upload';
+  const res = await fetch(url, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: form,
@@ -122,4 +137,11 @@ export const api = {
   // Contenido educativo público
   getMomCare: () => request('/contenido/cuidados-mama', { auth: false }),
   getBabyCare: () => request('/contenido/cuidados-bebe', { auth: false }),
+
+  // Notificaciones Push (segundo plano / fuera de la app)
+  getVapidPublicKey: () => request('/push/vapid-public-key', { auth: false }),
+  subscribePush: (payload) => request('/push/subscribe', { method: 'POST', body: payload }),
+  unsubscribePush: (payload) => request('/push/unsubscribe', { method: 'POST', body: payload }),
+  testPush: (payload = {}) => request('/push/test', { method: 'POST', body: payload }),
 };
+

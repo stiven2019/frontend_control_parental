@@ -184,6 +184,41 @@ frontend_control_prenatal/
 
 ---
 
+## 🛠️ Despliegue en Servidor y Solución de Errores de Base de Datos
+
+### Error: `{ error: "column \"is_born\" does not exist" }`
+Si al acceder a la API (por ejemplo `http://38.242.149.219:3011/api/embarazo/dashboard`) la base de datos responde con este error, significa que la tabla `babies` en PostgreSQL se creó con el esquema anterior y le faltan las columnas del recién nacido y el carnet postnatal.
+
+#### Opción 1: Ejecutar migración directa en el contenedor de PostgreSQL (Recomendada)
+En la consola del servidor VPS ejecuta este comando en una sola línea:
+```bash
+docker exec -i mibebe-postgres psql -U postgres -d mi_bebe -c "
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS is_born BOOLEAN DEFAULT false;
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_date DATE;
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_time VARCHAR(10);
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_weight_g INTEGER;
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_length_cm NUMERIC(5,2);
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_head_circ_cm NUMERIC(5,2);
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS delivery_type VARCHAR(50);
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS blood_type VARCHAR(10);
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_place VARCHAR(150);
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS postnatal_controls JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS vaccines JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE babies ADD COLUMN IF NOT EXISTS developmental_milestones JSONB DEFAULT '[]'::jsonb;
+"
+```
+
+#### Opción 2: Actualizar el backend y reiniciar
+El archivo `backend_control_prenatal/src/server.js` ahora incluye la auto-migración `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` en su función `start()`.
+1. Haz un `git pull` en la carpeta del backend en el servidor.
+2. Reinicia el contenedor del backend:
+   ```bash
+   docker compose restart backend
+   ```
+
+---
+
+
 ## 📄 Licencia y Aviso Médico
 
 Este software está diseñado como bitácora y guía de apoyo maternal. No sustituye el diagnóstico, tratamiento o control médico presencial por parte de un ginecólogo, obstetra o pediatra profesional.

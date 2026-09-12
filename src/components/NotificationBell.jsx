@@ -11,6 +11,7 @@ export default function NotificationBell() {
     testSound,
     testAlarm,
     testAlarmWithDelay,
+    testBackgroundPush,
     testCountdown,
     hasNotificationPermission,
     requestNotificationPermission,
@@ -237,23 +238,44 @@ export default function NotificationBell() {
                 </select>
               </div>
 
-              {/* Notificaciones de Sistema */}
-              <div className="p-2.5 rounded-xl bg-surface-container/60 border border-outline-variant/30 flex items-center justify-between">
-                <div>
-                  <span className="font-semibold text-on-surface block">Notificaciones del Navegador</span>
-                  <span className="text-[10px] text-on-surface-variant">
-                    {hasNotificationPermission ? 'Permiso concedido ✓' : 'Permiso no otorgado'}
-                  </span>
+              {/* Notificaciones de Sistema y Segundo Plano */}
+              <div className="p-2.5 rounded-xl bg-surface-container/60 border border-outline-variant/30 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-on-surface block">Alertas fuera de la app</span>
+                    <span className="text-[10px] text-on-surface-variant">
+                      {hasNotificationPermission
+                        ? 'Notificaciones push en segundo plano activas'
+                        : 'Permiso del navegador pendiente'}
+                    </span>
+                  </div>
+                  {!hasNotificationPermission ? (
+                    <button
+                      onClick={requestNotificationPermission}
+                      className="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-[11px] font-semibold hover:opacity-90"
+                    >
+                      Activar
+                    </button>
+                  ) : (
+                    <span className="text-secondary font-bold text-xs bg-secondary/10 px-2 py-0.5 rounded-md">
+                      ✓ Activo
+                    </span>
+                  )}
                 </div>
-                {!hasNotificationPermission ? (
+
+                {hasNotificationPermission && (
                   <button
-                    onClick={requestNotificationPermission}
-                    className="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-[11px] font-semibold hover:opacity-90"
+                    type="button"
+                    onClick={() => testBackgroundPush(4)}
+                    disabled={Boolean(testCountdown)}
+                    className="w-full py-1.5 px-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-semibold transition-all text-center flex items-center justify-center gap-1.5 border border-primary/20"
                   >
-                    Activar
+                    {testCountdown ? (
+                      <span>⏳ ¡Minimiza o cierra la app! Llega en {testCountdown}s...</span>
+                    ) : (
+                      <span>🚀 Probar alerta fuera de la app (en 4s)</span>
+                    )}
                   </button>
-                ) : (
-                  <span className="text-secondary font-bold text-sm">✓</span>
                 )}
               </div>
             </div>
@@ -263,3 +285,4 @@ export default function NotificationBell() {
     </div>
   );
 }
+
