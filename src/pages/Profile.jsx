@@ -185,7 +185,10 @@ function AlarmSettingsSection() {
     testCountdown,
     hasNotificationPermission,
     requestNotificationPermission,
+    isIOS,
+    isStandalone,
   } = useAlarm();
+
 
   return (
     <div className="flex flex-col gap-4">
@@ -310,11 +313,11 @@ function AlarmSettingsSection() {
         </div>
 
         {/* Notificaciones del Navegador y Segundo Plano */}
-        <div className="p-4 rounded-xl bg-surface-low border border-surface-container flex items-center justify-between gap-4">
+        <div className="p-4 rounded-xl bg-surface-low border border-surface-container flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="font-body font-semibold text-sm text-on-surface">Notificaciones del Sistema y Segundo Plano (Push)</p>
             <p className="font-body text-xs text-on-surface-variant mt-0.5">
-              Recibe avisos en la barra de tareas de tu PC o móvil incluso si tienes la aplicación minimizada o el navegador cerrado.
+              Recibe avisos en la barra de tareas de tu PC, laptop o móvil incluso si tienes la aplicación minimizada o el navegador cerrado.
             </p>
           </div>
           {!hasNotificationPermission ? (
@@ -326,14 +329,29 @@ function AlarmSettingsSection() {
               Permitir Notificaciones
             </button>
           ) : (
-            <span className="pill-chip bg-secondary-container text-on-secondary-container text-xs shrink-0 flex items-center gap-1">
+            <span className="pill-chip bg-secondary-container text-on-secondary-container text-xs shrink-0 flex items-center gap-1 self-start sm:self-auto">
               <span>✓</span> Alertas activas
             </span>
           )}
         </div>
 
+        {/* Guía especial para iPhone / iPad (iOS Safari) */}
+        {isIOS && !isStandalone && (
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
+            <span className="text-xl shrink-0">📱</span>
+            <div className="text-xs text-on-surface">
+              <p className="font-semibold text-amber-700 dark:text-amber-300">
+                Activación en iPhone y iPad (Apple iOS):
+              </p>
+              <p className="mt-1 text-on-surface-variant leading-relaxed">
+                Apple exige que la aplicación esté añadida a la pantalla de inicio para entregar alertas con Safari cerrado. Pulsa el botón <b>Compartir (icono ⎋)</b> en la barra inferior de Safari y selecciona <b>"Agregar al inicio"</b>. ¡Luego abre la app desde tu pantalla de inicio y activa las notificaciones!
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
 

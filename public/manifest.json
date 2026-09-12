@@ -1,0 +1,30 @@
+{
+  "name": "Mi Bebé — Control Prenatal y Salud Infantil",
+  "short_name": "Mi Bebé",
+  "description": "Tu acompañante digital durante el embarazo y el cuidado del recién nacido.",
+  "start_url": "/inicio",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff8f8",
+  "theme_color": "#745662",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ]
+}

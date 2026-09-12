@@ -1,5 +1,7 @@
-// Service Worker para "Mi Bebé" — Notificaciones Push en segundo plano
-const CACHE_NAME = 'mibebe-v1';
+// Service Worker para "Mi Bebé" — Notificaciones Push y en Segundo Plano
+// Diseñado para compatibilidad universal: Android (Chrome, Samsung, Edge), iOS (Safari PWA), macOS, Windows y Linux.
+
+const CACHE_NAME = 'mibebe-v2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -16,24 +18,30 @@ self.addEventListener('push', (event) => {
     try {
       data = event.data.json();
     } catch (e) {
-      data = { title: 'Recordatorio Mi Bebé', body: event.data.text() };
+      data = { title: '🔔 Recordatorio — Mi Bebé', body: event.data.text() };
     }
   }
 
   const title = data.title || '🔔 Recordatorio — Mi Bebé';
+  const targetUrl = data.url || '/recordatorios';
+
+  // Configuración de notificación compatible con todos los navegadores y plataformas móviles
   const options = {
-    body: data.body || 'Tienes una alarma o recordatorio pendiente.',
-    icon: data.icon || '/favicon.ico',
-    badge: data.badge || '/favicon.ico',
+    body: data.body || 'Tienes un recordatorio o medicamento programado.',
+    icon: data.icon || '/icon-192.png',
+    badge: data.badge || '/badge-72.png',
     tag: data.tag || 'mibebe_alarm_' + Date.now(),
-    data: {
-      url: data.url || '/recordatorios',
-    },
+    renotify: true, // Vuelve a alertar y vibrar si coincide con una alarma previa
     requireInteraction: true, // Se mantiene visible en el sistema operativo hasta que la usuaria interactúe
+    silent: false,
     vibrate: [300, 150, 300, 150, 450],
+    data: {
+      url: targetUrl,
+      dateOfArrival: Date.now(),
+    },
     actions: [
       { action: 'open', title: 'Ver en la App' },
-      { action: 'close', title: 'Cerrar' },
+      { action: 'close', title: 'Entendido' },
     ],
   };
 
@@ -48,24 +56,30 @@ self.addEventListener('notificationclick', (event) => {
     return;
   }
 
-  const targetUrl = event.notification.data?.url || '/recordatorios';
+  const rawUrl = event.notification.data?.url || '/recordatorios';
+  const fullUrl = new URL(rawUrl, self.location.origin).href;
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Si ya hay una ventana o pestaña abierta, le damos foco y navegamos
+      // 1. Si ya existe una ventana/pestaña abierta de la app, le damos foco y navegamos
       for (const client of clientList) {
         if ('focus' in client) {
-          client.focus();
-          if ('navigate' in client) {
-            return client.navigate(targetUrl);
-          }
-          return;
+          return client.focus().then(() => {
+            if ('navigate' in client) {
+              return client.navigate(fullUrl);
+            }
+          });
         }
       }
-      // Si el navegador o app estaba cerrado, abrimos una nueva ventana
+      // 2. Si la app o navegador estaban cerrados, abrimos una nueva ventana directamente en la ruta
       if (self.clients.openWindow) {
-        return self.clients.openWindow(targetUrl);
+        return self.clients.openWindow(fullUrl);
       }
     })
   );
+});
+
+// Al cerrar o descartar la notificación
+self.addEventListener('notificationclose', (event) => {
+  // Manejo de descarte silencioso
 });
