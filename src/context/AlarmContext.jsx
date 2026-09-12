@@ -13,7 +13,11 @@ import {
   subscribeToPushNotifications,
   triggerServerPushTest,
   isPushSupported,
+  askNotificationPermission,
+  isIOS,
+  isStandalone,
 } from '../utils/pushNotifications';
+
 
 const STORAGE_PREFS_KEY = 'mibebe_alarm_prefs';
 const STORAGE_ACK_KEY = 'mibebe_alarm_acknowledged';
@@ -111,7 +115,7 @@ export function AlarmProvider({ children }) {
   const requestNotificationPermission = useCallback(async () => {
     if (typeof window === 'undefined' || !('Notification' in window)) return false;
     try {
-      const result = await Notification.requestPermission();
+      const result = await askNotificationPermission();
       const granted = result === 'granted';
       setHasNotificationPermission(granted);
 
@@ -146,8 +150,8 @@ export function AlarmProvider({ children }) {
     }
 
     const defaultOptions = {
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: '/icon-192.png',
+      badge: '/badge-72.png',
       requireInteraction: true,
       silent: false,
       vibrate: [300, 150, 300, 150, 450],
@@ -155,7 +159,7 @@ export function AlarmProvider({ children }) {
       ...options,
     };
 
-    // 1. Prioridad: Service Worker (funciona en segundo plano y en dispositivos móviles Android)
+    // 1. Prioridad: Service Worker (imprescindible en Android y para notificaciones en segundo plano)
     if ('serviceWorker' in navigator) {
       try {
         const reg = await navigator.serviceWorker.ready;
@@ -167,6 +171,7 @@ export function AlarmProvider({ children }) {
         console.warn('Fallo en Service Worker showNotification, intentando constructor nativo:', swErr);
       }
     }
+
 
     // 2. Fallback estándar para escritorio
     try {
@@ -674,8 +679,11 @@ export function AlarmProvider({ children }) {
         requestNotificationPermission,
         isPushActive,
         isPushSupported: isPushSupported(),
+        isIOS: isIOS(),
+        isStandalone: isStandalone(),
         refreshAlarms: checkAlarms,
       }}
+
     >
       {children}
     </AlarmContext.Provider>

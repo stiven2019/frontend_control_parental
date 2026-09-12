@@ -9,6 +9,25 @@ export function isPushSupported() {
   );
 }
 
+// Detección de dispositivos Apple iOS (iPhone, iPad)
+export function isIOS() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+}
+
+// Detección de si la app está instalada / abierta como PWA en pantalla de inicio
+export function isStandalone() {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true ||
+    document.referrer.includes('android-app://')
+  );
+}
+
 export function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -43,6 +62,23 @@ export async function getExistingPushSubscription() {
   }
 }
 
+// Solicitud universal de permisos de notificación (compatible con Safari callback y Chrome/Firefox Promises)
+export async function askNotificationPermission() {
+  if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
+  try {
+    const result = await new Promise((resolve) => {
+      const res = Notification.requestPermission(resolve);
+      if (res && typeof res.then === 'function') {
+        res.then(resolve);
+      }
+    });
+    return result;
+  } catch (e) {
+    console.error('Error al pedir permiso de notificaciones:', e);
+    return Notification.permission || 'denied';
+  }
+}
+
 export async function subscribeToPushNotifications() {
   if (!isPushSupported()) {
     console.warn('Notificaciones Push no soportadas en este navegador o entorno.');
@@ -50,13 +86,13 @@ export async function subscribeToPushNotifications() {
   }
 
   try {
-    // 1. Solicitar permiso de notificaciones
-    const permission = await Notification.requestPermission();
+    // 1. Solicitar permiso de notificaciones de forma universal
+    const permission = await askNotificationPermission();
     if (permission !== 'granted') {
       return null;
     }
 
-    // 2. Registrar o esperar al Service Worker
+    // 2. Registrar y asegurar Service Worker activo
     await registerServiceWorker();
     const registration = await navigator.serviceWorker.ready;
 

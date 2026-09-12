@@ -15,7 +15,10 @@ export default function NotificationBell() {
     testCountdown,
     hasNotificationPermission,
     requestNotificationPermission,
+    isIOS,
+    isStandalone,
   } = useAlarm();
+
 
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('events'); // 'events' | 'sound'
@@ -263,6 +266,15 @@ export default function NotificationBell() {
                   )}
                 </div>
 
+                {isIOS && !isStandalone && (
+                  <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[10px] text-on-surface">
+                    <p className="font-semibold text-amber-700 dark:text-amber-300">📱 En iPhone / iPad:</p>
+                    <p className="mt-0.5 text-on-surface-variant">
+                      Para recibir alarmas fuera de Safari, pulsa Compartir <span className="font-bold">⎋</span> y elige <b>"Agregar al inicio"</b>.
+                    </p>
+                  </div>
+                )}
+
                 {hasNotificationPermission && (
                   <button
                     type="button"
@@ -285,4 +297,5 @@ export default function NotificationBell() {
     </div>
   );
 }
+
 
