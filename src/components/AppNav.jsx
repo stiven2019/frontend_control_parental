@@ -6,17 +6,17 @@ import SubscriptionModal from './SubscriptionModal';
 
 const MOBILE_NAV_ITEMS = [
   { to: '/inicio', label: 'Inicio', icon: HomeIcon },
-  { to: '/mi-bebe', label: 'Gestación', icon: GestationIcon },
-  { to: '/carnet-bebe', label: 'Carnet Bebé', icon: CarnetIcon },
+  { to: '/mi-bebe', label: 'Gestación', icon: GestationIcon, moduleKey: 'gestacion' },
+  { to: '/carnet-bebe', label: 'Carnet Bebé', icon: CarnetIcon, moduleKey: 'carnet_bebe' },
   { to: '/album', label: 'Álbum', icon: AlbumIcon, moduleKey: 'album' },
   { to: '/perfil', label: 'Perfil', icon: ProfileIcon },
 ];
 
 const DESKTOP_NAV_ITEMS = [
   { to: '/inicio', label: 'Inicio', icon: HomeIcon },
-  { to: '/calendario', label: 'Calendario', icon: CalendarIcon },
-  { to: '/mi-bebe', label: 'Mi Bebé (Gestación)', icon: GestationIcon },
-  { to: '/carnet-bebe', label: 'Carnet Infantil (Nacido)', icon: CarnetIcon },
+  { to: '/calendario', label: 'Calendario', icon: CalendarIcon, moduleKey: 'calendario' },
+  { to: '/mi-bebe', label: 'Mi Bebé (Gestación)', icon: GestationIcon, moduleKey: 'gestacion' },
+  { to: '/carnet-bebe', label: 'Carnet Infantil (Nacido)', icon: CarnetIcon, moduleKey: 'carnet_bebe' },
   { to: '/album', label: 'Álbum de Fotos', icon: AlbumIcon, moduleKey: 'album' },
   { to: '/perfil', label: 'Mi Perfil', icon: ProfileIcon },
 ];

@@ -4,60 +4,75 @@ import { useAuth } from '../context/AuthContext';
 export const SUBSCRIPTION_PLANS = [
   {
     id: 'full',
-    name: 'Libre Toda la App',
+    name: 'Plan VIP Toda la App',
     subtitle: 'Acceso Total e Ilimitado',
     price: 50000,
     priceFormatted: '50.000',
     popular: true,
     badge: 'Más Recomendado ⭐',
-    modules: ['album', 'recordatorios', 'diario', 'documentos', 'test_emocional', 'control_medico'],
+    modules: ['*'],
     features: [
-      'Álbum de fotos del embarazo',
-      'Recordatorios y alarmas de citas/medicamentos',
-      'Diario de notas y emociones',
-      'Documentos y ecografías seguras',
-      'Test emocional y bienestar',
-      'Control médico prenatal completo',
+      'Mi Bebé en Gestación (Desarrollo fetal semana a semana, pataditas y FCF)',
+      'Carnet de Salud Infantil (Bebé Nacido: Curvas OMS y 20 Vacunas PAI)',
+      'Cuidados del Bebé Nacido y Guías Pediátricas',
+      'Recordatorios y Alarmas sin límites',
+      'Controles Médicos Prenatales y Pediátricos',
+      'Calendario de Citas y Línea de Tiempo del Embarazo',
+      'Álbum de Fotos, Ecografías y Documentos Clínicos',
+      'Test Emocional, Diario de Notas y Módulo de Papá',
     ],
   },
   {
     id: 'salud',
-    name: 'Salud, Test y Recordatorios',
-    subtitle: 'Cuidado médico y bienestar',
+    name: 'Plan Gestación y Bebé Nacido',
+    subtitle: 'Seguimiento prenatal y del recién nacido',
     price: 30000,
     priceFormatted: '30.000',
     popular: false,
-    badge: 'Salud Integral 🩺',
-    modules: ['control_medico', 'test_emocional', 'recordatorios'],
+    badge: 'Salud y Clínica 👶',
+    modules: ['gestacion', 'carnet_bebe', 'control_medico', 'recordatorios', 'calendario', 'embarazo_timeline', 'test_emocional'],
     features: [
-      'Control médico prenatal',
-      'Test emocional y recomendaciones',
-      'Recordatorios de citas y medicamentos',
+      'Mi Bebé en Gestación (Monitoreo fetal en vientre)',
+      'Carnet Infantil del Bebé Nacido y Vacunas PAI',
+      'Controles médicos prenatales y pediátricos',
+      'Recordatorios y Alarmas activas',
+      'Calendario de Citas y Línea de Tiempo',
+      'Test de bienestar emocional materno',
     ],
   },
   {
     id: 'basico',
-    name: 'Recordatorio y Control Médico',
-    subtitle: 'Lo esencial para tu seguimiento',
+    name: 'Plan Esencial Médico',
+    subtitle: 'Gestación, Controles y Alarmas',
     price: 15000,
     priceFormatted: '15.000',
     popular: false,
-    badge: 'Esencial ⏰',
-    modules: ['recordatorios', 'control_medico'],
+    badge: 'Esencial 🩺',
+    modules: ['gestacion', 'control_medico', 'recordatorios', 'calendario'],
     features: [
-      'Recordatorios de medicamentos y citas',
-      'Control médico prenatal',
+      'Mi Bebé en Gestación (Seguimiento prenatal)',
+      'Controles médicos prenatales',
+      'Recordatorios y alarmas de citas',
+      'Calendario de citas médicas',
     ],
   },
 ];
 
-const MODULE_NAMES = {
-  album: 'Álbum de Fotos',
-  recordatorios: 'Recordatorios',
-  diario: 'Diario Personal',
-  documentos: 'Documentos y Ecografías',
-  test_emocional: 'Test Emocional',
-  control_medico: 'Control Médico',
+export const MODULE_NAMES = {
+  gestacion: 'Mi Bebé en Gestación',
+  carnet_bebe: 'Carnet de Salud Infantil (Bebé Nacido)',
+  calendario: 'Calendario de Citas y Embarazo',
+  embarazo_timeline: 'Línea de Tiempo del Embarazo',
+  papa: 'Módulo de Papá / Acompañante',
+  album: 'Álbum de Fotos del Embarazo',
+  diario: 'Diario de Emociones y Notas',
+  control_medico: 'Controles Médicos Prenatales',
+  recordatorios: 'Recordatorios y Alarmas',
+  documentos: 'Documentos y Ecografías Clínicas',
+  test_emocional: 'Test de Bienestar Emocional',
+  cuenta_regresiva: 'Cuenta Regresiva al Parto',
+  cuidados_mama: 'Guía de Cuidados de Mamá',
+  cuidados_bebe: 'Guía de Cuidados del Bebé',
 };
 
 export default function SubscriptionModal({ isOpen, onClose, requestedModule }) {
@@ -193,6 +208,13 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
                   </div>
                 );
               })}
+            </div>
+
+            <div className="mt-3.5 p-3 bg-secondary-container/25 border border-secondary/30 rounded-xl flex items-center gap-2.5 text-xs text-on-surface">
+              <span className="text-lg shrink-0">🎁</span>
+              <span>
+                <strong>Acceso Gratuito:</strong> Los módulos de <strong>Medicamentos 💊</strong>, <strong>Síntomas 📋</strong> y <strong>Guía de Desarrollo 🌱</strong> son 100% libres para todas las usuarias sin costo alguno.
+              </span>
             </div>
           </div>
 

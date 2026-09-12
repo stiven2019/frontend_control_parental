@@ -5,17 +5,21 @@ import { api } from '../api/client';
 import { useAlarm } from '../context/AlarmContext';
 
 const CATEGORIES = [
-  { value: 'medicamento', label: 'Medicamento', icon: '💊' },
-  { value: 'vitamina', label: 'Vitamina', icon: '💊' },
-  { value: 'control_medico', label: 'Control médico', icon: '🩺' },
+  { value: 'vacuna_bebe', label: 'Vacuna del bebé', icon: '💉' },
+  { value: 'control_pediatrico', label: 'Control pediátrico', icon: '🩺' },
+  { value: 'cuidado_bebe', label: 'Cuidado / Rutina del bebé', icon: '👶' },
+  { value: 'vitamina_bebe', label: 'Vitamina del bebé', icon: '🥄' },
+  { value: 'medicamento', label: 'Medicamento mamá', icon: '💊' },
+  { value: 'vitamina', label: 'Vitamina mamá', icon: '💊' },
+  { value: 'control_medico', label: 'Control prenatal', icon: '🩺' },
   { value: 'ecografia', label: 'Ecografía', icon: '📷' },
-  { value: 'examen', label: 'Examen', icon: '🧪' },
-  { value: 'cita', label: 'Cita', icon: '📅' },
-  { value: 'preparacion_parto', label: 'Preparación para el parto', icon: '👶' },
+  { value: 'examen', label: 'Examen de laboratorio', icon: '🧪' },
+  { value: 'cita', label: 'Cita médica', icon: '📅' },
+  { value: 'preparacion_parto', label: 'Preparación para el parto', icon: '🤰' },
   { value: 'otro', label: 'Otro', icon: '📌' },
 ];
 
-const EMPTY_FORM = { title: '', category: 'otro', date: '', time: '', repeatRule: 'ninguna', notify: true, notes: '' };
+const EMPTY_FORM = { title: '', category: 'vacuna_bebe', date: '', time: '09:00', repeatRule: 'ninguna', notify: true, notes: '' };
 
 export default function Reminders() {
   const { refreshAlarms } = useAlarm();
@@ -61,10 +65,22 @@ export default function Reminders() {
 
   return (
     <AppLayout>
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold">Mis recordatorios</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center text-xl shrink-0">
-          {showForm ? '×' : '+'}
+      <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-bold flex items-center gap-2">
+            <span>⏰</span>
+            <span>Mis Recordatorios y Alarmas</span>
+          </h1>
+          <p className="font-body text-xs sm:text-sm text-on-surface-variant mt-0.5">
+            Programa avisos para vacunas del bebé, controles pediátricos, medicamentos y rutinas.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowForm((s) => !s)}
+          className="btn-primary !py-2.5 !px-4 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-cloud-sm self-start sm:self-auto"
+        >
+          <span>{showForm ? '✕' : '+'}</span>
+          <span>{showForm ? 'Cerrar formulario' : 'Nuevo Recordatorio'}</span>
         </button>
       </header>
 

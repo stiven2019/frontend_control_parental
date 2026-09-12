@@ -284,23 +284,26 @@ export default function ForgotPassword() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-2 pt-2">
+                  <div className="flex flex-col gap-2.5 pt-2">
                     <a
                       href="https://mail.google.com/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn-primary w-full text-center flex items-center justify-center gap-2 !py-3 font-semibold text-xs shadow-md"
+                      className="btn-primary w-full text-center flex items-center justify-center gap-2 !py-3 font-semibold text-xs shadow-cloud-sm"
                     >
                       <span>📧</span>
                       <span>Abrir Gmail en el Navegador</span>
                     </a>
 
-                    {/* <Link
-                      to={`/restablecer-contrasena?token=${encodeURIComponent(result.resetUrl.split('token=')[1])}`}
-                      className="btn-secondary w-full text-center !py-2.5 text-xs font-semibold"
-                    >
-                      Abrir enlace de restablecimiento directamente
-                    </Link> */}
+                    {/* {result.resetUrl && (
+                      <Link
+                        to={result.resetUrl.replace(window.location.origin, "")}
+                        className="btn-secondary w-full text-center flex items-center justify-center gap-2 !py-2.5 text-xs font-semibold"
+                      >
+                        <span>🔗</span>
+                        <span>Abrir enlace de restablecimiento directamente</span>
+                      </Link>
+                    )} */}
                   </div>
                 </>
               ) : (
@@ -309,20 +312,26 @@ export default function ForgotPassword() {
                     ¡Listo! Tu enlace de recuperación está generado para
                     WhatsApp. Pulsa el botón para continuar:
                   </p>
-                  <a
-                    href={result.waUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-body font-semibold text-sm flex items-center justify-center gap-2.5 shadow-md"
-                  >
-                    <span>💬 Abrir en WhatsApp</span>
-                  </a>
-                  <Link
-                    to={result.resetUrl.replace(window.location.origin, "")}
-                    className="btn-secondary !py-2 !text-xs text-center"
-                  >
-                    Abrir enlace ahora
-                  </Link>
+                  <div className="flex flex-col gap-2.5 pt-1">
+                    <a
+                      href={result.waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-body font-semibold text-xs flex items-center justify-center gap-2 shadow-cloud-sm transition-all"
+                    >
+                      <span>💬</span>
+                      <span>Abrir en WhatsApp</span>
+                    </a>
+                    {result.resetUrl && (
+                      <Link
+                        to={result.resetUrl.replace(window.location.origin, "")}
+                        className="btn-secondary w-full text-center flex items-center justify-center gap-2 !py-2.5 text-xs font-semibold"
+                      >
+                        <span>🔗</span>
+                        <span>Abrir enlace directamente</span>
+                      </Link>
+                    )}
+                  </div>
                 </>
               )
             ) : (

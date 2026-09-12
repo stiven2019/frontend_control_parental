@@ -1,112 +1,161 @@
-# 🤖 AI Handoff & Technical Project Summary — Mi Bebé (Control Prenatal)
+# 🤖 AI Handoff & Technical Project Summary — Mi Bebé (Control Prenatal y Salud Infantil)
 
 > **Documento para Desarrolladores e Inteligencias Artificiales.**
-> Resume el estado actual del proyecto, la arquitectura técnica, las convenciones de código y los puntos de extensión para continuar el desarrollo sin fricción.
+> Resume el estado actual del proyecto, la arquitectura técnica, las convenciones de código, la gestión de suscripciones y los puntos de extensión para continuar el desarrollo sin fricción.
 
 ---
 
 ## 📌 Resumen Ejecutivo del Proyecto
 
-**Mi Bebé** es una plataforma integral de control prenatal que acompaña a las madres gestantes y sus familias durante las 40 semanas de embarazo y el posparto temprano. 
+**Mi Bebé** es una plataforma integral que acompaña a las madres gestantes, sus parejas y familias durante las 40 semanas de embarazo y la etapa postnatal del recién nacido (0 a 24 meses).
 
-El repositorio frontend (`frontend_control_prenatal`) se comunica con una API REST backend (`backend_control_prenatal`, corriendo por defecto en `http://localhost:4000`, proxy configurado en `vite.config.js`).
+El proyecto está compuesto por:
+- **Frontend SPA (`frontend_control_prenatal`)**: React 19, Vite, Tailwind CSS v4, Web Audio API, Web Workers para alarmas en segundo plano y React Router DOM v7.
+- **Backend API REST (`backend_control_prenatal`)**: Node.js, Express, PostgreSQL con Sequelize, autenticación JWT y Nodemailer configurado con Gmail SMTP.
 
 ---
 
 ## 🏛️ Arquitectura Técnica y Flujo de Datos
 
-### 1. Autenticación y Sesión (`src/context/AuthContext.jsx` & `src/api/client.js`)
-- El token JWT se almacena en `localStorage` bajo la clave `mibebe_token`.
-- `client.js` inyecta automáticamente el encabezado `Authorization: Bearer <token>` en las peticiones que requieren autenticación.
-- Si una petición devuelve `needsSetup: true` (la usuaria no ha completado el onboarding con FUR o fecha de ecografía), la aplicación redirige a `/configuracion-inicial`.
-- `ProtectedRoute.jsx` valida la presencia del usuario autenticado; si no existe, redirige a `/iniciar-sesion`.
+### 1. Autenticación, Seguridad y Recuperación (`src/context/AuthContext.jsx` & `src/api/client.js`)
+- **Almacenamiento de Token**: El JWT se almacena en `localStorage` bajo `mibebe_token`.
+- **Inyección Automática**: `client.js` inyecta `Authorization: Bearer <token>` en todas las peticiones autenticadas.
+- **Onboarding Obligatorio**: Si la API retorna `{ needsSetup: true }`, la aplicación redirige de inmediato a `/configuracion-inicial`.
+- **Recuperación de Contraseña con Caducidad (15 min)**:
+  - Endpoints: `POST /api/auth/forgot-password-email` y `POST /api/auth/forgot-password-whatsapp`.
+  - Tokens JWT estrictos con vigencia de 15 minutos (`expiresIn: '15m'`).
+  - Frontend (`ForgotPassword.jsx` & `ResetPassword.jsx`) con temporizador regresivo dinámico en vivo.
+  - Envío automático de correo con **Gmail SMTP** sanitizado en backend (`pass.replace(/\s+/g, '')`).
 
-### 2. Sistema de Alarmas y Notificaciones Sonoras (`src/context/AlarmContext.jsx` & `src/utils/soundAlarm.js`)
-- **Web Audio API (`soundAlarm.js`)**:
-  - Sintetiza 4 melodías sin archivos de audio externos: `chime_suave` (Campanilla Suave), `melodia_bebe` (Melodía de Cuna), `arpa_serena` (Arpa Serena), `alarma_amable` (Alarma Amable).
-  - Funciones exportadas: `startAlarmLoop(tone, volume)`, `stopAlarmLoop()`, `testAlarmSound(tone, volume)`, `unlockAudio()`.
-  - Desbloqueo del `AudioContext` en la primera interacción o cambio de visibilidad de pestaña.
-- **AlarmContext (`AlarmContext.jsx`)**:
-  - Polling cada 20 segundos y al retornar el foco (`visibilitychange`).
-  - Consulta `api.listReminders()`, `api.listMedications()`, `api.listControls()`.
-  - Compara la hora del evento con la hora local actual.
-  - Alerta en el momento exacto o con anticipación previa configurada (`prefs.advanceNoticeMinutes`: 0, 5, 15 o 30 min).
-  - Evita repeticiones no deseadas almacenando firmas en `localStorage` (`mibebe_alarm_acknowledged`).
-  - Soporta posponer 5 minutos (`snoozeAlarm`), silenciar (`dismissAlarm`) y marcar como completado/tomado directamente (`completeAlarmAction`).
-  - Dispara `Notification API` del navegador para alertar en segundo plano.
+### 2. Sistema de Suscripción y Módulos (`SubscriptionGuard.jsx` & `SubscriptionModal.jsx`)
+La aplicación cuenta con control de acceso por suscripción a nivel de ruta y navegación.
 
-### 3. Motor de Formateo de Contenido Médico (`src/components/FormattedContent.jsx`)
-- Convierte texto no estructurado o con Markdown del backend en componentes React estilizados:
-  - **Tablas Markdown** (`| Col 1 | Col 2 |`) $\rightarrow$ Elementos `<table>` responsivos con scroll horizontal, cabeceras contrastadas y estilos cebra.
-  - **Encabezados destacados** (`**Título:**`) $\rightarrow$ Tarjetas con bordes temáticos (Rojo para alertas/evitar, Verde para seguro/recomendado, Morado para informativo).
-  - **Viñetas semánticas**:
-    - `V ` o `✅` $\rightarrow$ Ítem con check verde.
-    - `? ` o `❌` $\rightarrow$ Ítem con cruz roja.
-    - `?? ` o `🚨` $\rightarrow$ Alerta con fondo y llamada de atención.
-    - `Clave: Valor` $\rightarrow$ Negrita + texto regular alineado.
+#### A. Módulos 100% Gratuitos (Sin Suscripción Requerida)
+- 💊 **Medicamentos** (`/medicamentos`)
+- 📋 **Síntomas** (`/sintomas`)
+- 🌱 **Guía de Desarrollo Fetal** (`/guia-desarrollo`)
+- 🏠 **Inicio / Dashboard** (`/inicio`)
+- 👤 **Perfil de Usuario** (`/perfil`)
 
-### 4. Layout y Navegación (`src/components/AppLayout.jsx` & `src/components/AppNav.jsx`)
-- **Desktop**: Barra lateral fija a la izquierda con enlaces principales.
-- **Mobile**: Barra inferior flotante con efecto *glassmorphism* (`backdrop-blur-xl`).
-- **Barra Superior**: Contiene el logo en móviles y la campana interactiva `NotificationBell` con contador en vivo y menú de ajustes de audio.
-- **Modal Global**: `ActiveAlarmModal` se monta en el layout y reacciona automáticamente cuando `activeAlarm` no es nulo.
+#### B. Módulos Restringidos bajo Suscripción
+Todos los demás módulos están protegidos mediante `<SubscriptionGuard moduleKey="..." moduleName="...">`:
+- `gestacion`: Mi Bebé en Gestación (`/mi-bebe`)
+- `carnet_bebe`: Carnet de Salud Infantil del Bebé Nacido (`/carnet-bebe`, `/bebe-nacido`)
+- `control_medico`: Controles Médicos Prenatales y Pediátricos (`/controles`)
+- `recordatorios`: Recordatorios y Alarmas (`/recordatorios`)
+- `calendario`: Calendario de Citas y Embarazo (`/calendario`)
+- `embarazo_timeline`: Línea de Tiempo del Embarazo (`/mi-embarazo`)
+- `album`: Álbum de Fotos del Embarazo y del Bebé (`/album`)
+- `documentos`: Documentos Clínicos y Ecografías (`/documentos`)
+- `test_emocional`: Test de Bienestar Emocional Materno (`/bienestar-emocional`, `/test-emocional`)
+- `diario`: Diario de Emociones y Notas (`/diario`)
+- `papa`: Módulo de Papá / Pareja (`/papa`)
+- `cuenta_regresiva`: Cuenta Regresiva al Parto (`/cuenta-regresiva`)
+- `cuidados_mama`: Guía de Cuidados de Mamá (`/cuidados-mama`)
+- `cuidados_bebe`: Guía de Cuidados del Bebé (`/cuidados-bebe`)
+
+#### C. Array de Configuración de Módulos (Base de Datos y Frontend)
+```javascript
+// Array de todos los módulos bloqueables
+export const ALL_LOCKABLE_MODULES = [
+  'gestacion', 'carnet_bebe', 'control_medico', 'recordatorios',
+  'calendario', 'embarazo_timeline', 'album', 'documentos',
+  'test_emocional', 'diario', 'papa', 'cuenta_regresiva',
+  'cuidados_mama', 'cuidados_bebe'
+];
+
+// Comodín para acceso VIP / Total
+user.unlockedModules = ['*']; // o user.plan = 'full'
+```
+
+#### D. Planes de Suscripción Equivalentes
+- **Plan VIP Toda la App ($50.000 COP/mes)**: Acceso total (`['*']`).
+- **Plan Gestación y Bebé Nacido ($30.000 COP/mes)**: Clínico (`gestacion`, `carnet_bebe`, `control_medico`, `recordatorios`, `calendario`, `embarazo_timeline`, `test_emocional`).
+- **Plan Esencial Médico ($15.000 COP/mes)**: Básico (`gestacion`, `control_medico`, `recordatorios`, `calendario`).
+
+---
+
+### 3. Separación de Etapas: Gestación vs. Bebé Nacido
+
+Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez el embarazo del recién nacido:
+
+1. **Mi Bebé en Gestación (`/mi-bebe` - `BabyPage.jsx`)**:
+   - Solo métricas prenatales: desarrollo fetal intrauterino semana a semana, tamaño comparativo, FCF (Frecuencia Cardíaca Fetal en lpm), altura uterina del control prenatal, contador de pataditas en el vientre materno y estimulación auditiva con melodía relajante.
+2. **Carnet de Salud Infantil (`/carnet-bebe` - `PostnatalCarnetPage.jsx` & `BornBabyCarnet.jsx`)**:
+   - Solo métricas postparto del recién nacido: fecha y hora de parto, peso, talla y perímetro cefálico al nacer, tipo de parto y grupo sanguíneo.
+   - **Curvas de Crecimiento OMS (0 a 24 meses)**: Diagnósticos de peso/edad, talla/edad, perímetro cefálico e IMC infantil comparados con tablas OMS para niñas y niños.
+   - **Carnet de Vacunación PAI (Colombia)**: 20 dosis programadas con checklist, fecha de aplicación y botón directo de alarma/recordatorio para cada vacuna.
+   - **Hitos de Neurodesarrollo (EAD)**: Motricidad gruesa, fina, audición/lenguaje y personal social.
+   - **Controles Pediátricos**: Bitácora de visitas con peso, talla, perímetro cefálico y recomendaciones del pediatra.
+   - **Cuidados del Bebé Nacido**: 9 guías clínicas con recomendaciones de la AAP y MinSalud (cordón umbilical, lactancia materna, sueño seguro SMSL, higiene, dermatitis del pañal, cólicos/gases, vitamina D 400 UI, tummy time y signos de alarma neonatal).
+
+---
+
+### 4. Sistema de Alarmas y Recordatorios en Segundo Plano (`AlarmContext.jsx`, Web Workers y `soundAlarm.js`)
+
+- **Web Worker Anti-Throttling**: Ejecuta un temporizador continuo en segundo plano independiente para evitar que el navegador reduzca la frecuencia de los temporizadores cuando la pestaña está minimizada o inactiva.
+- **Web Audio API + Melodías PCM**: Generación de tonos armónicos mediante osciladores sintetizados y buffer WAV para alertar con el sonido de cuna o campana seleccionada.
+- **Notificaciones Nativas**: Utiliza la `Notification API` con opción `requireInteraction: true` y parpadeo del título de la ventana.
+- **Categorías de Alarmas Soportadas**:
+  - `vacuna_bebe` (💉), `control_pediatrico` (🩺), `cuidado_bebe` (👶), `vitamina_bebe` (🥄), `medicamento` (💊), `control_medico` (🩺), `ecografia` (📷), `cita` (📅).
 
 ---
 
 ## 🗺️ Mapa Completo de Rutas y Páginas
 
-| Ruta | Componente | Descripción | Protegida |
-|---|---|---|---|
-| `/` | `Welcome.jsx` | Pantalla de bienvenida / Landing | No |
-| `/iniciar-sesion` | `Login.jsx` | Inicio de sesión con correo y contraseña | No |
-| `/crear-cuenta` | `Register.jsx` | Registro de nueva mamá/familia | No |
-| `/explorar/*` | `GuestExplore.jsx` | Portal público de exploración para visitantes | No |
-| `/configuracion-inicial` | `Onboarding.jsx` | Configuración de FUR / ecografía y datos de embarazo | Sí |
-| `/inicio` | `Dashboard.jsx` | Dashboard principal con anillo gestacional y alertas | Sí |
-| `/calendario` | `CalendarPage.jsx` | Calendario mensual interactivo con eventos consolidados | Sí |
-| `/mi-embarazo` | `PregnancyTimeline.jsx` | Línea de tiempo semana 1 a 40 | Sí |
-| `/mi-bebe` | `BabyPage.jsx` | Nombre, sexo, pataditas y notas del bebé | Sí |
-| `/papa` | `PartnerPage.jsx` | Perfil del padre/pareja y tips colaborativos | Sí |
-| `/album` | `Album.jsx` | Álbum de fotos del vientre y ecografías | Sí |
-| `/diario` | `Journal.jsx` | Diario íntimo de reflexiones durante el embarazo | Sí |
-| `/sintomas` | `Symptoms.jsx` | Registro de síntomas diarios y estado anímico | Sí |
-| `/controles` | `MedicalControls.jsx` | Historial obstétrico, peso, PA, FC y citas | Sí |
-| `/medicamentos` | `Medications.jsx` | Medicamentos/vitaminas con botón "Marcar como tomado" | Sí |
-| `/recordatorios` | `Reminders.jsx` | Recordatorios categorizados con repetición y alarmas | Sí |
-| `/documentos` | `Documents.jsx` | Gestor de exámenes y órdenes médicas | Sí |
-| `/cuenta-regresiva` | `Countdown.jsx` | Contador regresivo a la fecha de parto | Sí |
-| `/cuidados-mama` | `MomCarePage` (`Content.jsx`) | Guías de nutrición, ejercicio y salud mental con filtros | Sí |
-| `/cuidados-bebe` | `BabyCarePage` (`Content.jsx`) | Cuidados del recién nacido con buscador y categorías | Sí |
-| `/guia-desarrollo` | `BabyDevelopmentGuide.jsx` | Guía semana a semana con tablas comparativas y alertas | Sí |
-| `/perfil` | `Profile.jsx` | Edición de perfil, configuración de sonido/alarmas y seguridad | Sí |
+| Ruta | Componente | Acceso | Módulo Key | Descripción |
+|---|---|---|---|---|
+| `/` | `Welcome.jsx` | Público | — | Landing de bienvenida |
+| `/iniciar-sesion` | `Login.jsx` | Público | — | Inicio de sesión |
+| `/crear-cuenta` | `Register.jsx` | Público | — | Registro |
+| `/recuperar-contrasena` | `ForgotPassword.jsx` | Público | — | Recuperación Gmail / WhatsApp (15m) |
+| `/restablecer-contrasena`| `ResetPassword.jsx` | Público | — | Cambio de contraseña con token |
+| `/terminos-y-condiciones`| `TermsPage.jsx` | Público | — | Términos legales de salud |
+| `/explorar/*` | `GuestExplore.jsx` | Público | — | Modo invitado |
+| `/configuracion-inicial`| `Onboarding.jsx` | Autenticado | — | Configuración inicial FUR / ecografía |
+| `/inicio` | `Dashboard.jsx` | **Gratuito** | — | Panel principal con resumen y accesos |
+| `/medicamentos` | `Medications.jsx` | **Gratuito** | `medicamentos` | Dosis y tomas de medicamentos |
+| `/sintomas` | `Symptoms.jsx` | **Gratuito** | `sintomas` | Registro de síntomas y malestares |
+| `/guia-desarrollo` | `BabyDevelopmentGuide.jsx` | **Gratuito** | `guia_desarrollo`| Guía fetal semana a semana |
+| `/perfil` | `Profile.jsx` | **Gratuito** | — | Ajustes de cuenta y sonido de alarmas |
+| `/mi-bebe` | `BabyPage.jsx` | Suscripción | `gestacion` | Feto en gestación, pataditas y FCF |
+| `/carnet-bebe` | `PostnatalCarnetPage.jsx` | Suscripción | `carnet_bebe` | Carnet de salud infantil y vacunas |
+| `/calendario` | `CalendarPage.jsx` | Suscripción | `calendario` | Calendario mensual de citas |
+| `/mi-embarazo` | `PregnancyTimeline.jsx` | Suscripción | `embarazo_timeline`| Línea de tiempo de 40 semanas |
+| `/papa` | `PartnerPage.jsx` | Suscripción | `papa` | Acompañamiento del padre/pareja |
+| `/album` | `Album.jsx` | Suscripción | `album` | Álbum fotográfico y ecografías |
+| `/diario` | `Journal.jsx` | Suscripción | `diario` | Diario íntimo de emociones |
+| `/controles` | `MedicalControls.jsx` | Suscripción | `control_medico` | Consultas médicas prenatales |
+| `/recordatorios` | `Reminders.jsx` | Suscripción | `recordatorios` | Alarmas y recordatorios programados |
+| `/documentos` | `Documents.jsx` | Suscripción | `documentos` | Órdenes médicas y ecografías |
+| `/bienestar-emocional` | `EmotionalWellbeingPage.jsx`| Suscripción | `test_emocional` | Test psicológico y bienestar |
+| `/cuenta-regresiva` | `Countdown.jsx` | Suscripción | `cuenta_regresiva`| Contador regresivo a FPP |
+| `/cuidados-mama` | `MomCarePage` | Suscripción | `cuidados_mama` | Guía clínica de nutrición y ejercicio |
+| `/cuidados-bebe` | `BabyCarePage` | Suscripción | `cuidados_bebe` | Cuidados y desarrollo prenatal |
 
 ---
 
-## 🎨 Convenciones de Diseño y Estilo
+## 🎨 Convenciones de Diseño y UI Responsiva
 
+- **Alineación de Botones**: Todos los grupos de botones usan `flex-wrap`, `gap-2`, padding consistente (`!py-2.5 !px-3.5` o `!py-3 !px-4`), `w-full sm:w-auto` y escala táctil interactiva (`active:scale-95`).
 - **Paleta de Colores (Tailwind v4 en `src/styles/index.css`)**:
-  - `primary`: `#745662` (Rosa pardo suave)
-  - `primary-container`: `#fad2e1` (Rosa algodón)
-  - `secondary`: `#4f635b` (Verde salvia)
-  - `secondary-container`: `#d1e7dd` (Verde menta suave)
-  - `tertiary`: `#516070` (Azul sereno)
-  - `tertiary-container`: `#cfdef2` (Azul pastel)
-  - `surface`: `#fff8f8` (Blanco cálido maternal)
+  - `primary`: `#745662` (Rosa pardo maternal)
+  - `secondary`: `#4f635b` (Verde salvia clínico)
+  - `tertiary`: `#516070` (Azul sereno pediátrico)
+  - `surface`: `#fff8f8` (Blanco cálido suave)
   - `error`: `#ba1a1a` (Rojo alerta médica)
 - **Tipografías**:
   - Títulos y encabezados: `"Literata", serif` (`font-display`)
-  - Cuerpo y controles: `"Plus Jakarta Sans", sans-serif` (`font-body`)
+  - Cuerpo, controles y tablas: `"Plus Jakarta Sans", sans-serif` (`font-body`)
 
 ---
 
-## 🚀 Cómo Continuar el Desarrollo desde Este Punto
+## 🚀 Guía Rápida para Continuar el Desarrollo
 
-1. **Para agregar nuevas notificaciones o tipos de eventos**:
-   - En `src/context/AlarmContext.jsx`, dentro de la función `checkAlarms`, agrega la lógica de lectura y comparación de fecha/hora de la nueva entidad.
-   - Llama a `refreshAlarms()` desde la página donde se cree o edite dicha entidad.
-
-2. **Para agregar nuevos tonos de alarma**:
-   - En `src/utils/soundAlarm.js`, añade la definición en el arreglo `TONES` y crea su secuencia de frecuencias en `playMelody`.
-
-3. **Para añadir nuevos contenidos educativos formateados**:
-   - Pasa el texto Markdown (incluyendo tablas `| a | b |` y viñetas `V`, `?`, `🚨`) a través de `<FormattedContent text={tuTexto} />`.
+1. **Para desbloquear todos los módulos en desarrollo**:
+   - En la base de datos: `UPDATE users SET plan = 'full', unlocked_modules = '["*"]'::jsonb WHERE email = 'tu_correo@gmail.com';`
+   - O activa `is_vip = true` en el usuario.
+2. **Para probar alarmas audibles fuera de la app**:
+   - Entra a `/perfil` o `/recordatorios` y pulsa el botón *"Probar fuera (5s)"*. Cambia de pestaña o minimiza el navegador; a los 5 segundos sonará el timbre continuo y se activará la notificación del sistema.
+3. **Para registrar una nueva vacuna o control pediátrico**:
+   - En `/carnet-bebe`, usa el botón *"+ Nuevo Control Pediátrico"* o pulsa *`🔔 Poner Alarma`* en cualquiera de las 20 vacunas del PAI.

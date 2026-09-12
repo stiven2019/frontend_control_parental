@@ -4,10 +4,20 @@ import { useAuth } from '../context/AuthContext';
 import SubscriptionModal from './SubscriptionModal';
 import AppLayout from './AppLayout';
 
+export const FREE_MODULES = [
+  'medicamentos',
+  'sintomas',
+  'guia_desarrollo',
+  'guia-desarrollo',
+];
+
 export function hasModuleAccess(user, moduleKey) {
+  // Módulos 100% gratuitos para cualquier usuario sin suscripción
+  if (FREE_MODULES.includes(moduleKey)) return true;
+
   if (!user) return false;
   if (user.isVip) return true;
-  if (user.plan === 'full' || user.plan === 'libre' || user.plan === 'premium') return true;
+  if (user.plan === 'full' || user.plan === 'libre' || user.plan === 'premium' || user.plan === 'vip') return true;
 
   if (Array.isArray(user.unlockedModules)) {
     if (user.unlockedModules.includes('*') || user.unlockedModules.includes(moduleKey)) {
@@ -17,11 +27,24 @@ export function hasModuleAccess(user, moduleKey) {
 
   // Fallback por código de plan si unlockedModules no estuviera presente
   const plan = user.plan || 'free';
-  if (plan === 'salud') {
-    return ['control_medico', 'test_emocional', 'recordatorios'].includes(moduleKey);
+  if (plan === 'salud' || plan === 'etapas') {
+    return [
+      'gestacion',
+      'carnet_bebe',
+      'control_medico',
+      'recordatorios',
+      'calendario',
+      'embarazo_timeline',
+      'test_emocional',
+    ].includes(moduleKey);
   }
   if (plan === 'basico') {
-    return ['recordatorios', 'control_medico'].includes(moduleKey);
+    return [
+      'gestacion',
+      'control_medico',
+      'recordatorios',
+      'calendario',
+    ].includes(moduleKey);
   }
 
   return false;

@@ -1,85 +1,97 @@
-# 🍼 Mi Bebé — Frontend de Control Prenatal
+# 🍼 Mi Bebé — Plataforma de Control Prenatal y Salud Infantil
 
-Aplicación web moderna, interactiva y sensible para el **seguimiento integral del embarazo, control prenatal y cuidados materno-fetales**.
+Aplicación web moderna, interactiva y sensible para el **seguimiento integral del embarazo, control prenatal, cuidados del recién nacido y carnet de salud infantil**.
 
-Construida con **React 19**, **Vite**, **Tailwind CSS v4** y una arquitectura modular orientada al bienestar de la madre y su familia.
+Construida con **React 19**, **Vite**, **Tailwind CSS v4**, **Web Audio API**, **Web Workers** y una arquitectura modular orientada al bienestar de la madre, el bebé y su familia.
 
 ---
 
 ## 🚀 Características Principales
 
-### 1. 📊 Panel de Control y Estado Gestacional (`/inicio`)
-
-- **Anillo de progreso gestacional SVG interactivo**: Calcula semanas, días adicionales (+X días), trimestre actual y porcentaje de avance.
-- **Cuenta regresiva**: Días restantes exactos hasta la Fecha Probable de Parto (FPP).
-- **Desarrollo semanal inteligente**: Tamaño comparativo (frutas/objetos), longitud estimada (cm), peso estimado (g) y notas clínicas.
-- **Próximos eventos y citas**: Alertas inmediatas para controles médicos y recordatorios pendientes.
-
-### 2. 🔔 Sistema de Notificaciones y Alarmas Sonoras (Tiempo Real)
-
-- **Motor de Audio con Web Audio API (`src/utils/soundAlarm.js`)**:
-  - Sintetizador nativo sin librerías pesadas externas.
-  - 4 tonos y melodías relajantes: _Campanilla Suave_, _Melodía de Cuna_, _Arpa Serena_, _Alarma Amable_.
-  - Bucle de sonido continuo, control de volumen y soporte de vibración en móviles.
-- **Monitor en Tiempo Real (`src/context/AlarmContext.jsx`)**:
-  - Revisa automáticamente cada 20 segundos recordatorios, tomas de medicamentos, controles médicos y eventos del calendario.
-  - Alerta en el minuto exacto del evento o con aviso previo configurable (5, 15 o 30 minutos antes).
-  - Integrado con la API de Notificaciones del Navegador (`Notification API`) para alertar aun con la pestaña en segundo plano.
-- **Ventana de Alarma Activa (`src/components/ActiveAlarmModal.jsx`)**:
-  - Animación con ondas de sonido pulsantes.
-  - Opciones rápidas: _Posponer 5 minutos_, _Silenciar y Entendido_, _Marcar como tomado/completado_.
-- **Campana de Notificaciones (`src/components/NotificationBell.jsx`)**:
-  - Contador en tiempo real en la barra superior.
-  - Panel desplegable con agenda del día, selector de tonos, barra de volumen y botón para **probar sonido en 1 clic**.
-
-### 3. 📚 Guías de Salud con Formateo Inteligente (`FormattedContent.jsx`)
-
-- **Renderizado estructurado de textos médicos**:
-  - **Tablas interactivas**: Detección y renderizado automático de tablas Markdown (ej. comparativas de _Braxton-Hicks vs Trabajo de Parto Real_) con diseño responsivo.
-  - **Viñetas semánticas**:
-    - ✅ Recomendaciones seguras y aprobadas.
-    - ❌ Alimentos y factores a evitar.
-    - 🚨 Señales de emergencia y parada inmediata.
-    - **Dosis y nutrientes destacados**: negrita y alineación limpia.
-  - **Buscador y filtros por categoría**: En Cuidados de Mamá (`/cuidados-mama`), Cuidados del Bebé (`/cuidados-bebe`) y Guía de Desarrollo Semana a Semana (`/guia-desarrollo`).
-
-### 4. 📅 Calendario y Agenda Médica (`/calendario`)
-
-- Visualización mensual interactiva con puntos indicadores de eventos.
-- Filtrado por día y consolidación automática de controles, medicamentos y recordatorios.
-
-### 5. 💊 Medicamentos y Vitaminas (`/medicamentos`)
-
-- Registro de posología, frecuencia, hora de toma y rango de fechas.
-- Botón de acción rápida **"Marcar como tomado"** con confirmación visual y sincronización de alarmas.
-
-### 6. 🩺 Controles Médicos Prenatales (`/controles`)
-
-- Historial completo de consultas obstétricas: médico, lugar, motivo, peso materno (kg), presión arterial (PA), frecuencia cardíaca (FC), altura uterina (cm), observaciones y fecha de próxima cita.
-
-### 7. ⏰ Recordatorios Personalizados (`/recordatorios`)
-
-- Categorías con iconos temáticos (medicamentos, vitaminas, ecografías, exámenes, citas, preparación para el parto).
-- Reglas de repetición (diaria, semanal, mensual) y switches de notificación con alarma sonora.
-
-### 8. 📸 Álbum, Diario y Síntomas
-
-- **Álbum (`/album`)**: Subida y clasificación de fotos del vientre, ecografías y momentos especiales.
-- **Diario (`/diario`)**: Espacio íntimo para registrar pensamientos y emociones.
-- **Síntomas (`/sintomas`)**: Registro de malestares con nivel de intensidad y estado de ánimo.
-- **Papá (`/papa`)**: Espacio para involucrar a la pareja con consejos y notas conjuntas.
-- **Documentos (`/documentos`)**: Almacenamiento seguro de órdenes médicas, recetas y resultados.
+### 1. 📊 Panel de Control Gestacional (`/inicio`)
+- **Anillo de progreso gestacional SVG interactivo**: Semanas, días adicionales (+X días), trimestre actual y porcentaje del camino.
+- **Cuenta regresiva inteligente**: Días restantes exactos hasta la Fecha Probable de Parto (FPP).
+- **Desarrollo fetal semanal**: Tamaño comparativo (fruta/objeto), longitud aproximada (cm), peso estimado (g) y notas clínicas.
+- **Accesos Rápidos y Próximos Eventos**: Alertas de citas prenatales, tomas de medicamentos y recordatorios activos.
 
 ---
 
-## 🛠️ Tecnologías y Dependencias
+### 2. 🤰 Mi Bebé en Gestación (Módulo Prenatal - `/mi-bebe`)
+- **Desarrollo Fetal en Útero**: Hitos anatómicos semana a semana.
+- **Métricas Clínicas Obstétricas**: FPP, FUM, Frecuencia Cardíaca Fetal (FCF en latidos por minuto) y Altura Uterina.
+- **Contador Interactivo de Pataditas**: Registro diario de movimientos fetales con registro horario y reseteo.
+- **Estimulación Auditiva Prenatal**: Melodía armónica sintetizada para acercar al vientre materno.
+- **Álbum de Ecografías y Barriguita**: Acceso directo a ultrasonidos guardados.
 
-- **React 19**: Interfaz declarativa, hooks avanzados y contextos globales.
-- **Vite 8**: Servidor de desarrollo ultrarrápido y empaquetado optimizado.
-- **Tailwind CSS v4**: Sistema de diseño HSL con tokens de color temáticos maternos y animaciones fluidas.
-- **React Router DOM v7**: Enrutamiento protegido y navegación SPA.
-- **Web Audio API**: Síntesis nativa de audio para alarmas y melodías.
-- **Browser Notifications API**: Notificaciones nativas de escritorio y móvil.
+---
+
+### 3. 👶 Carnet de Salud Infantil (Bebé Nacido - `/carnet-bebe`)
+Módulo independiente para el seguimiento del recién nacido hasta los 24 meses:
+- **Ficha de Nacimiento**: Registro de fecha, hora, peso al nacer (g), talla neonatal (cm), perímetro cefálico (cm), grupo sanguíneo y tipo de parto.
+- **Curvas de Crecimiento OMS**: Diagnóstico antropométrico automático de **Peso para la Edad**, **Talla para la Edad** y **Perímetro Cefálico** comparado con los patrones de la OMS (niñas y niños).
+- **Carnet de Vacunación Oficial PAI (Colombia)**: Las 20 dosis reglamentarias desde el nacimiento hasta los 18 meses con checklist, fecha de aplicación y **botón para programar alarma con fecha sugerida**.
+- **Hitos del Neurodesarrollo (EAD)**: Motricidad gruesa, motricidad fina, audición/lenguaje y personal social.
+- **Bitácora de Controles Pediátricos**: Registro de consultas postnatales con médico tratante y recomendaciones.
+- **🍼 Cuidados del Bebé Nacido**: 9 guías clínicas pediátricas (cordón umbilical, lactancia y agarre, sueño seguro SMSL, baño e higiene, pañalitis, cólicos/gases, vitamina D 400 UI, tummy time y signos de alarma de urgencias).
+
+---
+
+### 4. 🔔 Alarmas y Recordatorios en Segundo Plano (Sonido fuera de la app)
+- **Web Worker Anti-Throttling**: Temporizador en segundo plano que no se detiene cuando la pestaña está minimizada o inactiva.
+- **Web Audio API**: Síntesis nativa de tonos de cuna, campanillas y arpa armónica.
+- **Notificaciones Nativas**: Notificaciones del sistema operativo con parpadeo del título de la ventana y timbre continuo.
+- **Categorías Pediátricas y Maternas**:
+  - `vacuna_bebe` (💉), `control_pediatrico` (🩺), `cuidado_bebe` (👶), `vitamina_bebe` (🥄), `medicamento` (💊), `control_medico` (🩺), `cita` (📅).
+- **Aviso previo configurable**: 0, 5, 15 o 30 minutos antes de la hora del evento.
+
+---
+
+### 5. 💎 Sistema de Suscripciones y Módulos Protegidos vs. Gratuitos
+
+#### Módulos 100% Gratuitos y Libres (Sin suscripción):
+- 💊 **Medicamentos** (`/medicamentos`): Registro de dosis y horarios.
+- 📋 **Síntomas** (`/sintomas`): Bitácora de molestias y estado anímico.
+- 🌱 **Guía de Desarrollo** (`/guia-desarrollo`): Crecimiento fetal semana a semana.
+- 🏠 **Inicio** y **Perfil**: Gestión de cuenta y configuración.
+
+#### Módulos Restringidos por Suscripción (`SubscriptionGuard.jsx`):
+- `gestacion` (Mi Bebé en Gestación)
+- `carnet_bebe` (Carnet Infantil Bebé Nacido)
+- `control_medico` (Controles Prenatales y Pediátricos)
+- `recordatorios` (Recordatorios y Alarmas)
+- `calendario` (Calendario de Citas)
+- `embarazo_timeline` (Línea de Tiempo)
+- `album` (Álbum de Fotos)
+- `documentos` (Documentos y Ecografías)
+- `test_emocional` (Test Emocional)
+- `diario` (Diario de Emociones)
+- `papa` (Módulo de Papá y Pareja)
+- `cuenta_regresiva` (Cuenta Regresiva)
+- `cuidados_mama` (Guía de Cuidados de Mamá)
+- `cuidados_bebe` (Guía de Cuidados del Bebé)
+
+#### Planes de Suscripción Disponibles:
+1. **Plan VIP Toda la App ($50.000 COP/mes)**: Acceso total e ilimitado (`unlockedModules: ['*']`).
+2. **Plan Gestación y Bebé Nacido ($30.000 COP/mes)**: Acceso clínico (`gestacion`, `carnet_bebe`, `control_medico`, `recordatorios`, `calendario`, `embarazo_timeline`, `test_emocional`).
+3. **Plan Esencial Médico ($15.000 COP/mes)**: Acceso básico (`gestacion`, `control_medico`, `recordatorios`, `calendario`).
+
+---
+
+### 6. 🔐 Recuperación Segura de Contraseña (15 Minutos)
+- Enlace enviado por **Gmail SMTP** o generado para **WhatsApp**.
+- Token JWT criptográfico con vigencia estricta de **15 minutos**.
+- Contador regresivo en tiempo real en la pantalla de recuperación.
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+- **React 19**: Biblioteca UI para componentes declarativos, hooks y contextos.
+- **Vite 8**: Servidor de desarrollo ultrarrápido y compilador de producción.
+- **Tailwind CSS v4**: Tokens de diseño HSL y estilos modernos maternales.
+- **React Router DOM v7**: Enrutamiento protegido y gestión de historial.
+- **Web Audio API & Web Workers**: Generación de alarmas sonoras activas fuera del navegador.
+- **Browser Notifications API**: Alertas en segundo plano del sistema operativo.
 
 ---
 
@@ -92,44 +104,51 @@ frontend_control_prenatal/
 │   │   └── client.js              # Cliente HTTP con JWT y endpoints del backend
 │   ├── components/
 │   │   ├── ActiveAlarmModal.jsx   # Modal de alarma sonora activa con animación
-│   │   ├── AppLayout.jsx          # Shell principal con barra superior y navegación
-│   │   ├── AppNav.jsx             # Barra de navegación (sidebar en desktop, bottom en móvil)
-│   │   ├── FormattedContent.jsx   # Formateador de tablas, viñetas y texto médico
-│   │   ├── NotificationBell.jsx   # Campana de avisos, panel de eventos y ajustes de sonido
-│   │   ├── ProgressRing.jsx       # Componente SVG circular de avance gestacional
+│   │   ├── AppLayout.jsx          # Layout principal con navegación y encabezado
+│   │   ├── AppNav.jsx             # Barra de navegación (sidebar en desktop, inferior en móvil)
+│   │   ├── BornBabyCarnet.jsx     # Carnet de salud infantil, curvas OMS y vacunas
+│   │   ├── FormattedContent.jsx   # Formateador de tablas y texto médico
+│   │   ├── NotificationBell.jsx   # Campana interactiva y ajustes de sonido
+│   │   ├── ProgressRing.jsx       # Anillo circular SVG de semanas de gestación
 │   │   ├── ProtectedRoute.jsx     # Guardia de rutas autenticadas
-│   │   └── States.jsx             # Estados visuales (Loading, Empty, Error, Banner)
+│   │   ├── SubscriptionGuard.jsx  # Guardia de módulos por suscripción
+│   │   ├── SubscriptionModal.jsx  # Modal interactivo de planes de suscripción
+│   │   └── TermsModal.jsx         # Modal de términos y condiciones de salud
 │   ├── context/
-│   │   ├── AuthContext.jsx        # Estado global de usuario, login y sesión
-│   │   └── AlarmContext.jsx       # Monitor de alarmas en tiempo real y preferencias
+│   │   ├── AlarmContext.jsx       # Monitor de alarmas con Web Worker y Web Audio
+│   │   └── AuthContext.jsx        # Estado global de autenticación, perfil y plan
+│   ├── data/
+│   │   └── postnatalData.js       # Curvas OMS, 20 vacunas PAI y 9 guías de cuidados
 │   ├── pages/
-│   │   ├── Album.jsx              # Galería de fotos y ecografías
-│   │   ├── BabyDevelopmentGuide.jsx # Guía semana a semana con filtros y tablas
-│   │   ├── BabyPage.jsx           # Perfil del bebé y contador de pataditas
-│   │   ├── CalendarPage.jsx       # Calendario mensual interactivo
-│   │   ├── Content.jsx            # Componente base de contenidos y cuidados
-│   │   ├── ContentPages.jsx       # Páginas públicas/privadas de cuidados
+│   │   ├── Album.jsx              # Álbum de fotos del embarazo y recién nacido
+│   │   ├── BabyDevelopmentGuide.jsx # Guía de desarrollo fetal (Gratuito)
+│   │   ├── BabyPage.jsx           # Mi Bebé en Gestación (desarrollo fetal intrauterino)
+│   │   ├── CalendarPage.jsx       # Calendario mensual consolidado
 │   │   ├── Countdown.jsx          # Cuenta regresiva al parto
-│   │   ├── Dashboard.jsx          # Pantalla principal con resumen general
-│   │   ├── Documents.jsx          # Gestor de documentos médicos
-│   │   ├── GuestExplore.jsx       # Portal público para usuarios invitados
-│   │   ├── Journal.jsx            # Diario personal de embarazo
+│   │   ├── Dashboard.jsx          # Panel de inicio con anillo gestacional y accesos
+│   │   ├── Documents.jsx          # Gestor de órdenes médicas y ecografías
+│   │   ├── EmotionalWellbeingPage.jsx # Test de bienestar emocional materno
+│   │   ├── ForgotPassword.jsx     # Recuperación de clave Gmail/WhatsApp (15 min)
+│   │   ├── Journal.jsx            # Diario personal de notas y emociones
 │   │   ├── Login.jsx              # Inicio de sesión
-│   │   ├── MedicalControls.jsx    # Registro de controles prenatales
-│   │   ├── Medications.jsx        # Gestión de medicamentos y tomas
+│   │   ├── MedicalControls.jsx    # Controles médicos prenatales
+│   │   ├── Medications.jsx        # Medicamentos y tomas diarias (Gratuito)
 │   │   ├── Onboarding.jsx         # Configuración inicial del embarazo
-│   │   ├── PartnerPage.jsx        # Página de papá / pareja
-│   │   ├── PregnancyTimeline.jsx  # Línea de tiempo semana 1 a 40
-│   │   ├── Profile.jsx            # Perfil y ajustes de alarmas y sonido
-│   │   ├── Register.jsx           # Registro de cuenta
-│   │   ├── Reminders.jsx          # Lista y creación de recordatorios
-│   │   ├── Symptoms.jsx           # Registro de síntomas y estado anímico
-│   │   └── Welcome.jsx            # Bienvenida y landing page
+│   │   ├── PartnerPage.jsx        # Módulo de papá y pareja
+│   │   ├── PostnatalCarnetPage.jsx# Página del Carnet de Salud Infantil (Bebé Nacido)
+│   │   ├── PregnancyTimeline.jsx  # Línea de tiempo de 40 semanas
+│   │   ├── Profile.jsx            # Perfil de usuario y pruebas de audio
+│   │   ├── Register.jsx           # Registro de usuarias
+│   │   ├── Reminders.jsx          # Alarmas y recordatorios categorizados
+│   │   ├── ResetPassword.jsx      # Formulario de nueva contraseña con token
+│   │   ├── Symptoms.jsx           # Registro diario de síntomas (Gratuito)
+│   │   ├── TermsPage.jsx          # Términos y condiciones
+│   │   └── Welcome.jsx            # Pantalla de bienvenida
 │   ├── styles/
-│   │   └── index.css              # Tokens de color Tailwind v4 y estilos base
+│   │   └── index.css              # Tokens de diseño y variables CSS
 │   ├── utils/
-│   │   └── soundAlarm.js          # Síntesis Web Audio API (4 tonos y bucle de alarma)
-│   ├── App.jsx                    # Enrutador principal envuelto en Auth y Alarm Providers
+│   │   └── soundAlarm.js          # Síntesis Web Audio API y melodías PCM
+│   ├── App.jsx                    # Enrutador principal con SubscriptionGuard
 │   └── main.jsx                   # Punto de entrada de React
 ├── package.json
 ├── vite.config.js
@@ -141,90 +160,30 @@ frontend_control_prenatal/
 ## ⚡ Instalación y Ejecución Local
 
 ### Prerrequisitos
-
 - Node.js >= 18
-- pnpm o (npm / yarn)
-- Backend de Control Prenatal corriendo en el puerto `4000`
+- pnpm (o npm / yarn)
+- Backend corriendo en el puerto `4000`
 
 ### Pasos
 
 1. **Instalar dependencias**:
-
    ```bash
    pnpm install
    ```
 
 2. **Iniciar servidor de desarrollo**:
-
    ```bash
    pnpm run dev
    ```
+   La aplicación se abrirá en `http://localhost:5173`.
 
-   La aplicación estará disponible en `http://localhost:5173`.
-
-3. **Construir para producción**:
+3. **Compilar para producción**:
    ```bash
    pnpm run build
    ```
 
 ---
 
-## 🐳 Despliegue con Docker y Docker Compose
+## 📄 Licencia y Aviso Médico
 
-### 1. Variables de Entorno (Opcional)
-
-Copia el archivo de ejemplo para configurar el puerto o la URL del backend si es necesario:
-
-```bash
-cp .env.example .env
-```
-
-| Variable | Descripción | Valor por Defecto |
-|---|---|---|
-| `FRONTEND_PORT` | Puerto público del frontend | `80` |
-| `BACKEND_URL` | URL del backend para proxy inverso (`/api` y `/uploads`) | `http://backend:4000` |
-
-> [!TIP]
-> Si el backend corre fuera de Docker en tu máquina local, establece `BACKEND_URL=http://host.docker.internal:4000`.
-
-### 2. Despliegue con Docker Compose (Recomendado)
-
-Construye y levanta el contenedor en segundo plano:
-
-```bash
-docker compose up -d --build
-```
-
-Para ver los logs en tiempo real:
-
-```bash
-docker compose logs -f
-```
-
-Para detener el servicio:
-
-```bash
-docker compose down
-```
-
-### 3. Construcción Manual con Dockerfile
-
-```bash
-# Construir imagen
-docker build -t mibebe-frontend:latest .
-
-# Ejecutar contenedor
-docker run -d -p 80:80 \
-  -e BACKEND_URL=http://host.docker.internal:4000 \
-  --name mibebe-frontend \
-  mibebe-frontend:latest
-```
-
----
-
-## 💡 Guía de Pruebas Rápidas
-
-- **Probar Alarma Sonora**: Haz clic en el icono de la campana 🔔 en la barra superior y presiona **"🔊 Probar"**, o dirígete a **Mi Perfil > Alarmas y Sonido** y haz clic en **"🔔 Probar Alarma Ahora"**.
-- **Probar Formato de Tablas**: Visita la **Guía de Desarrollo** y navega a las **Semanas 35-37** para observar la tabla comparativa de _Braxton-Hicks vs Trabajo de Parto_.
-- **Probar Recordatorio con Alarma**: Crea un recordatorio con la fecha de hoy y hora a +1 minuto para verificar el sonido automático y la notificación.
-
+Este software está diseñado como bitácora y guía de apoyo maternal. No sustituye el diagnóstico, tratamiento o control médico presencial por parte de un ginecólogo, obstetra o pediatra profesional.

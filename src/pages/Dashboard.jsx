@@ -9,15 +9,15 @@ import { hasModuleAccess } from '../components/SubscriptionGuard';
 import SubscriptionModal from '../components/SubscriptionModal';
 
 const QUICK_ACTIONS = [
-  { to: '/carnet-bebe', label: 'Carnet Infantil (Nacido)', icon: '👶', bg: 'bg-secondary-container' },
+  { to: '/carnet-bebe', label: 'Carnet Infantil (Nacido)', icon: '👶', bg: 'bg-secondary-container', moduleKey: 'carnet_bebe' },
   { to: '/bienestar-emocional', label: 'Test Emocional', icon: '🧠', bg: 'bg-primary-container', moduleKey: 'test_emocional' },
   { to: '/controles', label: 'Control prenatal', icon: '🩺', bg: 'bg-secondary-container', moduleKey: 'control_medico' },
-  { to: '/medicamentos', label: 'Medicamentos', icon: '💊', bg: 'bg-primary-container' },
+  { to: '/medicamentos', label: 'Medicamentos (Gratis)', icon: '💊', bg: 'bg-primary-container' },
   { to: '/recordatorios', label: 'Recordatorios', icon: '⏰', bg: 'bg-tertiary-container', moduleKey: 'recordatorios' },
   { to: '/documentos', label: 'Documentos', icon: '📁', bg: 'bg-surface-highest', moduleKey: 'documentos' },
   { to: '/diario', label: 'Diario', icon: '📖', bg: 'bg-primary-container', moduleKey: 'diario' },
-  { to: '/sintomas', label: 'Síntomas', icon: '📋', bg: 'bg-secondary-container' },
-  { to: '/guia-desarrollo', label: 'Guía desarrollo', icon: '🌱', bg: 'bg-tertiary-container' },
+  { to: '/sintomas', label: 'Síntomas (Gratis)', icon: '📋', bg: 'bg-secondary-container' },
+  { to: '/guia-desarrollo', label: 'Guía desarrollo (Gratis)', icon: '🌱', bg: 'bg-tertiary-container' },
 ];
 
 export default function Dashboard() {
@@ -149,8 +149,13 @@ export default function Dashboard() {
           </div>
         </div>
         <p className="font-body text-sm text-on-surface-variant mb-4">{weeklyDevelopment.note}</p>
-        <Link to="/mi-embarazo" className="btn-secondary block text-center">
-          Ver desarrollo completo
+        <Link
+          to="/mi-embarazo"
+          onClick={(e) => handleActionClick(e, { moduleKey: 'embarazo_timeline' })}
+          className="btn-secondary block text-center flex items-center justify-center gap-2"
+        >
+          <span>Ver desarrollo completo</span>
+          {isModuleLocked('embarazo_timeline') && <span title="Requiere suscripción">🔒</span>}
         </Link>
       </section>
 

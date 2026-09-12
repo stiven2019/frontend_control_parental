@@ -65,7 +65,12 @@ export default function App() {
               path="/calendario"
               element={
                 <ProtectedRoute>
-                  <CalendarPage />
+                  <SubscriptionGuard
+                    moduleKey="calendario"
+                    moduleName="Calendario de Embarazo"
+                  >
+                    <CalendarPage />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />
@@ -73,7 +78,12 @@ export default function App() {
               path="/mi-embarazo"
               element={
                 <ProtectedRoute>
-                  <PregnancyTimeline />
+                  <SubscriptionGuard
+                    moduleKey="embarazo_timeline"
+                    moduleName="Línea de Tiempo del Embarazo"
+                  >
+                    <PregnancyTimeline />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />
@@ -81,7 +91,12 @@ export default function App() {
               path="/mi-bebe"
               element={
                 <ProtectedRoute>
-                  <BabyPage />
+                  <SubscriptionGuard
+                    moduleKey="gestacion"
+                    moduleName="Mi Bebé en Gestación"
+                  >
+                    <BabyPage />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />
@@ -89,7 +104,12 @@ export default function App() {
               path="/carnet-bebe"
               element={
                 <ProtectedRoute>
-                  <PostnatalCarnetPage />
+                  <SubscriptionGuard
+                    moduleKey="carnet_bebe"
+                    moduleName="Carnet de Salud Infantil"
+                  >
+                    <PostnatalCarnetPage />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />
@@ -97,7 +117,12 @@ export default function App() {
               path="/bebe-nacido"
               element={
                 <ProtectedRoute>
-                  <PostnatalCarnetPage />
+                  <SubscriptionGuard
+                    moduleKey="carnet_bebe"
+                    moduleName="Carnet de Salud Infantil"
+                  >
+                    <PostnatalCarnetPage />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />
@@ -105,7 +130,12 @@ export default function App() {
               path="/papa"
               element={
                 <ProtectedRoute>
-                  <PartnerPage />
+                  <SubscriptionGuard
+                    moduleKey="papa"
+                    moduleName="Módulo de Papá y Pareja"
+                  >
+                    <PartnerPage />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />
@@ -203,7 +233,7 @@ export default function App() {
               }
             />
 
-            {/* Módulos estándar */}
+            {/* Módulos estándar gratuitos: Medicamentos, Síntomas y Guía de Desarrollo */}
             <Route
               path="/medicamentos"
               element={
@@ -221,10 +251,25 @@ export default function App() {
               }
             />
             <Route
+              path="/guia-desarrollo"
+              element={
+                <ProtectedRoute>
+                  <BabyDevelopmentGuide />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Módulos restringidos por suscripción */}
+            <Route
               path="/cuenta-regresiva"
               element={
                 <ProtectedRoute>
-                  <Countdown />
+                  <SubscriptionGuard
+                    moduleKey="cuenta_regresiva"
+                    moduleName="Cuenta Regresiva"
+                  >
+                    <Countdown />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />
@@ -232,7 +277,12 @@ export default function App() {
               path="/cuidados-mama"
               element={
                 <ProtectedRoute>
-                  <MomCarePage />
+                  <SubscriptionGuard
+                    moduleKey="cuidados_mama"
+                    moduleName="Cuidados de Mamá"
+                  >
+                    <MomCarePage />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />
@@ -240,15 +290,12 @@ export default function App() {
               path="/cuidados-bebe"
               element={
                 <ProtectedRoute>
-                  <BabyCarePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/guia-desarrollo"
-              element={
-                <ProtectedRoute>
-                  <BabyDevelopmentGuide />
+                  <SubscriptionGuard
+                    moduleKey="cuidados_bebe"
+                    moduleName="Cuidados del Bebé"
+                  >
+                    <BabyCarePage />
+                  </SubscriptionGuard>
                 </ProtectedRoute>
               }
             />

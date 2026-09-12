@@ -457,3 +457,200 @@ export function calculateGrowthMetrics({ ageMonths, weightKg, lengthCm, headCirc
     },
   };
 }
+
+/**
+ * Guías Clínicas de Cuidados del Bebé Nacido (0 a 12 meses)
+ * Recomendaciones basadas en la Academia Americana de Pediatría (AAP)
+ * y el Ministerio de Salud y Protección Social.
+ */
+export const NEWBORN_CARE_GUIDES = [
+  {
+    id: 'cuidado_cordon',
+    category: 'Higiene neonatal',
+    icon: '🩹',
+    title: 'Cuidado del Cordón Umbilical',
+    summary: 'El muñón umbilical suele desprenderse entre los 7 y 15 días de vida. El objetivo principal es mantenerlo limpio y seco para prevenir infecciones.',
+    keyPoints: [
+      'Lava tus manos con agua y jabón antes de tocar el cordón.',
+      'Límpialo suavemente en cada cambio de pañal con una gasa estéril y alcohol al 70% o agua hervida tibia con jabón neutro.',
+      'Dobla la parte delantera del pañal hacia abajo para dejar el cordón al aire libre y evitar el roce con la orina.',
+      'No coloques fajas, monedas, ombligueros ni polvos, ya que aumentan el riesgo de infección (onfalitis).',
+      'Es normal que al desprenderse caiga una gotita de sangre seca; déjalo cicatrizar naturalmente.'
+    ],
+    warning: 'Acude a urgencias si el cordón presenta mal olor, secreción amarillenta o purulenta, piel circundante enrojecida o si el bebé llora con dolor intenso al tocar la zona.',
+    quickReminder: {
+      title: 'Limpieza y cuidado del cordón umbilical',
+      category: 'cuidado_bebe',
+      suggestedTime: '10:00',
+      defaultNotes: 'Limpiar con gasa y alcohol al 70%, doblar el pañal hacia abajo.',
+    },
+  },
+  {
+    id: 'lactancia_alimentacion',
+    category: 'Alimentación',
+    icon: '🤱',
+    title: 'Lactancia Materna Exclusiva y Agarre',
+    summary: 'La Organización Mundial de la Salud recomienda lactancia materna exclusiva durante los primeros 6 meses de vida. Es alimento, agua y defensas inmunológicas para tu bebé.',
+    keyPoints: [
+      'Alimentación a libre demanda: no mires el reloj, amamanta cada vez que el bebé busque el pecho (apertura de boca, chupeteo de manos, movimientos de cabeza). El llanto es un signo tardío de hambre.',
+      'Agarre correcto: el bebé debe abarcar gran parte de la areola inferior, con boca bien abierta como un bostezo, labios evertidos (hacia afuera) y barbilla tocando el pecho materno.',
+      'Si el amamantamiento duele, desengancha al bebé introduciendo suavemente tu dedo meñique limpio por la comisura de sus labios para romper el vacío y vuelve a acomodarlo.',
+      'Permite que vacíe el primer pecho antes de ofrecer el segundo para que reciba la leche final rica en grasas y calorías.',
+      'Mantén a la mamá muy bien hidratada y con una dieta balanceada.'
+    ],
+    warning: 'Si observas grietas dolorosas en los pezones, fiebre materna con enrojecimiento y endurecimiento del pecho (posible mastitis), o si el bebé moja menos de 4 pañales en 24 horas, consulta a un asesor de lactancia o pediatra.',
+    quickReminder: {
+      title: 'Toma de leche materna / hidratación',
+      category: 'cuidado_bebe',
+      suggestedTime: '09:00',
+      defaultNotes: 'Lactancia a libre demanda, verificar agarre correcto y pañales mojados.',
+    },
+  },
+  {
+    id: 'sueno_seguro',
+    category: 'Seguridad infantil',
+    icon: '🌙',
+    title: 'Sueño Seguro y Prevención del SMSL',
+    summary: 'Estrategias fundamentales para reducir al máximo el riesgo de Síndrome de Muerte Súbita del Lactante (SMSL) durante las siestas y la noche.',
+    keyPoints: [
+      'Posición boca arriba SIEMPRE: acuesta a tu bebé boca arriba (decúbito supino) sobre una superficie firme y plana.',
+      'Cuna despejada: sin almohadas, peluches, cobijas sueltas, protectores de barandales (bumpers) ni cuñas.',
+      'Habitación compartida, pero cama separada: el bebé debe dormir en su propia cuna o moisés en la misma habitación de los padres al menos durante los primeros 6 meses.',
+      'Evita el sobrecalentamiento: la temperatura ambiente ideal oscila entre 20°C y 23°C. Viste al bebé con ropa ligera o un saquito de dormir.',
+      'Ambiente 100% libre de humo de tabaco o vapeo antes y después del nacimiento.'
+    ],
+    warning: 'Nunca acuestes al bebé boca abajo ni de lado para dormir. No duermas con el bebé en sofás o sillones, ya que representan un riesgo crítico de asfixia.',
+    quickReminder: {
+      title: 'Preparación de cuna y sueño seguro',
+      category: 'cuidado_bebe',
+      suggestedTime: '20:00',
+      defaultNotes: 'Boca arriba, colchón firme, sin almohadas ni cobijas sueltas.',
+    },
+  },
+  {
+    id: 'bano_higiene',
+    category: 'Higiene neonatal',
+    icon: '🛁',
+    title: 'Baño, Piel e Higiene del Recién Nacido',
+    summary: 'La piel del recién nacido es cinco veces más delgada que la de un adulto y pierde humedad con facilidad. El baño debe ser una experiencia tranquila y reconfortante.',
+    keyPoints: [
+      'Frecuencia recomendada: no es necesario bañar al recién nacido todos los días; de 2 a 3 veces por semana es suficiente. Los demás días puedes hacer aseo con esponja y agua tibia.',
+      'Temperatura del agua: debe estar tibia, entre 36°C y 37°C. Pruébala siempre con la parte interna de tu muñeca o el codo antes de sumergir al bebé.',
+      'Usa un syndet (limpiador sin jabón) o jabón líquido neutro hipoalergénico especial para bebés, en pequeñas cantidades.',
+      'El baño debe ser breve (entre 5 y 8 minutos) para evitar que el bebé pierda calor.',
+      'Seca con toques suaves usando una toalla de algodón, prestando atención a los pliegues (cuello, axilas, ingles) sin frotar con fuerza.'
+    ],
+    warning: 'Nunca dejes al bebé solo en la tina o sobre el cambiador, ni siquiera por un segundo. Prepara todo lo necesario (toalla, pañal, ropa) antes de comenzar el baño.',
+    quickReminder: {
+      title: 'Baño relajante del bebé',
+      category: 'cuidado_bebe',
+      suggestedTime: '18:30',
+      defaultNotes: 'Agua a 36-37°C, baño corto (5-8 min), secar muy bien los pliegues.',
+    },
+  },
+  {
+    id: 'cuidado_panal',
+    category: 'Higiene neonatal',
+    icon: '🧷',
+    title: 'Área del Pañal y Prevención de Dermatitis',
+    summary: 'La combinación de humedad, calor y acidez de la orina y las heces puede irritar la delicada piel del bebé si no se cambian oportunamente.',
+    keyPoints: [
+      'Cambia el pañal con frecuencia: cada vez que esté sucio de materia fecal o muy húmedo (aproximadamente entre 6 y 8 veces al día al inicio).',
+      'Limpia suavemente de adelante hacia atrás, especialmente en las niñas, para no arrastrar bacterias hacia las vías urinarias.',
+      'Prefiere algodón humedecido con agua tibia o toallitas húmedas a base de agua, libres de alcohol, perfume y parabenos.',
+      'Deja secar al aire unos minutos antes de poner el nuevo pañal.',
+      'Aplica una capa delgada de crema protectora con óxido de zinc en cada cambio para crear una barrera aislante contra la humedad.'
+    ],
+    warning: 'Si la piel de la zona se torna roja intensa con granitos o descamación que no mejora en 3 días o se extiende a los pliegues, consulta con el pediatra (puede tratarse de una infección por hongos/Cándida).',
+    quickReminder: {
+      title: 'Revisión y cambio de pañal con crema protectora',
+      category: 'cuidado_bebe',
+      suggestedTime: '15:00',
+      defaultNotes: 'Limpieza con agua tibia, secar al aire y aplicar óxido de zinc.',
+    },
+  },
+  {
+    id: 'colicos_gases',
+    category: 'Bienestar y confort',
+    icon: '💨',
+    title: 'Cólicos del Lactante, Gases y Digestión',
+    summary: 'El sistema digestivo del bebé es inmaduro y aprende a coordinar los movimientos peristálticos. Los gases y cólicos son comunes pero pueden aliviarse con técnicas sencillas.',
+    keyPoints: [
+      'Ayuda a expulsar los gases: coloca al bebé en posición vertical sobre tu pecho o recostado boca abajo en tu antebrazo después de cada toma durante 10 a 15 minutos.',
+      'Masaje abdominal "I Love U": realiza suaves masajes circulares en sentido horario (dirección de las manecillas del reloj) sobre su abdomen.',
+      'Ejercicio de la bicicleta: flexiona suavemente las rodillitas del bebé hacia su abdomen en movimientos alternos para facilitar la expulsión de gases.',
+      'Porteo ergonómico en fular o mochila: la posición vertical y el calor del cuerpo materno/paterno calman notablemente el llanto por cólicos.',
+      'Paciencia y contención: el llanto por cólicos suele tener un pico entre la semana 6 y 8 y disminuye gradualmente hacia el 3er o 4to mes.'
+    ],
+    warning: 'Si el llanto se acompaña de vómitos en proyectil, heces con sangre, distensión abdominal dura y dolorosa al tacto o fiebre, consulta a urgencias de inmediato.',
+    quickReminder: {
+      title: 'Masaje anticólicos y expulsión de gases',
+      category: 'cuidado_bebe',
+      suggestedTime: '19:30',
+      defaultNotes: 'Masajes en sentido horario, ejercicio de bicicleta y porteo vertical.',
+    },
+  },
+  {
+    id: 'vitamina_d_hierro',
+    category: 'Nutrición y suplementación',
+    icon: '🥄',
+    title: 'Vitamina D y Suplementación Pediátrica',
+    summary: 'La OMS y las sociedades de pediatría recomiendan la suplementación diaria de Vitamina D en todos los recién nacidos amamantados para la adecuada mineralización ósea y el sistema inmune.',
+    keyPoints: [
+      'Dosis estándar de Vitamina D: 400 UI (Unidades Internacionales) al día en gotas desde los primeros días de vida hasta el primer año.',
+      'Administración: suministra las gotas directamente en la boca del bebé o en una cucharita pequeña antes de una toma.',
+      'Hierro profiláctico: el pediatra indicará cuándo iniciar suplementación con hierro (generalmente a partir de los 4 meses en nacidos a término o antes en prematuros).',
+      'No administres infusiones de hierbas (ni anís estrellado ni manzanilla), aguas aromáticas ni miel (riesgo de botulismo infantil antes del año).'
+    ],
+    warning: 'Nunca cambies la dosis de vitaminas o suplementos sin prescripción de tu pediatra tratante.',
+    quickReminder: {
+      title: 'Dar gotas de Vitamina D (400 UI)',
+      category: 'vitamina',
+      suggestedTime: '08:30',
+      defaultNotes: '400 UI diarias en gotas antes de la toma de la mañana.',
+    },
+  },
+  {
+    id: 'tummy_time',
+    category: 'Desarrollo psicomotor',
+    icon: '🧸',
+    title: 'Tiempo Boca Abajo (Tummy Time)',
+    summary: 'El tiempo boca abajo despierto y supervisado fortalece los músculos del cuello, espalda y hombros, además de prevenir la deformidad posicional de la cabecita (plagiocefalia).',
+    keyPoints: [
+      'Comienza desde las primeras semanas: coloca al bebé boca abajo sobre tu pecho mientras estás semi-reclinada.',
+      'Duración progresiva: empieza con sesiones cortas de 2 a 3 minutos, 2 o 3 veces al día, y ve aumentando según tolere el bebé.',
+      'Sobre una manta en el suelo: coloca juguetes de alto contraste (blanco y negro) o un espejito irrompible frente a él para llamar su atención.',
+      'Bebé SIEMPRE despierto y con un adulto vigilando en todo momento.'
+    ],
+    warning: 'Si el bebé se queda dormido durante el tummy time, pásalo de inmediato a su cuna boca arriba.',
+    quickReminder: {
+      title: 'Sesión de Tummy Time (Tiempo boca abajo)',
+      category: 'cuidado_bebe',
+      suggestedTime: '11:00',
+      defaultNotes: 'Colocar boca abajo despierto sobre manta o pecho por 5 minutos supervisados.',
+    },
+  },
+  {
+    id: 'signos_alarma_neonatal',
+    category: 'Emergencias pediátricas',
+    icon: '🚨',
+    title: 'Signos de Alarma Neonatal (¿Cuándo ir a Urgencias?)',
+    summary: 'Conocer las señales de alerta médica te permite actuar con rapidez y tranquilidad para proteger la vida y salud de tu recién nacido.',
+    keyPoints: [
+      'Fiebre: temperatura rectal o axilar de 38.0°C o más en menores de 3 meses es una urgencia médica inmediata.',
+      'Hipotermia: temperatura corporal inferior a 36.0°C que no sube con abrigo y contacto piel con piel.',
+      'Dificultad respiratoria: respiración muy rápida (más de 60 por minuto), hundimiento de costillas (tirajes), aleteo de la nariz o quejido audible al exhalar.',
+      'Rechazo del alimento: el bebé rechaza 3 tomas consecutivas o está tan débil y letárgico que es imposible despertarlo para comer.',
+      'Color de piel anormal: labios, lengua o rostro azulados (cianosis); palidez extrema; o piel muy amarilla (ictericia) que llega al abdomen y piernas.',
+      'Vómitos verdes (biliosos) o en proyectil repetidos; ausencia de orina durante más de 12 horas.'
+    ],
+    warning: 'Ante cualquiera de estos síntomas, NO automediques al bebé. Llévalo de inmediato al servicio de urgencias pediátricas más cercano.',
+    quickReminder: {
+      title: 'Revisión preventiva de signos vitales y temperatura',
+      category: 'control_pediatrico',
+      suggestedTime: '14:00',
+      defaultNotes: 'Verificar temperatura, respiración tranquila, color de piel y tomas de leche.',
+    },
+  }
+];
+

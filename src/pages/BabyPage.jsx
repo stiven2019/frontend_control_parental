@@ -192,10 +192,10 @@ export default function BabyPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Link
             to="/carnet-bebe"
-            className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm border border-secondary/30 text-secondary"
+            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm border border-secondary/40 text-secondary bg-secondary-container/20 hover:bg-secondary-container/40"
             title="Ir al carnet del bebé nacido"
           >
             <span>👶</span>
@@ -203,14 +203,14 @@ export default function BabyPage() {
           </Link>
           <Link
             to="/album"
-            className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
+            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
           >
             <span>📸</span>
             <span>Álbum</span>
           </Link>
           <Link
             to="/controles"
-            className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
+            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
           >
             <span>🩺</span>
             <span>Controles</span>
@@ -608,7 +608,7 @@ export default function BabyPage() {
         </div>
         <Link
           to="/carnet-bebe"
-          className="btn-primary !py-2.5 !px-5 text-xs font-semibold whitespace-nowrap bg-secondary hover:bg-secondary/90 text-white shrink-0 shadow-cloud flex items-center gap-2"
+          className="btn-primary !py-2.5 !px-5 text-xs font-semibold whitespace-nowrap bg-secondary hover:bg-secondary/90 text-white shrink-0 shadow-cloud flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <span>Abrir Carnet Infantil</span>
           <span>→</span>

@@ -86,17 +86,24 @@ export default function PostnatalCarnetPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <Link
+            to="/recordatorios"
+            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
+          >
+            <span>⏰</span>
+            <span>Recordatorios</span>
+          </Link>
           <Link
             to="/album"
-            className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
+            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
           >
             <span>📸</span>
-            <span>Fotos del Bebé</span>
+            <span>Fotos</span>
           </Link>
           <Link
             to="/inicio"
-            className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
+            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
           >
             <span>🏠</span>
             <span>Inicio</span>
