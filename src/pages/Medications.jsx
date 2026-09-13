@@ -16,10 +16,17 @@ export default function Medications() {
   const [justTaken, setJustTaken] = useState(null);
 
   const load = async () => {
-    const { items } = await api.listMedications();
-    setItems(items);
-    refreshAlarms();
+    try {
+      const res = await api.listMedications();
+      setItems(res?.items || []);
+      refreshAlarms();
+    } catch (err) {
+      console.error('Error cargando medicamentos:', err);
+      setItems([]);
+      setError(err.message || 'No se pudieron cargar los medicamentos.');
+    }
   };
+
 
   useEffect(() => { load(); }, []);
 

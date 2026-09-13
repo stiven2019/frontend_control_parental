@@ -34,9 +34,15 @@ export default function Symptoms() {
   const [warning, setWarning] = useState(null);
 
   const load = async () => {
-    const { items } = await api.listSymptoms();
-    setItems(items);
+    try {
+      const res = await api.listSymptoms();
+      setItems(res?.items || []);
+    } catch (err) {
+      console.error('Error cargando síntomas:', err);
+      setItems([]);
+    }
   };
+
 
   useEffect(() => { load(); }, []);
 

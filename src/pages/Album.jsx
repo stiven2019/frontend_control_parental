@@ -24,9 +24,16 @@ export default function Album() {
   const [selected, setSelected] = useState(null);
 
   const load = async () => {
-    const { items } = await api.listPhotos();
-    setItems(items);
+    try {
+      const res = await api.listPhotos();
+      setItems(res?.items || []);
+    } catch (err) {
+      console.error('Error cargando fotos del álbum:', err);
+      setItems([]);
+      setError(err.message || 'No se pudieron cargar las fotografías.');
+    }
   };
+
 
   useEffect(() => { load(); }, []);
 

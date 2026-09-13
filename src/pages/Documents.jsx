@@ -23,9 +23,16 @@ export default function Documents() {
   const [error, setError] = useState('');
 
   const load = async () => {
-    const { items } = await api.listDocuments();
-    setItems(items);
+    try {
+      const res = await api.listDocuments();
+      setItems(res?.items || []);
+    } catch (err) {
+      console.error('Error cargando documentos:', err);
+      setItems([]);
+      setError(err.message || 'No se pudieron cargar los documentos.');
+    }
   };
+
 
   useEffect(() => { load(); }, []);
 

@@ -48,8 +48,10 @@ export default function Journal() {
       }
     } catch (err) {
       console.error('Error cargando diario:', err);
+      setItems((prev) => prev || []);
     }
   };
+
 
   useEffect(() => {
     load();

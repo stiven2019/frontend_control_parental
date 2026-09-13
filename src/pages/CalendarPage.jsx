@@ -4,16 +4,21 @@ import { LoadingState, ErrorState, EmptyState } from '../components/States';
 import { api } from '../api/client';
 
 const CATEGORY_LABELS = {
-  control_medico: 'Control médico',
+  vacuna_bebe: 'Vacuna del bebé',
+  control_pediatrico: 'Control pediátrico',
+  cuidado_bebe: 'Cuidado del bebé',
+  vitamina_bebe: 'Vitamina del bebé',
+  control_medico: 'Control prenatal / pediátrico',
   medicamento: 'Medicamento',
   vitamina: 'Vitamina',
   ecografia: 'Ecografía',
   examen: 'Examen',
-  cita: 'Cita',
+  cita: 'Cita médica',
   preparacion_parto: 'Preparación para el parto',
   evento_importante: 'Evento importante',
-  otro: 'Evento',
+  otro: 'Recordatorio',
 };
+
 
 function monthKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
