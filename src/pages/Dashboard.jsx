@@ -9,9 +9,10 @@ import { hasModuleAccess } from '../components/SubscriptionGuard';
 import SubscriptionModal from '../components/SubscriptionModal';
 
 const QUICK_ACTIONS = [
-  { to: '/carnet-bebe', label: 'Carnet Infantil (Nacido)', icon: '👶', bg: 'bg-secondary-container', moduleKey: 'carnet_bebe' },
+  { to: '/controles-bebe', label: 'Control del Bebé', icon: '👶', bg: 'bg-primary-container', moduleKey: 'control_medico' },
+  { to: '/controles', label: 'Control prenatal (Mamá)', icon: '🩺', bg: 'bg-secondary-container', moduleKey: 'control_medico' },
+  { to: '/carnet-bebe', label: 'Carnet Bebé Nacido', icon: '🚼', bg: 'bg-secondary-container', moduleKey: 'carnet_bebe' },
   { to: '/bienestar-emocional', label: 'Test Emocional', icon: '🧠', bg: 'bg-primary-container', moduleKey: 'test_emocional' },
-  { to: '/controles', label: 'Control prenatal', icon: '🩺', bg: 'bg-secondary-container', moduleKey: 'control_medico' },
   { to: '/medicamentos', label: 'Medicamentos (Gratis)', icon: '💊', bg: 'bg-primary-container' },
   { to: '/recordatorios', label: 'Recordatorios', icon: '⏰', bg: 'bg-tertiary-container', moduleKey: 'recordatorios' },
   { to: '/documentos', label: 'Documentos', icon: '📁', bg: 'bg-surface-highest', moduleKey: 'documentos' },

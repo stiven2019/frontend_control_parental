@@ -4,6 +4,8 @@ import AppLayout from '../components/AppLayout';
 import { LoadingState, ErrorState } from '../components/States';
 import { api, uploadFile } from '../api/client';
 import { testAlarmSound, stopAlarmLoop } from '../utils/soundAlarm';
+import { evaluateFetalHealth } from '../utils/healthEvaluations';
+import FetalHealthModal from '../components/FetalHealthModal';
 
 const SEX_LABELS = {
   nino: 'Niño 👦',
@@ -19,6 +21,7 @@ export default function BabyPage() {
   const [babyCareContent, setBabyCareContent] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetalModalOpen, setFetalModalOpen] = useState(false);
 
   // Edición del perfil del bebé
   const [editing, setEditing] = useState(false);
@@ -158,10 +161,22 @@ export default function BabyPage() {
     (p) => p.category === 'ecografia' || p.category === 'barriga'
   );
 
-  // Extraer información clínica del último control
+  // Extraer información clínica del último control general y del bebé
   const latestControl = controls.length > 0
     ? [...controls].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
     : null;
+
+  const babyControls = controls.filter(
+    (c) => c.controlType === 'bebe' || c.fetalHeartRate || c.fetalWeightG || c.fetalAssessment
+  );
+  const latestBabyControl = babyControls.length > 0
+    ? [...babyControls].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
+    : null;
+
+  const babyAssessment = latestBabyControl?.fetalAssessment || (latestBabyControl ? evaluateFetalHealth(latestBabyControl, {
+    week: latestBabyControl.gestationalWeek || status?.week,
+    probableDeliveryDate: pregnancy?.probableDeliveryDate,
+  }) : null);
 
   // Formatear FPP
   const fppFormatted = pregnancy?.probableDeliveryDate
@@ -192,25 +207,26 @@ export default function BabyPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/carnet-bebe"
-            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm border border-secondary/40 text-secondary bg-secondary-container/20 hover:bg-secondary-container/40"
+            className="btn-secondary !w-auto !py-2 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm border border-secondary/40 text-secondary bg-secondary-container/20 hover:bg-secondary-container/40 rounded-full"
             title="Ir al carnet del bebé nacido"
           >
             <span>👶</span>
-            <span>Bebé Nacido (Carnet)</span>
+            <span className="hidden sm:inline">Bebé Nacido</span>
+            <span className="sm:hidden">Carnet</span>
           </Link>
           <Link
             to="/album"
-            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
+            className="btn-secondary !w-auto !py-2 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm rounded-full"
           >
             <span>📸</span>
             <span>Álbum</span>
           </Link>
           <Link
             to="/controles"
-            className="btn-secondary !py-2.5 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm"
+            className="btn-secondary !w-auto !py-2 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm rounded-full"
           >
             <span>🩺</span>
             <span>Controles</span>
@@ -361,82 +377,139 @@ export default function BabyPage() {
             <span className="text-2xl">🩺</span>
             <div>
               <h3 className="font-display font-bold text-base text-on-surface">
-                Mediciones Clínicas del Bebé
+                Mediciones Clínicas y Salud del Bebé
               </h3>
               <p className="font-body text-xs text-on-surface-variant">
-                Datos extraídos de los controles obstétricos registrados en la aplicación.
+                Datos extraídos de ecografías y controles gestacionales del bebé.
               </p>
             </div>
           </div>
-          <Link to="/controles" className="text-xs text-primary font-semibold hover:underline shrink-0">
-            + Nuevo Control
+          <Link
+            to="/controles?tab=bebe"
+            className="btn-secondary !w-auto !py-1.5 !px-3 text-xs font-semibold flex items-center gap-1 shadow-cloud-sm border border-primary/30 text-primary bg-primary-container/20 hover:bg-primary-container/40 rounded-full shrink-0"
+          >
+            <span>+</span>
+            <span>Nuevo Control Fetal</span>
           </Link>
         </div>
 
-        {controls.length === 0 ? (
+        {!latestBabyControl && !latestControl ? (
           <div className="text-center py-6 bg-surface-container/30 rounded-xl border border-surface-container">
             <span className="text-3xl block mb-2">📋</span>
             <p className="font-body text-xs text-on-surface-variant mb-3">
-              Aún no has registrado controles médicos obstétricos con frecuencia cardíaca o altura uterina.
+              Aún no has registrado controles médicos con frecuencia cardíaca fetal o peso ecográfico del bebé.
             </p>
-            <Link to="/controles" className="btn-primary !py-2 !px-4 text-xs font-semibold !w-auto inline-block">
-              Registrar primer control obstétrico
+            <Link to="/controles?tab=bebe" className="btn-primary !py-2 !px-4 text-xs font-semibold !w-auto inline-block rounded-full">
+              Registrar primer control del bebé
             </Link>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Frecuencia Cardíaca Fetal */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Frecuencia Cardíaca Fetal Real */}
               <div className="p-3.5 rounded-xl bg-surface-container/50 border border-outline-variant/30 flex items-start gap-3">
-                <span className="w-10 h-10 rounded-full bg-error-container/40 text-error flex items-center justify-center text-lg shrink-0">
+                <span className="w-10 h-10 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-lg shrink-0">
                   💓
                 </span>
                 <div>
                   <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Frecuencia Cardíaca Fetal (FCF)
+                    FCF (Corazón del Bebé)
                   </span>
-                  <p className="font-display font-bold text-lg text-on-surface mt-0.5">
-                    {latestControl?.heartRate ? `${latestControl.heartRate} lpm` : 'No registrada'}
+                  <p className="font-display font-bold text-lg text-rose-700 mt-0.5">
+                    {latestBabyControl?.fetalHeartRate
+                      ? `${latestBabyControl.fetalHeartRate} lpm`
+                      : latestControl?.fetalHeartRate
+                      ? `${latestControl.fetalHeartRate} lpm`
+                      : 'No registrada'}
                   </p>
                   <p className="text-[10px] text-on-surface-variant">
-                    Rango normal de referencia: 120 - 160 latidos por minuto.
+                    Rango normal de referencia: 120 - 160 latidos/min.
+                  </p>
+                </div>
+              </div>
+
+              {/* Peso Fetal Estimado */}
+              <div className="p-3.5 rounded-xl bg-surface-container/50 border border-outline-variant/30 flex items-start gap-3">
+                <span className="w-10 h-10 rounded-full bg-secondary-container text-secondary flex items-center justify-center text-lg shrink-0">
+                  ⚖️
+                </span>
+                <div>
+                  <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Peso Fetal Estimado
+                  </span>
+                  <p className="font-display font-bold text-lg text-secondary mt-0.5">
+                    {latestBabyControl?.fetalWeightG
+                      ? `${latestBabyControl.fetalWeightG} g`
+                      : 'No registrado'}
+                  </p>
+                  <p className="text-[10px] text-on-surface-variant">
+                    {babyAssessment ? `Percentil P${babyAssessment.percentile || 50} Hadlock` : 'Según ecografía obstétrica.'}
                   </p>
                 </div>
               </div>
 
               {/* Altura Uterina */}
               <div className="p-3.5 rounded-xl bg-surface-container/50 border border-outline-variant/30 flex items-start gap-3">
-                <span className="w-10 h-10 rounded-full bg-secondary-container text-secondary flex items-center justify-center text-lg shrink-0">
+                <span className="w-10 h-10 rounded-full bg-tertiary-container text-tertiary flex items-center justify-center text-lg shrink-0">
                   📐
                 </span>
                 <div>
                   <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Altura Uterina (Crecimiento)
+                    Altura Uterina
                   </span>
                   <p className="font-display font-bold text-lg text-on-surface mt-0.5">
                     {latestControl?.uterineHeightCm ? `${latestControl.uterineHeightCm} cm` : 'No registrada'}
                   </p>
                   <p className="text-[10px] text-on-surface-variant">
-                    Correlaciona con las semanas de gestación (+/- 2 cm).
+                    Correlaciona con las semanas (+/- 2 cm).
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Último y próximo control */}
+            {/* Banner de predicción si hay evaluación */}
+            {babyAssessment && (
+              <div className="w-full p-4 bg-gradient-to-r from-primary-container/30 to-secondary-container/20 rounded-2xl border border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-cloud-sm overflow-hidden">
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] uppercase font-bold text-primary tracking-wider flex items-center gap-1.5">
+                    <span>🌟</span> Diagnóstico y Predicción de Salud Fetal
+                  </span>
+                  <h4 className="font-display font-bold text-base text-on-surface mt-1">
+                    {babyAssessment.predictionTitle}
+                  </h4>
+                  <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                    {babyAssessment.predictionSummary}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFetalModalOpen(true)}
+                  className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud self-stretch sm:self-center whitespace-nowrap flex items-center justify-center gap-1.5 rounded-full"
+                >
+                  <span>Ver Dictamen Fetal</span>
+                  <span>✨</span>
+                </button>
+              </div>
+            )}
+
+            {/* Último control del bebé y enlace a todos */}
             <div className="p-3 rounded-xl bg-white border border-surface-container flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div>
-                <span className="text-on-surface-variant">Último control registrado:</span>{' '}
+                <span className="text-on-surface-variant">Último control:</span>{' '}
                 <strong className="text-on-surface">
                   {latestControl?.date
-                    ? new Date(latestControl.date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })
+                    ? new Date(`${typeof latestControl.date === 'string' && latestControl.date.includes('T') ? latestControl.date.split('T')[0] : latestControl.date}T00:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })
                     : 'Sin controles'}
                 </strong>{' '}
                 {latestControl?.doctorName && `con Dr(a). ${latestControl.doctorName}`}
               </div>
-              <div>
-                <span className="text-on-surface-variant">Total controles:</span>{' '}
-                <span className="font-bold text-primary">{controls.length} visitas</span>
+              <div className="flex items-center gap-3">
+                <span className="text-on-surface-variant">
+                  Total controles: <strong className="text-primary">{controls.length}</strong>
+                </span>
+                <Link to="/controles" className="text-primary font-bold hover:underline">
+                  Ver todos →
+                </Link>
               </div>
             </div>
           </div>
@@ -468,7 +541,7 @@ export default function BabyPage() {
             <p className="font-body text-xs text-on-surface-variant mb-3">
               Aún no tienes ecografías subidas en tu Álbum.
             </p>
-            <Link to="/album" className="btn-secondary !py-2 !px-4 text-xs font-semibold !w-auto inline-block">
+            <Link to="/album" className="btn-secondary !w-auto !py-2 !px-4 text-xs font-semibold inline-block rounded-full">
               Subir primera ecografía
             </Link>
           </div>
@@ -540,7 +613,7 @@ export default function BabyPage() {
           <button
             type="button"
             onClick={addKick}
-            className="btn-primary w-full !py-3 flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/90 shadow-md active:scale-95 transition-transform"
+            className="btn-primary w-full !py-3 flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/90 shadow-md active:scale-95 transition-transform rounded-full"
           >
             <span className="text-lg">🦶</span>
             <span className="font-semibold text-sm">+ Registrar Patadita Sentida</span>
@@ -577,7 +650,7 @@ export default function BabyPage() {
           <button
             type="button"
             onClick={toggleLullaby}
-            className={`w-full py-3 px-4 rounded-xl font-body font-semibold text-sm flex items-center justify-center gap-2 shadow-md transition-all ${
+            className={`w-full py-3 px-4 rounded-full font-body font-semibold text-sm flex items-center justify-center gap-2 shadow-md transition-all ${
               isPlayingLullaby
                 ? 'bg-error text-white animate-pulse'
                 : 'bg-secondary hover:bg-secondary/90 text-white'
@@ -590,7 +663,7 @@ export default function BabyPage() {
 
       {/* Tarjeta de enlace al módulo independiente del Bebé Nacido */}
       <section className="card mb-6 bg-gradient-to-r from-secondary-container/30 to-surface-container border border-secondary/25 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 shadow-cloud-sm">
-        <div className="flex items-start gap-3.5 text-center sm:text-left">
+        <div className="flex items-start gap-3.5 text-center sm:text-left flex-1 min-w-0">
           <span className="w-12 h-12 rounded-2xl bg-white shadow-cloud-sm flex items-center justify-center text-2xl shrink-0">
             👶
           </span>
@@ -608,7 +681,7 @@ export default function BabyPage() {
         </div>
         <Link
           to="/carnet-bebe"
-          className="btn-primary !py-2.5 !px-5 text-xs font-semibold whitespace-nowrap bg-secondary hover:bg-secondary/90 text-white shrink-0 shadow-cloud flex items-center justify-center gap-2 w-full sm:w-auto"
+          className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold whitespace-nowrap bg-secondary hover:bg-secondary/90 text-white shrink-0 shadow-cloud flex items-center justify-center gap-2 rounded-full"
         >
           <span>Abrir Carnet Infantil</span>
           <span>→</span>
@@ -618,6 +691,13 @@ export default function BabyPage() {
       <p className="font-body text-xs text-outline text-center mb-6">
         Información educativa y de bitácora basada en tus registros. No sustituye una consulta médica obstétrica presencial.
       </p>
+
+      {/* Modal de Dictamen y Pronóstico Fetal */}
+      <FetalHealthModal
+        isOpen={fetalModalOpen}
+        onClose={() => setFetalModalOpen(false)}
+        assessment={babyAssessment}
+      />
     </AppLayout>
   );
 }

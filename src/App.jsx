@@ -19,6 +19,7 @@ import Album from "./pages/Album";
 import Journal from "./pages/Journal";
 import Symptoms from "./pages/Symptoms";
 import MedicalControls from "./pages/MedicalControls";
+import BabyGestationalControls from "./pages/BabyGestationalControls";
 import Medications from "./pages/Medications";
 import Reminders from "./pages/Reminders";
 import Documents from "./pages/Documents";
@@ -176,6 +177,32 @@ export default function App() {
                     moduleName="Control Médico"
                   >
                     <MedicalControls />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/controles-bebe"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard
+                    moduleKey="control_medico"
+                    moduleName="Control Gestacional del Bebé"
+                  >
+                    <BabyGestationalControls />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/control-gestacional-bebe"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard
+                    moduleKey="control_medico"
+                    moduleName="Control Gestacional del Bebé"
+                  >
+                    <BabyGestationalControls />
                   </SubscriptionGuard>
                 </ProtectedRoute>
               }
