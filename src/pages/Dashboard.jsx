@@ -224,16 +224,29 @@ export default function Dashboard() {
         <h3 className="font-display text-lg font-semibold mb-3">Acciones rápidas</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {QUICK_ACTIONS.map((a) => {
-            const locked = isModuleLocked(a.moduleKey);
+            const isSubLocked = isModuleLocked(a.moduleKey);
+            const isGestationLocked = a.to === '/carnet-bebe' && !Boolean(data?.baby?.isBorn || (data?.status?.week && Number(data.status.week) >= 40));
+            const locked = isSubLocked || isGestationLocked;
+
             return (
               <Link
                 key={a.to}
                 to={a.to}
-                onClick={(e) => handleActionClick(e, a)}
+                onClick={(e) => {
+                  if (isSubLocked) {
+                    handleActionClick(e, a);
+                  }
+                  // Si solo es bloqueo gestacional, permite navegar para ver la pantalla de estado y activación
+                }}
                 className="relative card flex flex-col items-center gap-2 !p-5 hover:shadow-cloud transition-all group hover:scale-[1.02]"
               >
                 {locked && (
-                  <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">
+                  <span
+                    className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                      isGestationLocked ? 'bg-amber-500/15 text-amber-700' : 'bg-primary/10 text-primary'
+                    }`}
+                    title={isGestationLocked ? 'Se habilita en semana 40 o nacimiento' : 'Plan requerido'}
+                  >
                     🔒
                   </span>
                 )}
@@ -243,11 +256,15 @@ export default function Dashboard() {
                 <span className="font-body text-sm font-medium text-center">
                   {a.label}
                 </span>
-                {locked && (
+                {isGestationLocked ? (
+                  <span className="text-[10px] text-amber-600 font-semibold">
+                    Sem. 40 o nacido
+                  </span>
+                ) : locked ? (
                   <span className="text-[10px] text-primary font-semibold">
                     Plan requerido
                   </span>
-                )}
+                ) : null}
               </Link>
             );
           })}

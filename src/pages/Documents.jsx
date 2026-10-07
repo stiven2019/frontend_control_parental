@@ -44,7 +44,7 @@ export default function Documents() {
     setSaving(true);
     setError('');
     try {
-      const fileUrl = await uploadFile(file);
+      const fileUrl = await uploadFile(file, 'documentos');
       await api.createDocument({ ...form, date: form.date || null, fileUrl, thumbnailUrl: fileUrl });
       setForm(EMPTY_FORM);
       setFile(null);

@@ -54,11 +54,13 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
   return data;
 }
 
-export async function uploadFile(file) {
+export async function uploadFile(file, module = 'general') {
   const token = getToken();
   const form = new FormData();
   form.append('file', file);
-  const url = API_BASE ? `${API_BASE}/api/upload` : '/api/upload';
+  if (module) form.append('module', module);
+  const baseUrl = API_BASE ? `${API_BASE}/api/upload` : '/api/upload';
+  const url = module ? `${baseUrl}?module=${encodeURIComponent(module)}` : baseUrl;
   const res = await fetch(url, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},

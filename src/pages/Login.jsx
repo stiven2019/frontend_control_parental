@@ -1,22 +1,23 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/inicio');
+      navigate("/inicio");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -27,7 +28,9 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-surface flex flex-col justify-center px-6 py-10">
       <div className="w-full max-w-sm mx-auto">
-        <h1 className="font-display text-3xl font-semibold text-primary mb-2">Hola de nuevo ❤️</h1>
+        <h1 className="font-display text-3xl font-semibold text-primary mb-2">
+          Hola de nuevo ❤️
+        </h1>
         <p className="font-body text-sm text-on-surface-variant mb-8">
           Inicia sesión para seguir el camino junto a tu bebé.
         </p>
@@ -46,14 +49,29 @@ export default function Login() {
           </div>
           <div>
             <label className="field-label">Contraseña</label>
-            <input
-              type="password"
-              required
-              className="input-field"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                className="input-field pr-12"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-on-surface-variant hover:text-primary"
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Ver contraseña"
+                }
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
+
             <div className="flex justify-end mt-1.5">
               <Link
                 to="/recuperar-contrasena"
@@ -64,16 +82,15 @@ export default function Login() {
               </Link>
             </div>
           </div>
-
           {error && <p className="text-sm text-error font-body">{error}</p>}
 
           <button type="submit" disabled={loading} className="btn-primary mt-2">
-            {loading ? 'Ingresando...' : 'Iniciar sesión'}
+            {loading ? "Ingresando..." : "Iniciar sesión"}
           </button>
         </form>
 
         <p className="text-center font-body text-sm text-on-surface-variant mt-6">
-          ¿Aún no tienes cuenta?{' '}
+          ¿Aún no tienes cuenta?{" "}
           <Link to="/crear-cuenta" className="text-primary font-semibold">
             Crear mi cuenta
           </Link>

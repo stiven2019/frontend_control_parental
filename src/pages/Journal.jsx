@@ -105,7 +105,7 @@ export default function Journal() {
     try {
       let photoUrl = photoPreview;
       if (file) {
-        photoUrl = await uploadFile(file);
+        photoUrl = await uploadFile(file, 'diario');
       }
 
       const payload = {

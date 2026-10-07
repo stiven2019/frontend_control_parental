@@ -90,7 +90,7 @@ export default function BabyPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const photoUrl = await uploadFile(file);
+      const photoUrl = await uploadFile(file, 'bebe');
       await api.updateBaby({ photoUrl });
       await loadAllData();
     } catch (err) {
@@ -192,6 +192,9 @@ export default function BabyPage() {
     (w) => Number(w.week) === Number(status.week)
   );
 
+  const currentGestationalWeek = status?.week ? Number(status.week) : 0;
+  const isCarnetUnlocked = Boolean(baby?.isBorn || currentGestationalWeek >= 40);
+
   return (
     <AppLayout>
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -211,11 +214,11 @@ export default function BabyPage() {
           <Link
             to="/carnet-bebe"
             className="btn-secondary !w-auto !py-2 !px-3.5 text-xs font-semibold flex items-center gap-1.5 shadow-cloud-sm border border-secondary/40 text-secondary bg-secondary-container/20 hover:bg-secondary-container/40 rounded-full"
-            title="Ir al carnet del bebé nacido"
+            title={isCarnetUnlocked ? "Ir al carnet del bebé nacido" : "Bloqueado hasta la semana 40 o nacimiento"}
           >
-            <span>👶</span>
-            <span className="hidden sm:inline">Bebé Nacido</span>
-            <span className="sm:hidden">Carnet</span>
+            <span>{isCarnetUnlocked ? '👶' : '🔒'}</span>
+            <span className="hidden sm:inline">{isCarnetUnlocked ? 'Bebé Nacido' : 'Carnet (Sem 40)'}</span>
+            <span className="sm:hidden">{isCarnetUnlocked ? 'Carnet' : 'Sem 40'}</span>
           </Link>
           <Link
             to="/album"
@@ -665,17 +668,19 @@ export default function BabyPage() {
       <section className="card mb-6 bg-gradient-to-r from-secondary-container/30 to-surface-container border border-secondary/25 flex flex-col sm:flex-row items-center justify-between gap-4 p-5 shadow-cloud-sm">
         <div className="flex items-start gap-3.5 text-center sm:text-left flex-1 min-w-0">
           <span className="w-12 h-12 rounded-2xl bg-white shadow-cloud-sm flex items-center justify-center text-2xl shrink-0">
-            👶
+            {isCarnetUnlocked ? '👶' : '🔒'}
           </span>
           <div>
-            <span className="pill-chip bg-secondary text-white text-[10px] font-bold uppercase tracking-wider mb-1 inline-block">
-              Módulo Independiente
+            <span className={`pill-chip ${isCarnetUnlocked ? 'bg-secondary text-white' : 'bg-surface-container text-on-surface-variant font-bold'} text-[10px] font-bold uppercase tracking-wider mb-1 inline-block`}>
+              {isCarnetUnlocked ? 'Módulo Activo' : 'Disponible en Semana 40 o Nacimiento'}
             </span>
             <h4 className="font-display font-bold text-base text-on-surface">
-              ¿Tu bebé ya nació?
+              {isCarnetUnlocked ? 'Carnet de Salud Infantil' : '¿Tu bebé ya nació?'}
             </h4>
             <p className="font-body text-xs text-on-surface-variant mt-0.5 leading-relaxed max-w-xl">
-              Accede al <strong>Carnet de Salud Infantil</strong> para registrar sus medidas de nacimiento, monitorear el esquema de vacunas oficiales del PAI, las curvas antropométricas de la OMS y los controles pediátricos.
+              {isCarnetUnlocked
+                ? 'Accede al Carnet de Salud Infantil para registrar sus medidas de nacimiento, monitorear el esquema de vacunas oficiales del PAI, las curvas antropométricas de la OMS y los controles pediátricos.'
+                : 'El Carnet de Salud Infantil se habilitará automáticamente al cumplir la semana 40 de gestación. Si tu bebé ya nació antes de tiempo, puedes acceder para activarlo de inmediato.'}
             </p>
           </div>
         </div>
@@ -683,7 +688,7 @@ export default function BabyPage() {
           to="/carnet-bebe"
           className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold whitespace-nowrap bg-secondary hover:bg-secondary/90 text-white shrink-0 shadow-cloud flex items-center justify-center gap-2 rounded-full"
         >
-          <span>Abrir Carnet Infantil</span>
+          <span>{isCarnetUnlocked ? 'Abrir Carnet Infantil' : 'Ver Estado / Activar Carnet'}</span>
           <span>→</span>
         </Link>
       </section>

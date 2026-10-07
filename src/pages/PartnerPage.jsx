@@ -20,7 +20,7 @@ export default function PartnerPage() {
   const handlePhoto = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const photoUrl = await uploadFile(file);
+    const photoUrl = await uploadFile(file, 'pareja');
     await api.updatePartner({ photoUrl });
     load();
   };
