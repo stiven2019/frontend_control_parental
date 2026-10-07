@@ -133,7 +133,8 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 | `/papa` | `PartnerPage.jsx` | Suscripción | `papa` | Acompañamiento del padre/pareja |
 | `/album` | `Album.jsx` | Suscripción | `album` | Álbum fotográfico y ecografías |
 | `/diario` | `Journal.jsx` | Suscripción | `diario` | Diario íntimo de emociones |
-| `/controles` | `MedicalControls.jsx` | Suscripción | `control_medico` | Consultas médicas prenatales |
+| `/controles` | `MedicalControls.jsx` | Suscripción | `control_medico` | Consultas médicas prenatales de Mamá y Bebé con diagnóstico clínico |
+| `/controles-bebe` | `BabyGestationalControls.jsx` | Suscripción | `control_medico` | Control gestacional del bebé, biometría, percentiles y predicción |
 | `/recordatorios` | `Reminders.jsx` | Suscripción | `recordatorios` | Alarmas y recordatorios programados |
 | `/documentos` | `Documents.jsx` | Suscripción | `documentos` | Órdenes médicas y ecografías |
 | `/bienestar-emocional` | `EmotionalWellbeingPage.jsx`| Suscripción | `test_emocional` | Test psicológico y bienestar |

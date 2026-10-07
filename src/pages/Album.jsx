@@ -46,7 +46,7 @@ export default function Album() {
     setSaving(true);
     setError('');
     try {
-      const imageUrl = await uploadFile(file);
+      const imageUrl = await uploadFile(file, 'album');
       await api.createPhoto({ ...form, weekNumber: form.weekNumber || null, imageUrl });
       setForm(EMPTY_FORM);
       setFile(null);

@@ -23,14 +23,20 @@ export default function Welcome() {
         </p>
 
         <div className="w-full flex flex-col gap-3">
-          <button className="btn-primary" onClick={() => navigate('/iniciar-sesion')}>
+          <button
+            className="btn-primary flex items-center justify-center text-center"
+            onClick={() => navigate('/iniciar-sesion')}
+          >
             Iniciar sesión
           </button>
-          <button className="btn-secondary" onClick={() => navigate('/crear-cuenta')}>
+          <button
+            className="btn-secondary flex items-center justify-center text-center"
+            onClick={() => navigate('/crear-cuenta')}
+          >
             Crear mi cuenta
           </button>
           <button
-            className="btn-ghost"
+            className="btn-ghost flex items-center justify-center text-center"
             onClick={() => {
               continueAsGuest();
               navigate('/explorar');

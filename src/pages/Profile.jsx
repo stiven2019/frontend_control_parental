@@ -20,7 +20,7 @@ export default function Profile() {
   const handleAvatar = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const avatarUrl = await uploadFile(file);
+    const avatarUrl = await uploadFile(file, 'perfil');
     await api.updateMe({ avatarUrl });
     refreshUser();
   };
