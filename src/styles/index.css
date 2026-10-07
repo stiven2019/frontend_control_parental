@@ -67,13 +67,13 @@ h1, h2, h3, .font-display {
 
 @layer components {
   .btn-primary {
-    @apply w-full py-4 rounded-full bg-primary text-on-primary font-body font-semibold text-base shadow-cloud-sm transition-transform active:scale-[0.98] disabled:opacity-50;
+    @apply w-full py-4 rounded-full bg-primary text-on-primary font-body font-semibold text-base shadow-cloud-sm transition-transform active:scale-[0.98] disabled:opacity-50 inline-flex items-center justify-center text-center;
   }
   .btn-secondary {
-    @apply w-full py-4 rounded-full bg-primary-container text-on-primary-container font-body font-semibold text-base transition-transform active:scale-[0.98] disabled:opacity-50;
+    @apply w-full py-4 rounded-full bg-primary-container text-on-primary-container font-body font-semibold text-base transition-transform active:scale-[0.98] disabled:opacity-50 inline-flex items-center justify-center text-center;
   }
   .btn-ghost {
-    @apply w-full py-3 rounded-full text-on-surface-variant font-body font-medium text-sm transition-colors hover:bg-surface-container;
+    @apply w-full py-3 rounded-full text-on-surface-variant font-body font-medium text-sm transition-colors hover:bg-surface-container inline-flex items-center justify-center text-center;
   }
   .card {
     @apply bg-white rounded-md shadow-cloud p-6;
