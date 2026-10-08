@@ -9,6 +9,7 @@ export const FREE_MODULES = [
   'sintomas',
   'guia_desarrollo',
   'guia-desarrollo',
+  'papa',
 ];
 
 export function hasModuleAccess(user, moduleKey) {
@@ -18,6 +19,16 @@ export function hasModuleAccess(user, moduleKey) {
   if (!user) return false;
   if (user.isVip) return true;
   if (user.plan === 'full' || user.plan === 'libre' || user.plan === 'premium' || user.plan === 'vip') return true;
+
+  // Si es una sesión vinculada de acompañante por QR
+  if (user.isFamilyLink) {
+    if (user.role === 'papa') {
+      return ['album', 'diario', 'gestacion', 'guia_desarrollo', 'papa', 'cuenta_regresiva'].includes(moduleKey);
+    }
+    if (user.role === 'familia') {
+      return ['album', 'gestacion', 'guia_desarrollo', 'cuenta_regresiva'].includes(moduleKey);
+    }
+  }
 
   if (Array.isArray(user.unlockedModules)) {
     if (user.unlockedModules.includes('*') || user.unlockedModules.includes(moduleKey)) {

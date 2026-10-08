@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
 import { api, uploadFile } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 const getLocalDateStr = () => {
   const now = new Date();
@@ -11,6 +12,7 @@ const getLocalDateStr = () => {
 };
 
 export default function Journal() {
+  const { isFamilyMember } = useAuth();
   const [items, setItems] = useState(null);
   const [dashboard, setDashboard] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -151,6 +153,23 @@ export default function Journal() {
       alert(err.message || 'Error al eliminar');
     }
   };
+
+  if (isFamilyMember) {
+    return (
+      <AppLayout>
+        <div className="card text-center p-8 max-w-md mx-auto my-12 shadow-cloud border border-outline-variant/30 flex flex-col items-center">
+          <span className="text-4xl mb-3">🔒</span>
+          <h2 className="font-display text-xl font-bold text-on-surface">Diario Íntimo Privado</h2>
+          <p className="font-body text-xs text-on-surface-variant mt-2 mb-5 leading-relaxed">
+            El diario es un espacio reservado exclusivamente para las vivencias íntimas de mamá y papá. Puedes acompañar a la familia explorando las fotografías compartidas en el álbum y el desarrollo del bebé.
+          </p>
+          <Link to="/album" className="btn-primary !py-2.5 !px-5 text-xs font-semibold shadow-cloud">
+            Ver Álbum de Fotos →
+          </Link>
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (!items) return <AppLayout><LoadingState label="Cargando tu diario prenatal..." /></AppLayout>;
 

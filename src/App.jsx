@@ -31,6 +31,7 @@ import TermsPage from "./pages/TermsPage";
 import EmotionalWellbeingPage from "./pages/EmotionalWellbeingPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import FamilyLinkPage from "./pages/FamilyLinkPage";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="/crear-cuenta" element={<Register />} />
             <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
             <Route path="/restablecer-contrasena" element={<ResetPassword />} />
+            <Route path="/vincular" element={<FamilyLinkPage />} />
             <Route path="/terminos-y-condiciones" element={<TermsPage />} />
             <Route path="/explorar/*" element={<GuestExplore />} />
 

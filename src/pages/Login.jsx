@@ -89,17 +89,27 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-center font-body text-sm text-on-surface-variant mt-6">
-          ¿Aún no tienes cuenta?{" "}
-          <Link to="/crear-cuenta" className="text-primary font-semibold">
-            Crear mi cuenta
+        <div className="mt-6 pt-5 border-t border-outline-variant/30 flex flex-col gap-3">
+          <Link
+            to="/vincular"
+            className="w-full py-2.5 px-4 rounded-2xl bg-secondary-container/50 border border-secondary/20 text-on-secondary-container text-xs font-semibold flex items-center justify-center gap-2 hover:bg-secondary-container transition-colors text-center"
+          >
+            <span>📱</span>
+            <span>¿Eres papá o familiar con código QR? Conéctate aquí</span>
           </Link>
-        </p>
-        <p className="text-center font-body text-sm mt-2">
-          <Link to="/" className="text-outline">
-            Volver
-          </Link>
-        </p>
+
+          <p className="text-center font-body text-sm text-on-surface-variant">
+            ¿Aún no tienes cuenta?{" "}
+            <Link to="/crear-cuenta" className="text-primary font-semibold">
+              Crear mi cuenta
+            </Link>
+          </p>
+          <p className="text-center font-body text-sm">
+            <Link to="/" className="text-outline">
+              Volver
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
