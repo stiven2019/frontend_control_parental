@@ -34,8 +34,14 @@ export default function ForgotPassword() {
 
     try {
       if (channel === "email") {
-        const res = await api.requestPasswordResetEmail({ email });
-        const resetUrl = `${window.location.origin}/restablecer-contrasena?token=${encodeURIComponent(res.token)}`;
+        const clientOrigin = window.location.origin;
+        const res = await api.requestPasswordResetEmail({
+          email,
+          origin: clientOrigin,
+        });
+        const resetUrl =
+          res.resetUrl ||
+          `${clientOrigin}/restablecer-contrasena?token=${encodeURIComponent(res.token)}`;
         setResult({
           type: "email",
           email,

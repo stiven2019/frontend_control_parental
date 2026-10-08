@@ -8,7 +8,9 @@ import { useAuth } from '../context/AuthContext';
 import { hasModuleAccess } from '../components/SubscriptionGuard';
 import SubscriptionModal from '../components/SubscriptionModal';
 
-const QUICK_ACTIONS = [
+const OWNER_QUICK_ACTIONS = [
+  { to: '/papa', label: 'Papá y Familia', icon: '🧑‍🍼', bg: 'bg-primary-container', moduleKey: 'papa' },
+  { to: '/album', label: 'Álbum de Fotos', icon: '📸', bg: 'bg-secondary-container', moduleKey: 'album' },
   { to: '/controles-bebe', label: 'Control del Bebé', icon: '👶', bg: 'bg-primary-container', moduleKey: 'control_medico' },
   { to: '/controles', label: 'Control prenatal (Mamá)', icon: '🩺', bg: 'bg-secondary-container', moduleKey: 'control_medico' },
   { to: '/carnet-bebe', label: 'Carnet Bebé Nacido', icon: '🚼', bg: 'bg-secondary-container', moduleKey: 'carnet_bebe' },
@@ -21,8 +23,27 @@ const QUICK_ACTIONS = [
   { to: '/guia-desarrollo', label: 'Guía desarrollo (Gratis)', icon: '🌱', bg: 'bg-tertiary-container' },
 ];
 
+const FAMILIA_QUICK_ACTIONS = [
+  { to: '/album', label: 'Álbum (Fotos)', icon: '📸', bg: 'bg-secondary-container' },
+  { to: '/guia-desarrollo', label: 'Desarrollo Fetal', icon: '🌱', bg: 'bg-tertiary-container' },
+  { to: '/cuenta-regresiva', label: 'Cuenta Regresiva', icon: '⏳', bg: 'bg-primary-container' },
+];
+
+const PAPA_QUICK_ACTIONS = [
+  { to: '/album', label: 'Álbum (Fotos)', icon: '📸', bg: 'bg-secondary-container' },
+  { to: '/diario', label: 'Diario de Recuerdos', icon: '📖', bg: 'bg-primary-container' },
+  { to: '/guia-desarrollo', label: 'Desarrollo Fetal', icon: '🌱', bg: 'bg-tertiary-container' },
+  { to: '/cuenta-regresiva', label: 'Cuenta Regresiva', icon: '⏳', bg: 'bg-secondary-container' },
+  { to: '/papa', label: 'Perfil de Papá', icon: '🧑', bg: 'bg-primary-container' },
+];
+
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, isFamilyLink, isFamilyMember, isPartnerLink } = useAuth();
+  const quickActions = isFamilyMember 
+    ? FAMILIA_QUICK_ACTIONS 
+    : isPartnerLink 
+    ? PAPA_QUICK_ACTIONS 
+    : OWNER_QUICK_ACTIONS;
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -82,12 +103,18 @@ export default function Dashboard() {
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl md:text-3xl font-semibold">
-            Hola, {user?.firstName} <span>👶</span>
+            Hola, {user?.firstName} <span>{isFamilyMember ? '👨‍👩‍👧' : isPartnerLink ? '🧑' : '👶'}</span>
           </h1>
-          <p className="font-body text-on-surface-variant mt-1">Tu bebé está creciendo cada día.</p>
+          <p className="font-body text-on-surface-variant mt-1">
+            {isFamilyMember
+              ? 'Acompañando a la familia en este hermoso camino (Solo Lectura).'
+              : isPartnerLink
+              ? 'Acompañando a mamá y al bebé en cada etapa.'
+              : 'Tu bebé está creciendo cada día.'}
+          </p>
         </div>
 
-        {isFreePlan && (
+        {isFreePlan && !isFamilyLink && (
           <button
             type="button"
             onClick={() => {
@@ -160,49 +187,51 @@ export default function Dashboard() {
         </Link>
       </section>
 
-      {/* Bienestar Emocional Materno */}
-      <section className="card mb-6 bg-primary-container/25 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-start gap-3 text-center sm:text-left">
-          <span className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shrink-0 shadow-cloud-sm">
-            🧠
-          </span>
-          <div>
-            <div className="flex items-center gap-2 justify-center sm:justify-start">
-              <h3 className="font-display text-base font-bold text-on-surface">
-                ¿Cómo te sientes hoy, mamá?
-              </h3>
-              {isTestEmocionalLocked && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary text-white">
-                  🔒 Suscripción
-                </span>
-              )}
+      {/* Bienestar Emocional Materno (Solo visible para Mamá) */}
+      {!isFamilyLink && (
+        <section className="card mb-6 bg-primary-container/25 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-start gap-3 text-center sm:text-left">
+            <span className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shrink-0 shadow-cloud-sm">
+              🧠
+            </span>
+            <div>
+              <div className="flex items-center gap-2 justify-center sm:justify-start">
+                <h3 className="font-display text-base font-bold text-on-surface">
+                  ¿Cómo te sientes hoy, mamá?
+                </h3>
+                {isTestEmocionalLocked && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary text-white">
+                    🔒 Suscripción
+                  </span>
+                )}
+              </div>
+              <p className="font-body text-xs text-on-surface-variant mt-0.5 leading-relaxed">
+                Evalúa tu estado emocional en 2 minutos y accede a tips asertivos para soltar culpas y cultivar calma.
+              </p>
             </div>
-            <p className="font-body text-xs text-on-surface-variant mt-0.5 leading-relaxed">
-              Evalúa tu estado emocional en 2 minutos y accede a tips asertivos para soltar culpas y cultivar calma.
-            </p>
           </div>
-        </div>
-        {isTestEmocionalLocked ? (
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedLockedModule('test_emocional');
-              setSubModalOpen(true);
-            }}
-            className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud-sm flex items-center justify-center gap-1.5"
-          >
-            <span>🔒</span>
-            <span>Desbloquear Test</span>
-          </button>
-        ) : (
-          <Link
-            to="/bienestar-emocional"
-            className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud-sm"
-          >
-            Hacer Test Emocional
-          </Link>
-        )}
-      </section>
+          {isTestEmocionalLocked ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedLockedModule('test_emocional');
+                setSubModalOpen(true);
+              }}
+              className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud-sm flex items-center justify-center gap-1.5"
+            >
+              <span>🔒</span>
+              <span>Desbloquear Test</span>
+            </button>
+          ) : (
+            <Link
+              to="/bienestar-emocional"
+              className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold shrink-0 shadow-cloud-sm"
+            >
+              Hacer Test Emocional
+            </Link>
+          )}
+        </section>
+      )}
 
       {/* Próximos eventos */}
       {(nextControl || upcomingReminders?.length > 0) && (
@@ -223,7 +252,7 @@ export default function Dashboard() {
       <section>
         <h3 className="font-display text-lg font-semibold mb-3">Acciones rápidas</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {QUICK_ACTIONS.map((a) => {
+          {quickActions.map((a) => {
             const isSubLocked = isModuleLocked(a.moduleKey);
             const isGestationLocked = a.to === '/carnet-bebe' && !Boolean(data?.baby?.isBorn || (data?.status?.week && Number(data.status.week) >= 40));
             const locked = isSubLocked || isGestationLocked;

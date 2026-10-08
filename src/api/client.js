@@ -145,5 +145,12 @@ export const api = {
   subscribePush: (payload) => request('/push/subscribe', { method: 'POST', body: payload }),
   unsubscribePush: (payload) => request('/push/unsubscribe', { method: 'POST', body: payload }),
   testPush: (payload = {}) => request('/push/test', { method: 'POST', body: payload }),
+
+  // Vínculos Familiares y Papá (QR)
+  generateFamilyQr: (payload) => request('/familia/generar-qr', { method: 'POST', body: payload }),
+  getFamilyInviteInfo: (code) => request(`/familia/info-invitacion?code=${encodeURIComponent(code)}`, { auth: false }),
+  redeemFamilyQr: (payload) => request('/familia/canjear-qr', { method: 'POST', body: payload, auth: false }),
+  listFamilyLinks: () => request('/familia/vinculos'),
+  revokeFamilyLink: (id) => request(`/familia/vinculos/${id}`, { method: 'DELETE' }),
 };
 

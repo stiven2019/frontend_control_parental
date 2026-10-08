@@ -8,7 +8,6 @@ import { api, uploadFile } from '../api/client';
 
 
 export default function Profile() {
-  const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [section, setSection] = useState('perfil');
@@ -17,7 +16,10 @@ export default function Profile() {
     api.getDashboard().then(setDashboard).catch(() => setDashboard(false));
   }, []);
 
+  const { user, logout, refreshUser, isFamilyLink, isFamilyMember, isPartnerLink } = useAuth();
+
   const handleAvatar = async (e) => {
+    if (isFamilyLink) return;
     const file = e.target.files[0];
     if (!file) return;
     const avatarUrl = await uploadFile(file, 'perfil');
@@ -27,10 +29,70 @@ export default function Profile() {
 
   if (!user) return <AppLayout><LoadingState /></AppLayout>;
 
+  if (isFamilyLink) {
+    return (
+      <AppLayout>
+        <header className="mb-6">
+          <h1 className="font-display text-2xl font-semibold">Mi perfil</h1>
+          <p className="font-body text-xs text-on-surface-variant mt-0.5">
+            Sesión de acompañamiento vinculada por código QR.
+          </p>
+        </header>
+
+        <section className="card flex flex-col items-center text-center mb-6 p-6">
+          <div className="w-24 h-24 rounded-full bg-secondary-container flex items-center justify-center text-4xl mb-4 border-4 border-white shadow-cloud">
+            {isPartnerLink ? '🧑' : '👨‍👩‍👧'}
+          </div>
+          <h2 className="font-display text-xl font-bold text-on-surface">
+            {user.firstName}
+          </h2>
+          <span className="inline-flex mt-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary-container text-on-primary-container">
+            {isPartnerLink ? '🧑 Papá / Pareja' : '👁️ Familiar (Solo Lectura)'}
+          </span>
+
+          <div className="mt-5 p-4 rounded-2xl bg-surface-container/60 w-full text-left text-xs font-body text-on-surface-variant flex flex-col gap-2 border border-outline-variant/20">
+            <p>
+              🌸 <strong>Estado:</strong> Conectado a la app mediante código QR.
+            </p>
+            <p>
+              🛡️ <strong>Permisos:</strong>{' '}
+              {isPartnerLink
+                ? 'Acceso colaborativo para ver y subir fotos al Álbum, redactar en el Diario y ver el Desarrollo.'
+                : 'Acceso de solo lectura para disfrutar de fotos del Álbum, cuenta regresiva y desarrollo del bebé.'}
+            </p>
+            <p className="text-[11px] text-outline mt-1">
+              * La administración de la cuenta y los datos médicos confidenciales son gestionados exclusivamente por la mamá.
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+            className="btn-secondary !w-full sm:!w-auto !py-2.5 !px-6 text-xs font-semibold mt-6 text-error"
+          >
+            Salir de la cuenta vinculada
+          </button>
+        </section>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-semibold">Mi perfil</h1>
+      <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-semibold">Mi perfil</h1>
+          <p className="font-body text-xs text-on-surface-variant mt-0.5">Gestión de tu cuenta y preferencias.</p>
+        </div>
+        <Link
+          to="/papa"
+          className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto"
+        >
+          <span>🧑‍🍼</span>
+          <span>Lazos y QR Familiar</span>
+        </Link>
       </header>
 
       <section className="card flex flex-col items-center text-center mb-6">

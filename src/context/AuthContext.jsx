@@ -111,14 +111,34 @@ export function AuthProvider({ children }) {
     });
   };
 
+  const loginWithFamilyLink = (token, user) => {
+    setToken(token);
+    localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user));
+    setUser(user);
+    setIsGuest(false);
+    return user;
+  };
+
+  const isFamilyLink = Boolean(user?.isFamilyLink);
+  const familyRole = isFamilyLink ? user?.role : 'owner';
+  const isFamilyMember = isFamilyLink && user?.role === 'familia';
+  const isPartnerLink = isFamilyLink && user?.role === 'papa';
+  const isOwner = !isFamilyLink;
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
         isGuest,
+        isFamilyLink,
+        familyRole,
+        isFamilyMember,
+        isPartnerLink,
+        isOwner,
         login,
         register,
+        loginWithFamilyLink,
         logout,
         continueAsGuest,
         refreshUser,

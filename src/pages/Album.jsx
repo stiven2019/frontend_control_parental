@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
 import { api, uploadFile } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 const CATEGORIES = [
   { value: 'ecografia', label: 'Ecografía' },
@@ -15,6 +16,7 @@ const CATEGORIES = [
 const EMPTY_FORM = { category: 'momento_especial', weekNumber: '', date: '', description: '', comment: '' };
 
 export default function Album() {
+  const { isFamilyMember } = useAuth();
   const [items, setItems] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -34,13 +36,13 @@ export default function Album() {
     }
   };
 
-
   useEffect(() => { load(); }, []);
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isFamilyMember) return;
     if (!file) { setError('Selecciona una fotografía para continuar.'); return; }
     if (!form.date) { setError('Indica la fecha de la fotografía.'); return; }
     setSaving(true);
@@ -59,18 +61,35 @@ export default function Album() {
     }
   };
 
-  const remove = async (id) => { await api.deletePhoto(id); setSelected(null); load(); };
+  const remove = async (id) => { 
+    if (isFamilyMember) return;
+    await api.deletePhoto(id); 
+    setSelected(null); 
+    load(); 
+  };
 
   if (!items) return <AppLayout><LoadingState /></AppLayout>;
 
   return (
     <AppLayout>
       <header className="mb-6 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold">Mi álbum ❤️</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center text-xl shrink-0">
-          {showForm ? '×' : '+'}
-        </button>
+        <div>
+          <h1 className="font-display text-2xl font-semibold">Mi álbum ❤️</h1>
+          <p className="font-body text-xs text-on-surface-variant mt-0.5">Recuerdos, ecografías y momentos especiales.</p>
+        </div>
+        {!isFamilyMember && (
+          <button onClick={() => setShowForm((s) => !s)} className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center text-xl shrink-0 shadow-cloud">
+            {showForm ? '×' : '+'}
+          </button>
+        )}
       </header>
+
+      {isFamilyMember && (
+        <div className="mb-6 p-4 rounded-2xl bg-secondary-container/50 border border-secondary/20 text-on-secondary-container text-xs font-semibold flex items-center gap-2 shadow-sm">
+          <span>👁️</span>
+          <span>Modo Acompañante Familiar: Tienes acceso de solo lectura para disfrutar de las memorias y fotos del bebé.</span>
+        </div>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit} className="card mb-6 flex flex-col gap-4">

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { hasModuleAccess } from './SubscriptionGuard';
 import SubscriptionModal from './SubscriptionModal';
 
-const MOBILE_NAV_ITEMS = [
+const DEFAULT_MOBILE_NAV_ITEMS = [
   { to: '/inicio', label: 'Inicio', icon: HomeIcon },
   { to: '/mi-bebe', label: 'Gestación', icon: GestationIcon, moduleKey: 'gestacion' },
   { to: '/carnet-bebe', label: 'Carnet Bebé', icon: CarnetIcon, moduleKey: 'carnet_bebe' },
@@ -12,18 +12,66 @@ const MOBILE_NAV_ITEMS = [
   { to: '/perfil', label: 'Perfil', icon: ProfileIcon },
 ];
 
-const DESKTOP_NAV_ITEMS = [
+const DEFAULT_DESKTOP_NAV_ITEMS = [
   { to: '/inicio', label: 'Inicio', icon: HomeIcon },
   { to: '/calendario', label: 'Calendario', icon: CalendarIcon, moduleKey: 'calendario' },
   { to: '/mi-bebe', label: 'Mi Bebé (Gestación)', icon: GestationIcon, moduleKey: 'gestacion' },
   { to: '/carnet-bebe', label: 'Carnet Infantil (Nacido)', icon: CarnetIcon, moduleKey: 'carnet_bebe' },
   { to: '/album', label: 'Álbum de Fotos', icon: AlbumIcon, moduleKey: 'album' },
+  { to: '/papa', label: 'Papá y Familia', icon: FamilyIcon, moduleKey: 'papa' },
+  { to: '/perfil', label: 'Mi Perfil', icon: ProfileIcon },
+];
+
+// Rutas adaptadas para Familiar (Solo Lectura)
+const FAMILIA_MOBILE_ITEMS = [
+  { to: '/inicio', label: 'Inicio', icon: HomeIcon },
+  { to: '/album', label: 'Álbum (Lectura)', icon: AlbumIcon },
+  { to: '/guia-desarrollo', label: 'Desarrollo', icon: GestationIcon },
+  { to: '/cuenta-regresiva', label: 'Cuenta Regresiva', icon: CalendarIcon },
+  { to: '/perfil', label: 'Perfil', icon: ProfileIcon },
+];
+
+const FAMILIA_DESKTOP_ITEMS = [
+  { to: '/inicio', label: 'Inicio', icon: HomeIcon },
+  { to: '/album', label: 'Álbum de Fotos (Solo Lectura)', icon: AlbumIcon },
+  { to: '/guia-desarrollo', label: 'Desarrollo Fetal', icon: GestationIcon },
+  { to: '/cuenta-regresiva', label: 'Cuenta Regresiva al Parto', icon: CalendarIcon },
+  { to: '/perfil', label: 'Mi Perfil', icon: ProfileIcon },
+];
+
+// Rutas adaptadas para Papá (Colaborativo: Álbum + Diario + Desarrollo)
+const PAPA_MOBILE_ITEMS = [
+  { to: '/inicio', label: 'Inicio', icon: HomeIcon },
+  { to: '/album', label: 'Álbum', icon: AlbumIcon },
+  { to: '/diario', label: 'Diario', icon: JournalIcon },
+  { to: '/guia-desarrollo', label: 'Desarrollo', icon: GestationIcon },
+  { to: '/perfil', label: 'Perfil', icon: ProfileIcon },
+];
+
+const PAPA_DESKTOP_ITEMS = [
+  { to: '/inicio', label: 'Inicio', icon: HomeIcon },
+  { to: '/album', label: 'Álbum de Fotos', icon: AlbumIcon },
+  { to: '/diario', label: 'Diario de Recuerdos', icon: JournalIcon },
+  { to: '/guia-desarrollo', label: 'Desarrollo Fetal', icon: GestationIcon },
+  { to: '/cuenta-regresiva', label: 'Cuenta Regresiva', icon: CalendarIcon },
   { to: '/perfil', label: 'Mi Perfil', icon: ProfileIcon },
 ];
 
 export default function AppNav() {
-  const { user } = useAuth();
+  const { user, isFamilyLink, isFamilyMember, isPartnerLink } = useAuth();
   const [subModalOpen, setSubModalOpen] = useState(false);
+
+  const mobileNavItems = isFamilyMember
+    ? FAMILIA_MOBILE_ITEMS
+    : isPartnerLink
+    ? PAPA_MOBILE_ITEMS
+    : DEFAULT_MOBILE_NAV_ITEMS;
+
+  const desktopNavItems = isFamilyMember
+    ? FAMILIA_DESKTOP_ITEMS
+    : isPartnerLink
+    ? PAPA_DESKTOP_ITEMS
+    : DEFAULT_DESKTOP_NAV_ITEMS;
 
   const handleNavClick = (e, item) => {
     if (item.moduleKey && !hasModuleAccess(user, item.moduleKey)) {
@@ -37,7 +85,7 @@ export default function AppNav() {
       {/* Móvil: barra inferior flotante con glassmorphism */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-3 pb-3 pt-1">
         <div className="mx-auto max-w-md flex items-center justify-between bg-white/80 backdrop-blur-xl rounded-full shadow-cloud px-2 py-1.5 border border-white/60">
-          {MOBILE_NAV_ITEMS.map((item) => {
+          {mobileNavItems.map((item) => {
             const Icon = item.icon;
             const isLocked = item.moduleKey && !hasModuleAccess(user, item.moduleKey);
             return (
@@ -77,7 +125,7 @@ export default function AppNav() {
           <span className="font-display text-xl font-semibold text-primary">Mi Bebé</span>
         </div>
         <nav className="flex flex-col gap-1.5">
-          {DESKTOP_NAV_ITEMS.map((item) => {
+          {desktopNavItems.map((item) => {
             const Icon = item.icon;
             const isLocked = item.moduleKey && !hasModuleAccess(user, item.moduleKey);
             return (
@@ -160,6 +208,24 @@ function AlbumIcon({ filled, className }) {
       <rect x="3.5" y="4.5" width="17" height="15" rx="3" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
       <circle cx="9" cy="10" r="1.6" />
       <path d="M5 17l4.5-4.5a2 2 0 0 1 2.8 0L18 18" />
+    </svg>
+  );
+}
+function JournalIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+      <path d="M6 6h10M6 10h10M6 14h6" />
+    </svg>
+  );
+}
+function FamilyIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="7" r="3" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+      <path d="M3 18c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+      <circle cx="17" cy="11" r="2.5" />
+      <path d="M14.5 20c.3-1.8 1.9-3.2 3.8-3.2 1.3 0 2.4.6 3.1 1.6" />
     </svg>
   );
 }
