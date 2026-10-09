@@ -91,6 +91,9 @@ export default function BabyPage() {
     if (!file) return;
     try {
       const photoUrl = await uploadFile(file, 'bebe');
+      if (!photoUrl || photoUrl.startsWith('data:')) {
+        throw new Error('No se pudo obtener una URL válida de MinIO para la foto del bebé.');
+      }
       await api.updateBaby({ photoUrl });
       await loadAllData();
     } catch (err) {
@@ -248,7 +251,7 @@ export default function BabyPage() {
           <span className="absolute inset-0 bg-black/30 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold">
             Cambiar foto
           </span>
-          <input type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden" onChange={handlePhoto} />
+          <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handlePhoto} />
         </label>
 
         {editing ? (

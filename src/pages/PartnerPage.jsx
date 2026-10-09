@@ -57,6 +57,9 @@ export default function PartnerPage() {
     if (!file) return;
     try {
       const photoUrl = await uploadFile(file, 'pareja');
+      if (!photoUrl || photoUrl.startsWith('data:')) {
+        throw new Error('No se pudo obtener una URL válida de MinIO para la foto de papá.');
+      }
       await api.updatePartner({ photoUrl });
       loadDashboard();
     } catch (err) {
@@ -155,7 +158,7 @@ export default function PartnerPage() {
               </div>
             )}
             {!isFamilyLink && (
-              <input type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden" onChange={handlePhoto} />
+              <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handlePhoto} />
             )}
           </label>
 

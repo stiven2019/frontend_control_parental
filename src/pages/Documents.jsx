@@ -110,9 +110,13 @@ export default function Documents() {
     setError('');
     try {
       const fileUrl = await uploadFile(file, 'documentos');
+      if (!fileUrl || fileUrl.startsWith('data:')) {
+        throw new Error('No se pudo obtener una URL válida de MinIO para el documento.');
+      }
+      const dateClean = form.date ? String(form.date).split('T')[0] : null;
       await api.createDocument({
         ...form,
-        date: form.date || null,
+        date: dateClean,
         fileUrl,
         thumbnailUrl: fileUrl,
       });
@@ -287,7 +291,7 @@ export default function Documents() {
               <input
                 type="file"
                 required={!file}
-                accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+                accept=".jpg,.jpeg,.png,.webp,.pdf,.heic,.heif,image/*,application/pdf"
                 onChange={handleFileChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />

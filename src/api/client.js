@@ -11,6 +11,8 @@ export function setToken(token) {
 
 const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
+import { compressImageIfPossible } from '../utils/imageOptimizer';
+
 export function getFileUrl(path) {
   if (!path) return '';
   if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
@@ -30,21 +32,45 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
   const endpoint = path.startsWith('/') ? path : `/${path}`;
   const url = API_BASE ? `${API_BASE}/api${endpoint}` : `/api${endpoint}`;
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (netErr) {
+    throw new Error('Error de conexión con el servidor. Revisa tu acceso a internet.');
+  }
 
   let data = null;
-  try {
-    data = await res.json();
-  } catch (e) {
-    // respuesta sin cuerpo
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      data = await res.json();
+    } catch (e) {
+      // respuesta sin cuerpo JSON válido
+    }
+  } else {
+    // Si la respuesta fue HTML o texto (error de proxy, nginx o express)
+    await res.text().catch(() => '');
   }
 
   if (!res.ok) {
-    const message = data?.error || 'Ocurrió un error inesperado. Intenta de nuevo.';
+    let message = data?.error;
+    if (!message) {
+      if (res.status === 413) {
+        message = 'El contenido enviado es demasiado grande para el servidor.';
+      } else if (res.status === 401) {
+        message = 'Tu sesión ha expirado o no tienes autorización.';
+      } else if (res.status === 404) {
+        message = 'El recurso solicitado no fue encontrado.';
+      } else if (res.status >= 500) {
+        message = 'Ocurrió un error en el servidor. Intenta de nuevo más tarde.';
+      } else {
+        message = 'Ocurrió un error inesperado. Intenta de nuevo.';
+      }
+    }
     const err = new Error(message);
     err.status = res.status;
     err.needsSetup = data?.needsSetup;
@@ -55,19 +81,65 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
 }
 
 export async function uploadFile(file, module = 'general') {
+  if (!file) throw new Error('No se seleccionó ningún archivo para subir.');
+
   const token = getToken();
+
+  // Optimizar y comprimir imágenes de alta resolución en móvil automáticamente
+  let fileToUpload = file;
+  try {
+    fileToUpload = await compressImageIfPossible(file);
+  } catch (compressErr) {
+    console.warn('No se pudo comprimir la imagen en el cliente, subiendo archivo original:', compressErr);
+  }
+
   const form = new FormData();
-  form.append('file', file);
+  form.append('file', fileToUpload, fileToUpload.name || file.name || 'foto.jpg');
   if (module) form.append('module', module);
+
   const baseUrl = API_BASE ? `${API_BASE}/api/upload` : '/api/upload';
   const url = module ? `${baseUrl}?module=${encodeURIComponent(module)}` : baseUrl;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: form,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.error || 'No pudimos subir el archivo.');
+
+  let res;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+  } catch (netErr) {
+    throw new Error('Error de conexión al subir la imagen. Revisa tu internet.');
+  }
+
+  let data = null;
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      data = await res.json();
+    } catch (e) {
+      // fallo al parsear JSON
+    }
+  } else {
+    // Leer texto plano o HTML sin lanzar SyntaxError
+    await res.text().catch(() => '');
+  }
+
+  if (!res.ok) {
+    let message = data?.error;
+    if (!message) {
+      if (res.status === 413) {
+        message = 'El servidor rechazó el archivo por tamaño (413 Request Entity Too Large). El Nginx del servidor requiere configurar "client_max_body_size 50M;".';
+      } else {
+        message = `Error al subir el archivo (Código ${res.status}). Intenta de nuevo.`;
+      }
+    }
+    throw new Error(message);
+  }
+
+  if (!data?.url || data.url.startsWith('data:')) {
+    throw new Error('El servidor no devolvió una URL válida de MinIO para el archivo.');
+  }
+
   return data.url;
 }
 
