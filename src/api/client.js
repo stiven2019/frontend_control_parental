@@ -128,7 +128,7 @@ export async function uploadFile(file, module = 'general') {
     let message = data?.error;
     if (!message) {
       if (res.status === 413) {
-        message = 'La imagen o archivo es demasiado pesado para el servidor. Intenta con una imagen más liviana.';
+        message = 'El servidor rechazó el archivo por tamaño (413 Request Entity Too Large). El Nginx del servidor requiere configurar "client_max_body_size 50M;".';
       } else {
         message = `Error al subir el archivo (Código ${res.status}). Intenta de nuevo.`;
       }
