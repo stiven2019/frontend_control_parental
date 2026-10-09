@@ -91,6 +91,9 @@ export default function BabyPage() {
     if (!file) return;
     try {
       const photoUrl = await uploadFile(file, 'bebe');
+      if (!photoUrl || photoUrl.startsWith('data:')) {
+        throw new Error('No se pudo obtener una URL válida de MinIO para la foto del bebé.');
+      }
       await api.updateBaby({ photoUrl });
       await loadAllData();
     } catch (err) {

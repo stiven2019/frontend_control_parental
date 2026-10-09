@@ -108,7 +108,7 @@ export default function Journal() {
       let photoUrl = null;
       if (file) {
         photoUrl = await uploadFile(file, 'diario');
-      } else if (photoPreview && !photoPreview.startsWith('blob:')) {
+      } else if (photoPreview && !photoPreview.startsWith('blob:') && !photoPreview.startsWith('data:')) {
         photoUrl = photoPreview;
       }
 

@@ -136,8 +136,8 @@ export async function uploadFile(file, module = 'general') {
     throw new Error(message);
   }
 
-  if (!data?.url) {
-    throw new Error('El servidor no devolvió el enlace del archivo.');
+  if (!data?.url || data.url.startsWith('data:')) {
+    throw new Error('El servidor no devolvió una URL válida de MinIO para el archivo.');
   }
 
   return data.url;

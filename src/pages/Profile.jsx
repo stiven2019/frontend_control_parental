@@ -24,6 +24,9 @@ export default function Profile() {
     if (!file) return;
     try {
       const avatarUrl = await uploadFile(file, 'perfil');
+      if (!avatarUrl || avatarUrl.startsWith('data:')) {
+        throw new Error('No se pudo obtener una URL válida de MinIO para el avatar.');
+      }
       await api.updateMe({ avatarUrl });
       refreshUser();
     } catch (err) {

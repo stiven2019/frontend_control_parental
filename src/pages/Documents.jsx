@@ -110,6 +110,9 @@ export default function Documents() {
     setError('');
     try {
       const fileUrl = await uploadFile(file, 'documentos');
+      if (!fileUrl || fileUrl.startsWith('data:')) {
+        throw new Error('No se pudo obtener una URL válida de MinIO para el documento.');
+      }
       const dateClean = form.date ? String(form.date).split('T')[0] : null;
       await api.createDocument({
         ...form,

@@ -58,6 +58,9 @@ export default function Album() {
     setError('');
     try {
       const imageUrl = await uploadFile(file, 'album');
+      if (!imageUrl || imageUrl.startsWith('data:')) {
+        throw new Error('No se pudo obtener una URL válida de MinIO para la fotografía.');
+      }
       await api.createPhoto({
         ...form,
         date: dateClean,
