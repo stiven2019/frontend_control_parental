@@ -4,7 +4,7 @@ import AppLayout from '../components/AppLayout';
 import { LoadingState } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useAlarm } from '../context/AlarmContext';
-import { api, uploadFile } from '../api/client';
+import { api, uploadFile, getFileUrl } from '../api/client';
 
 
 export default function Profile() {
@@ -104,7 +104,22 @@ export default function Profile() {
 
       <section className="card flex flex-col items-center text-center mb-6">
         <label className="relative w-24 h-24 rounded-full overflow-hidden bg-primary-container flex items-center justify-center mb-4 cursor-pointer border-4 border-white shadow-cloud">
-          {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-3xl">🤰</span>}
+          {user.avatarUrl ? (
+            <img
+              src={getFileUrl(user.avatarUrl)}
+              alt=""
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.triedOriginal && user.avatarUrl && user.avatarUrl.startsWith('http')) {
+                  target.dataset.triedOriginal = 'true';
+                  target.src = user.avatarUrl;
+                }
+              }}
+            />
+          ) : (
+            <span className="text-3xl">🤰</span>
+          )}
           <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handleAvatar} />
         </label>
         <h2 className="font-display text-xl font-semibold">{user.firstName} {user.lastName}</h2>

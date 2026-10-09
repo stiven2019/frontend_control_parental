@@ -18,6 +18,10 @@ export async function compressImageIfPossible(file, {
     return file;
   }
 
+  if (file.size === 0) {
+    throw new Error('El archivo seleccionado está vacío.');
+  }
+
   // Si no es imagen (por ejemplo un documento PDF), no procesar
   const isImage = file.type?.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|bmp)$/i.test(file.name || '');
   if (!isImage) {
@@ -38,8 +42,9 @@ export async function compressImageIfPossible(file, {
       img.onload = () => {
         try {
           const originalName = file.name || 'foto.jpg';
-          const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
-          const newFileName = `${nameWithoutExt}.jpg`;
+          const rawBase = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+          const cleanBase = rawBase.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 40);
+          const newFileName = `${cleanBase || 'foto'}.jpg`;
 
           // Función interna para comprimir en canvas con dimensiones y calidad dadas
           const renderToBlob = (currWidth, currHeight, currQuality) => {

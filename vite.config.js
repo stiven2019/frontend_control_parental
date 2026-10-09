@@ -9,6 +9,7 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:4000', changeOrigin: true },
       '/uploads': { target: 'http://localhost:4000', changeOrigin: true },
+      '/mibebe-media': { target: 'http://localhost:9000', changeOrigin: true },
     },
   },
 });
