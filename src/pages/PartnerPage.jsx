@@ -155,7 +155,7 @@ export default function PartnerPage() {
               </div>
             )}
             {!isFamilyLink && (
-              <input type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden" onChange={handlePhoto} />
+              <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handlePhoto} />
             )}
           </label>
 

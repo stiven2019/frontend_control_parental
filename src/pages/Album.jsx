@@ -13,7 +13,13 @@ const CATEGORIES = [
   { value: 'momento_especial', label: 'Momento especial' },
 ];
 
-const EMPTY_FORM = { category: 'momento_especial', weekNumber: '', date: '', description: '', comment: '' };
+const getLocalDateStr = () => {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().split('T')[0];
+};
+
+const EMPTY_FORM = { category: 'momento_especial', weekNumber: '', date: getLocalDateStr(), description: '', comment: '' };
 
 export default function Album() {
   const { isFamilyMember } = useAuth();
@@ -44,18 +50,26 @@ export default function Album() {
     e.preventDefault();
     if (isFamilyMember) return;
     if (!file) { setError('Selecciona una fotografía para continuar.'); return; }
-    if (!form.date) { setError('Indica la fecha de la fotografía.'); return; }
+    
+    const dateClean = form.date ? String(form.date).split('T')[0] : getLocalDateStr();
+    if (!dateClean) { setError('Indica la fecha de la fotografía.'); return; }
+    
     setSaving(true);
     setError('');
     try {
       const imageUrl = await uploadFile(file, 'album');
-      await api.createPhoto({ ...form, weekNumber: form.weekNumber || null, imageUrl });
-      setForm(EMPTY_FORM);
+      await api.createPhoto({
+        ...form,
+        date: dateClean,
+        weekNumber: form.weekNumber ? parseInt(form.weekNumber, 10) : null,
+        imageUrl,
+      });
+      setForm({ ...EMPTY_FORM, date: getLocalDateStr() });
       setFile(null);
       setShowForm(false);
       load();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Error al guardar la fotografía.');
     } finally {
       setSaving(false);
     }
@@ -96,7 +110,7 @@ export default function Album() {
           <h3 className="font-display text-lg font-semibold">Agregar fotografía</h3>
           <div>
             <label className="field-label">Fotografía</label>
-            <input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => setFile(e.target.files[0])} className="input-field" />
+            <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={(e) => setFile(e.target.files[0])} className="input-field" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -140,9 +154,11 @@ export default function Album() {
             <div className="p-5">
               {selected.weekNumber && <p className="font-body text-xs font-semibold text-primary mb-1">Semana {selected.weekNumber}</p>}
               {selected.description && <p className="font-display text-lg font-semibold mb-1">{selected.description}</p>}
-              <p className="font-body text-xs text-on-surface-variant mb-2">
-                {new Date(`${selected.date}T00:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
+              {selected.date && (
+                <p className="font-body text-xs text-on-surface-variant mb-2">
+                  {new Date(`${String(selected.date).split('T')[0]}T00:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              )}
               {selected.comment && <p className="font-body text-sm">{selected.comment}</p>}
               <div className="flex gap-3 mt-4">
                 <button onClick={() => setSelected(null)} className="btn-secondary">Cerrar</button>

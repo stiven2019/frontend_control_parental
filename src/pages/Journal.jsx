@@ -105,13 +105,17 @@ export default function Journal() {
     setSaving(true);
     setFeedback('');
     try {
-      let photoUrl = photoPreview;
+      let photoUrl = null;
       if (file) {
         photoUrl = await uploadFile(file, 'diario');
+      } else if (photoPreview && !photoPreview.startsWith('blob:')) {
+        photoUrl = photoPreview;
       }
 
+      const dateClean = form.date ? String(form.date).split('T')[0] : getLocalDateStr();
+
       const payload = {
-        date: form.date,
+        date: dateClean,
         weekNumber: form.weekNumber ? parseInt(form.weekNumber, 10) : null,
         title: form.title,
         text: form.text,
@@ -359,7 +363,7 @@ export default function Journal() {
             )}
             <input
               type="file"
-              accept=".jpg,.jpeg,.png,.webp"
+              accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif"
               onChange={(e) => {
                 const f = e.target.files[0];
                 if (f) {
@@ -451,11 +455,13 @@ export default function Journal() {
             <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="pill-chip bg-primary-container/80 text-on-primary-container text-xs font-bold">
-                  {new Date(`${entry.date}T00:00:00`).toLocaleDateString('es-CO', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  {entry.date ? (
+                    new Date(`${String(entry.date).split('T')[0]}T00:00:00`).toLocaleDateString('es-CO', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                  ) : 'Sin fecha'}
                 </span>
                 {entry.weekNumber && (
                   <span className="pill-chip bg-secondary-container/80 text-on-secondary-container text-xs font-semibold">

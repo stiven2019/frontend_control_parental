@@ -22,9 +22,13 @@ export default function Profile() {
     if (isFamilyLink) return;
     const file = e.target.files[0];
     if (!file) return;
-    const avatarUrl = await uploadFile(file, 'perfil');
-    await api.updateMe({ avatarUrl });
-    refreshUser();
+    try {
+      const avatarUrl = await uploadFile(file, 'perfil');
+      await api.updateMe({ avatarUrl });
+      refreshUser();
+    } catch (err) {
+      alert(err.message || 'No se pudo subir la foto de perfil.');
+    }
   };
 
   if (!user) return <AppLayout><LoadingState /></AppLayout>;
@@ -98,7 +102,7 @@ export default function Profile() {
       <section className="card flex flex-col items-center text-center mb-6">
         <label className="relative w-24 h-24 rounded-full overflow-hidden bg-primary-container flex items-center justify-center mb-4 cursor-pointer border-4 border-white shadow-cloud">
           {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-3xl">🤰</span>}
-          <input type="file" accept=".jpg,.jpeg,.png,.webp" className="hidden" onChange={handleAvatar} />
+          <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handleAvatar} />
         </label>
         <h2 className="font-display text-xl font-semibold">{user.firstName} {user.lastName}</h2>
         <p className="font-body text-sm text-on-surface-variant">{user.email}</p>
