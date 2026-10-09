@@ -5,7 +5,7 @@ import {
   NEWBORN_CARE_GUIDES,
   calculateGrowthMetrics,
 } from '../data/postnatalData';
-import { api } from '../api/client';
+import { api, getFileUrl } from '../api/client';
 import { useAlarm } from '../context/AlarmContext';
 
 export default function BornBabyCarnet({ baby, onUpdateBaby }) {
@@ -325,7 +325,18 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
           <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
             <div className="w-20 h-20 rounded-2xl bg-secondary-container text-secondary flex items-center justify-center text-4xl shadow-cloud-sm shrink-0 overflow-hidden border-2 border-white">
               {baby?.photoUrl ? (
-                <img src={baby.photoUrl} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={getFileUrl(baby.photoUrl)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.dataset.triedOriginal && baby.photoUrl && baby.photoUrl.startsWith('http')) {
+                      target.dataset.triedOriginal = 'true';
+                      target.src = baby.photoUrl;
+                    }
+                  }}
+                />
               ) : (
                 '👶'
               )}

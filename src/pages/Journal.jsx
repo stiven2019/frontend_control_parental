@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
-import { api, uploadFile } from '../api/client';
+import { api, uploadFile, getFileUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 const getLocalDateStr = () => {
@@ -444,9 +444,16 @@ export default function Journal() {
             {entry.photoUrl && (
               <div className="w-full rounded-xl overflow-hidden mb-4 aspect-video bg-surface-container">
                 <img
-                  src={entry.photoUrl}
+                  src={getFileUrl(entry.photoUrl)}
                   alt={entry.title}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.dataset.triedOriginal && entry.photoUrl && entry.photoUrl.startsWith('http')) {
+                      target.dataset.triedOriginal = 'true';
+                      target.src = entry.photoUrl;
+                    }
+                  }}
                 />
               </div>
             )}

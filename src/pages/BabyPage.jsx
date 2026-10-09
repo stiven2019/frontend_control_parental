@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, ErrorState } from '../components/States';
-import { api, uploadFile } from '../api/client';
+import { api, uploadFile, getFileUrl } from '../api/client';
 import { testAlarmSound, stopAlarmLoop } from '../utils/soundAlarm';
 import { evaluateFetalHealth } from '../utils/healthEvaluations';
 import FetalHealthModal from '../components/FetalHealthModal';
@@ -244,7 +244,18 @@ export default function BabyPage() {
       <section className="card flex flex-col items-center text-center mb-6 shadow-cloud bg-gradient-to-b from-white to-surface-container/20">
         <label className="relative w-28 h-28 rounded-full overflow-hidden bg-primary-container flex items-center justify-center mb-4 cursor-pointer border-4 border-white shadow-cloud hover:opacity-90 transition-opacity group">
           {baby?.photoUrl ? (
-            <img src={baby.photoUrl} alt="Bebé" className="w-full h-full object-cover" />
+            <img
+              src={getFileUrl(baby.photoUrl)}
+              alt="Bebé"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.triedOriginal && baby.photoUrl && baby.photoUrl.startsWith('http')) {
+                  target.dataset.triedOriginal = 'true';
+                  target.src = baby.photoUrl;
+                }
+              }}
+            />
           ) : (
             <span className="text-5xl">👶</span>
           )}
@@ -556,9 +567,16 @@ export default function BabyPage() {
             {ultrasounds.slice(0, 4).map((photo) => (
               <div key={photo.id} className="group relative rounded-xl overflow-hidden bg-black/5 aspect-square border border-surface-container shadow-cloud-sm">
                 <img
-                  src={photo.imageUrl}
+                  src={getFileUrl(photo.imageUrl)}
                   alt={photo.description || 'Ecografía del bebé'}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.dataset.triedOriginal && photo.imageUrl && photo.imageUrl.startsWith('http')) {
+                      target.dataset.triedOriginal = 'true';
+                      target.src = photo.imageUrl;
+                    }
+                  }}
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 text-white">
                   {photo.weekNumber && (

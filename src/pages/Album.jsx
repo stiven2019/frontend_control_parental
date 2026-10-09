@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
-import { api, uploadFile } from '../api/client';
+import { api, uploadFile, getFileUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 const CATEGORIES = [
@@ -113,7 +113,25 @@ export default function Album() {
           <h3 className="font-display text-lg font-semibold">Agregar fotografía</h3>
           <div>
             <label className="field-label">Fotografía</label>
-            <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={(e) => setFile(e.target.files[0])} className="input-field" />
+            <input
+              type="file"
+              accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="input-field"
+            />
+            {file && (
+              <div className="mt-2 flex items-center gap-3 p-2 bg-surface-container/50 rounded-xl border border-outline-variant/30">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="Vista previa"
+                  className="w-14 h-14 rounded-lg object-cover border border-outline-variant/30"
+                />
+                <div className="text-xs">
+                  <p className="font-medium text-on-surface truncate max-w-[200px]">{file.name}</p>
+                  <p className="text-on-surface-variant">{(file.size / 1024).toFixed(0)} KB · Lista para subir a MinIO</p>
+                </div>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -142,9 +160,30 @@ export default function Album() {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {items.map((p) => (
           <button key={p.id} onClick={() => setSelected(p)} className="aspect-square rounded-md overflow-hidden bg-surface-container relative group">
-            <img src={p.imageUrl} alt={p.description || ''} className="w-full h-full object-cover" />
+            <img
+              src={getFileUrl(p.imageUrl)}
+              alt={p.description || ''}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.triedOriginal && p.imageUrl && p.imageUrl.startsWith('http')) {
+                  target.dataset.triedOriginal = 'true';
+                  target.src = p.imageUrl;
+                  return;
+                }
+                target.style.display = 'none';
+                if (target.nextElementSibling) {
+                  target.nextElementSibling.classList.remove('hidden');
+                  target.nextElementSibling.classList.add('flex');
+                }
+              }}
+            />
+            <div className="hidden absolute inset-0 bg-surface-container flex-col items-center justify-center p-2 text-center text-on-surface-variant">
+              <span className="text-2xl mb-1">📷</span>
+              <span className="text-[11px] font-medium truncate w-full">{p.description || 'Fotografía'}</span>
+            </div>
             {p.weekNumber && (
-              <span className="absolute bottom-2 left-2 pill-chip bg-white/85 text-on-surface text-[10px]">Semana {p.weekNumber}</span>
+              <span className="absolute bottom-2 left-2 pill-chip bg-white/85 text-on-surface text-[10px] shadow-sm">Semana {p.weekNumber}</span>
             )}
           </button>
         ))}
@@ -153,7 +192,18 @@ export default function Album() {
       {selected && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
           <div className="bg-white rounded-md max-w-sm w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <img src={selected.imageUrl} alt="" className="w-full aspect-square object-cover" />
+            <img
+              src={getFileUrl(selected.imageUrl)}
+              alt={selected.description || ''}
+              className="w-full aspect-square object-cover"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.triedOriginal && selected.imageUrl && selected.imageUrl.startsWith('http')) {
+                  target.dataset.triedOriginal = 'true';
+                  target.src = selected.imageUrl;
+                }
+              }}
+            />
             <div className="p-5">
               {selected.weekNumber && <p className="font-body text-xs font-semibold text-primary mb-1">Semana {selected.weekNumber}</p>}
               {selected.description && <p className="font-display text-lg font-semibold mb-1">{selected.description}</p>}

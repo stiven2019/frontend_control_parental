@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState } from '../components/States';
 import FamilyQrModal from '../components/FamilyQrModal';
-import { api, uploadFile } from '../api/client';
+import { api, uploadFile, getFileUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 export default function PartnerPage() {
@@ -148,7 +148,18 @@ export default function PartnerPage() {
         <section className="card flex flex-col items-center text-center p-6 md:col-span-1">
           <label className="relative w-28 h-28 rounded-full overflow-hidden bg-tertiary-container flex items-center justify-center mb-4 cursor-pointer border-4 border-white shadow-cloud group">
             {partner?.photoUrl ? (
-              <img src={partner.photoUrl} alt="Foto de papá" className="w-full h-full object-cover" />
+              <img
+                src={getFileUrl(partner.photoUrl)}
+                alt="Foto de papá"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.dataset.triedOriginal && partner.photoUrl && partner.photoUrl.startsWith('http')) {
+                    target.dataset.triedOriginal = 'true';
+                    target.src = partner.photoUrl;
+                  }
+                }}
+              />
             ) : (
               <span className="text-4xl">🧑</span>
             )}
