@@ -242,7 +242,8 @@ const EXPLORE_PLANS = [
     priceFormatted: "50.000",
     period: "mes",
     popular: true,
-    description: "Acceso completo a los 14 módulos clínicos, pediátricos, familiares y de almacenamiento.",
+    description:
+      "Acceso completo a los 14 módulos clínicos, pediátricos, familiares y de almacenamiento.",
     features: [
       "Mi Bebé en Gestación (Semana a semana, pataditas y FCF)",
       "Carnet de Salud Infantil (Curvas OMS y 20 Vacunas PAI)",
@@ -263,7 +264,8 @@ const EXPLORE_PLANS = [
     priceFormatted: "30.000",
     period: "mes",
     popular: false,
-    description: "Ideal para el seguimiento médico del embarazo y los primeros meses del bebé.",
+    description:
+      "Ideal para el seguimiento médico del embarazo y los primeros meses del bebé.",
     features: [
       "Mi Bebé en Gestación (Desarrollo y métricas fetales)",
       "Carnet de Salud Infantil (Curvas OMS de peso/talla)",
@@ -282,7 +284,8 @@ const EXPLORE_PLANS = [
     priceFormatted: "15.000",
     period: "mes",
     popular: false,
-    description: "Acompañamiento prenatal obstétrico básico para tus consultas y citas médicas.",
+    description:
+      "Acompañamiento prenatal obstétrico básico para tus consultas y citas médicas.",
     features: [
       "Mi Bebé en Gestación (Seguimiento prenatal)",
       "Registro de Controles Médicos Prenatales",
@@ -315,7 +318,10 @@ export default function GuestExplore() {
             <a href="#modulos" className="hover:text-primary transition-colors">
               Módulos
             </a>
-            <a href="#planes" className="hover:text-primary transition-colors text-primary font-bold">
+            <a
+              href="#planes"
+              className="hover:text-primary transition-colors text-primary font-bold"
+            >
               Planes y Precios 💎
             </a>
             <a href="#familia" className="hover:text-primary transition-colors">
@@ -364,7 +370,7 @@ function GuestHome() {
   );
 
   const whatsappMessage = encodeURIComponent(
-    "¡Hola! Vengo desde la página de Explorar de Mi Bebé ❤️ y deseo conocer más sobre la activación de los planes de suscripción por Nequi/Daviplata."
+    "¡Hola! Vengo desde la página de Explorar de Mi Bebé ❤️ y deseo conocer más sobre la activación de los planes de suscripción por Nequi/Daviplata.",
   );
   const whatsappUrl = `https://wa.me/573122031777?text=${whatsappMessage}`;
 
@@ -373,17 +379,18 @@ function GuestHome() {
       {/* Hero Principal Explicativo con Botones Activos */}
       <section className="my-6 sm:my-10 animate-fade-in">
         <div className="card !bg-gradient-to-br from-primary-container/70 via-white to-secondary-container/30 !p-6 sm:!p-12 text-center rounded-3xl border-2 border-primary/20 shadow-cloud">
-         
           <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-on-surface mb-4 leading-tight max-w-3xl mx-auto">
             Todo lo que puedes hacer dentro de{" "}
             <span className="text-primary">Mi Bebé</span>
           </h1>
 
           <p className="font-body text-on-surface-variant mb-6 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-           Un acompañamiento clínico y familiar completo: desde tu primera semana de gestación hasta el carnet oficial de crecimiento del bebé nacido. Conoce cada una de las herramientas diseñadas para darte tranquilidad.
+            Un acompañamiento clínico y familiar completo: desde tu primera
+            semana de gestación hasta el carnet oficial de crecimiento del bebé
+            nacido. Conoce cada una de las herramientas diseñadas para darte
+            tranquilidad.
           </p>
 
-          
           {/* Highlights en Píldoras */}
           <div className="pt-6 border-t border-outline-variant/30 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-semibold text-on-surface-variant">
             <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border border-outline-variant/20 shadow-2xs">
@@ -418,7 +425,9 @@ function GuestHome() {
             ¿Cómo te apoya la plataforma en cada etapa?
           </h2>
           <p className="font-body text-xs sm:text-sm text-on-surface-variant max-w-xl mx-auto mt-2">
-            La plataforma evoluciona contigo: te brinda herramientas obstétricas durante el embarazo y se transforma en un carnet pediátrico cuando nace tu bebé.
+            La plataforma evoluciona contigo: te brinda herramientas obstétricas
+            durante el embarazo y se transforma en un carnet pediátrico cuando
+            nace tu bebé.
           </p>
         </div>
 
@@ -434,7 +443,9 @@ function GuestHome() {
               Gestación y Embarazo
             </h3>
             <p className="font-body text-xs text-on-surface-variant leading-relaxed mb-3">
-              Monitoreo del crecimiento fetal semana a semana, controles médicos, registro de presión arterial, altura uterina, síntomas físicos y tomas de vitaminas prenatales.
+              Monitoreo del crecimiento fetal semana a semana, controles
+              médicos, registro de presión arterial, altura uterina, síntomas
+              físicos y tomas de vitaminas prenatales.
             </p>
             <ul className="text-[11px] text-on-surface space-y-1 font-medium">
               <li className="flex items-center gap-1 text-primary">
@@ -460,7 +471,9 @@ function GuestHome() {
               Nacimiento del Bebé
             </h3>
             <p className="font-body text-xs text-on-surface-variant leading-relaxed mb-3">
-              Preparación para el parto, guías sobre la maleta de maternidad, signos de alarma obstétrica y botón de confirmación de nacimiento para activar el módulo infantil.
+              Preparación para el parto, guías sobre la maleta de maternidad,
+              signos de alarma obstétrica y botón de confirmación de nacimiento
+              para activar el módulo infantil.
             </p>
             <ul className="text-[11px] text-on-surface space-y-1 font-medium">
               <li className="flex items-center gap-1 text-amber-700">
@@ -486,7 +499,9 @@ function GuestHome() {
               Carnet de Salud Infantil
             </h3>
             <p className="font-body text-xs text-on-surface-variant leading-relaxed mb-3">
-              Curvas oficiales de crecimiento OMS (peso, talla y perímetro cefálico), esquema oficial de vacunación PAI de Colombia con recordatorios y bitácora pediátrica.
+              Curvas oficiales de crecimiento OMS (peso, talla y perímetro
+              cefálico), esquema oficial de vacunación PAI de Colombia con
+              recordatorios y bitácora pediátrica.
             </p>
             <ul className="text-[11px] text-on-surface space-y-1 font-medium">
               <li className="flex items-center gap-1 text-secondary">
@@ -514,7 +529,9 @@ function GuestHome() {
               Planes Mensuales Claros y Transparentes
             </h2>
             <p className="font-body text-xs sm:text-sm text-on-surface-variant mt-2 leading-relaxed">
-              Sin cobros automáticos ocultos a tarjetas. Eliges tu plan preferido, transfieres por Nequi o Daviplata y disfrutas de acceso continuo durante 30 días con respaldo total de tu historial.
+              Sin cobros automáticos ocultos a tarjetas. Eliges tu plan
+              preferido, transfieres por Nequi o Daviplata y disfrutas de acceso
+              continuo durante 30 días con respaldo total de tu historial.
             </p>
           </div>
 
@@ -551,14 +568,17 @@ function GuestHome() {
                       ${plan.priceFormatted}
                     </span>
                     <span className="text-xs text-on-surface-variant font-medium">
-                      {" "}COP / {plan.period}
+                      {" "}
+                      COP / {plan.period}
                     </span>
                   </div>
 
                   <ul className="space-y-2 text-xs font-body text-on-surface mb-6">
                     {plan.features.map((feat, idx) => (
                       <li key={idx} className="flex items-start gap-2">
-                        <span className="text-secondary font-bold shrink-0">✓</span>
+                        <span className="text-secondary font-bold shrink-0">
+                          ✓
+                        </span>
                         <span className="leading-snug">{feat}</span>
                       </li>
                     ))}
@@ -590,7 +610,8 @@ function GuestHome() {
               <span className="text-xl">📧</span>
               <strong className="text-on-surface">Alerta 1 Semana Antes</strong>
               <p className="text-on-surface-variant text-[11px] leading-tight">
-                Te enviamos un correo electrónico preventivo exactamente 7 días antes del vencimiento para que renueves sin interrupción.
+                Te enviamos un correo electrónico preventivo exactamente 7 días
+                antes del vencimiento para que renueves sin interrupción.
               </p>
             </div>
 
@@ -598,7 +619,9 @@ function GuestHome() {
               <span className="text-xl">🛡️</span>
               <strong className="text-on-surface">Datos Siempre Seguros</strong>
               <p className="text-on-surface-variant text-[11px] leading-tight">
-                Tus ecografías, registros de salud y fotos permanecen respaldados y encriptados incluso si tu suscripción llega a vencer.
+                Tus ecografías, registros de salud y fotos permanecen
+                respaldados y encriptados incluso si tu suscripción llega a
+                vencer.
               </p>
             </div>
 
@@ -606,7 +629,8 @@ function GuestHome() {
               <span className="text-xl">🎁</span>
               <strong className="text-on-surface">Módulos 100% Gratis</strong>
               <p className="text-on-surface-variant text-[11px] leading-tight">
-                Medicamentos, Registro de Síntomas y Guía de Desarrollo Fetal son 100% libres sin ningún costo para todas las mamás.
+                Medicamentos, Registro de Síntomas y Guía de Desarrollo Fetal
+                son 100% libres sin ningún costo para todas las mamás.
               </p>
             </div>
 
@@ -614,7 +638,9 @@ function GuestHome() {
               <span className="text-xl">💳</span>
               <strong className="text-on-surface">Daviplata o Nequi</strong>
               <p className="text-on-surface-variant text-[11px] leading-tight">
-                Transfiere al <strong>3122031777</strong> (Llave: <strong>@DAVI3122031777</strong>) y activa al instante por WhatsApp.
+                Transfiere al <strong>3122031777</strong> (Llave:{" "}
+                <strong>@DAVI3122031777</strong>) y activa al instante por
+                WhatsApp.
               </p>
             </div>
           </div>
@@ -633,28 +659,40 @@ function GuestHome() {
                 Papá y Lazos Familiares con Códigos QR
               </h2>
               <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed mb-4">
-                Diseñado para involucrar con total seguridad a tu pareja y familia, manteniendo la privacidad obstétrica bajo el control exclusivo de mamá:
+                Diseñado para involucrar con total seguridad a tu pareja y
+                familia, manteniendo la privacidad obstétrica bajo el control
+                exclusivo de mamá:
               </p>
 
               <div className="space-y-2.5 text-xs font-body text-on-surface-variant">
                 <div className="flex items-start gap-2.5">
                   <span className="text-base shrink-0">🧑</span>
                   <p>
-                    <strong>Vinculación de papá:</strong> No se permiten múltiples cuentas de papá en el mismo embarazo. Papá tiene acceso especial para ver y subir fotos al álbum, redactar en el diario íntimo y seguir el desarrollo del feto.
+                    <strong>Vinculación de papá:</strong> No se permiten
+                    múltiples cuentas de papá en el mismo embarazo. Papá tiene
+                    acceso especial para ver y subir fotos al álbum, redactar en
+                    el diario íntimo y seguir el desarrollo del feto.
                   </p>
                 </div>
 
                 <div className="flex items-start gap-2.5">
                   <span className="text-base shrink-0">⏱️</span>
                   <p>
-                    <strong>Caducidad estricta de 15 minutos:</strong> Cada código QR y enlace vence a los 15 minutos exactos si no se ha conectado. Si mantienes abierta la pantalla, se refresca automáticamente cada 15 min para garantizar máxima seguridad.
+                    <strong>Caducidad estricta de 15 minutos:</strong> Cada
+                    código QR y enlace vence a los 15 minutos exactos si no se
+                    ha conectado. Si mantienes abierta la pantalla, se refresca
+                    automáticamente cada 15 min para garantizar máxima
+                    seguridad.
                   </p>
                 </div>
 
                 <div className="flex items-start gap-2.5">
                   <span className="text-base shrink-0">👨‍👩‍👧</span>
                   <p>
-                    <strong>Familiares con nombres diferenciados:</strong> Abuelos y tíos se conectan con permisos de solo lectura. El sistema no permite dos familiares con el mismo nombre para evitar confusiones.
+                    <strong>Familiares con nombres diferenciados:</strong>{" "}
+                    Abuelos y tíos se conectan con permisos de solo lectura. El
+                    sistema no permite dos familiares con el mismo nombre para
+                    evitar confusiones.
                   </p>
                 </div>
               </div>
@@ -666,7 +704,8 @@ function GuestHome() {
                 Vinculación en 1 Toque
               </h4>
               <p className="font-body text-[11px] text-on-surface-variant leading-relaxed mb-3">
-                Mamá genera el código QR desde su app y el familiar apunta la cámara de su teléfono para quedar conectado de inmediato.
+                Mamá genera el código QR desde su app y el familiar apunta la
+                cámara de su teléfono para quedar conectado de inmediato.
               </p>
               <Link
                 to="/crear-cuenta"
@@ -687,10 +726,11 @@ function GuestHome() {
               Explorador de Funciones
             </span>
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-on-surface">
-              Módulos Disponibles en la Plataforma
+              ¿Qué puedes hacer dentro de la plataforma?
             </h2>
             <p className="font-body text-xs sm:text-sm text-on-surface-variant mt-1">
-              Explora en detalle las herramientas integradas en tu expediente prenatal y carnet postnatal.
+              Explora en detalle las herramientas integradas en tu expediente
+              prenatal y carnet postnatal.
             </p>
           </div>
 
@@ -782,7 +822,8 @@ function GuestHome() {
               Explora nuestras Guías Médicas Gratuitas
             </h2>
             <p className="font-body text-xs sm:text-sm text-on-surface-variant mb-6 leading-relaxed">
-              Puedes comenzar a leer nuestras recomendaciones clínicas ahora mismo sin necesidad de iniciar sesión ni crear una cuenta:
+              Puedes comenzar a leer nuestras recomendaciones clínicas ahora
+              mismo sin necesidad de iniciar sesión ni crear una cuenta:
             </p>
           </div>
 
@@ -841,7 +882,9 @@ function GuestHome() {
           ¿Lista para comenzar tu viaje con Mi Bebé?
         </h3>
         <p className="font-body text-xs sm:text-sm text-on-surface-variant mb-6 max-w-lg mx-auto leading-relaxed">
-          Crea tu cuenta gratuita en segundos para guardar tus ecografías, recibir alarmas sonoras, registrar tus controles médicos y seguir de cerca cada momento del embarazo.
+          Crea tu cuenta gratuita en segundos para guardar tus ecografías,
+          recibir alarmas sonoras, registrar tus controles médicos y seguir de
+          cerca cada momento del embarazo.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
@@ -860,7 +903,8 @@ function GuestHome() {
         </div>
 
         <p className="text-[11px] text-on-surface-variant mt-4">
-          Cumple con la normativa colombiana de protección de datos de salud (Ley 1581 de 2012).
+          Cumple con la normativa colombiana de protección de datos de salud
+          (Ley 1581 de 2012).
         </p>
       </section>
     </>
