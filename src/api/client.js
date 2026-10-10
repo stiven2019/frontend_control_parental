@@ -98,6 +98,8 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     const err = new Error(message);
     err.status = res.status;
     err.needsSetup = data?.needsSetup;
+    err.expired = data?.expired;
+    err.limitReached = data?.limitReached;
     throw err;
   }
 

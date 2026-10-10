@@ -106,8 +106,23 @@ export default function PartnerPage() {
   if (!data) return <AppLayout><LoadingState label="Cargando información familiar..." /></AppLayout>;
   const { partner } = data;
 
+  const isLinkPendingExpired = (link) => {
+    if (link.status === 'expired') return true;
+    if (link.status === 'pending') {
+      const exp = link.expiresAt
+        ? new Date(link.expiresAt).getTime()
+        : new Date(link.createdAt).getTime() + 15 * 60 * 1000;
+      return Date.now() > exp;
+    }
+    return false;
+  };
+
+  const validLinks = links.filter(
+    (l) => l.status === 'active' || (l.status === 'pending' && !isLinkPendingExpired(l))
+  );
   const activeLinks = links.filter((l) => l.status !== 'revoked');
-  const partnerLinkActive = activeLinks.some((l) => l.role === 'papa');
+  const partnerLinkActive = validLinks.some((l) => l.role === 'papa' && l.status === 'active');
+  const isLimitReached = validLinks.length >= 10;
 
   return (
     <AppLayout>
@@ -296,10 +311,10 @@ export default function PartnerPage() {
             <div>
               <h3 className="font-display text-lg font-bold text-on-surface flex items-center gap-2">
                 <span>🔗</span>
-                <span>Lazos y Dispositivos Vinculados ({activeLinks.length})</span>
+                <span>Lazos y Dispositivos Vinculados ({validLinks.length}/10)</span>
               </h3>
               <p className="font-body text-xs text-on-surface-variant mt-0.5">
-                Familiares y acompañantes que tienen acceso a acompañar tu embarazo.
+                Familiares y acompañantes que tienen acceso a acompañar tu embarazo (máximo 10 enlaces).
               </p>
             </div>
 
@@ -307,13 +322,23 @@ export default function PartnerPage() {
               <button
                 type="button"
                 onClick={() => handleOpenQrModal('familia')}
-                className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5"
+                disabled={isLimitReached}
+                className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50"
               >
                 <span>+</span>
                 <span>Vincular Familiar</span>
               </button>
             </div>
           </div>
+
+          {isLimitReached && (
+            <div className="mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-2">
+              <span>⚠️</span>
+              <span>
+                Has alcanzado el límite máximo de 10 enlaces por cuenta ({validLinks.length}/10). Para conectar a otro acompañante, desvincula miembros anteriores o no utilizados.
+              </span>
+            </div>
+          )}
 
           {loadingLinks ? (
             <div className="py-8 text-center text-xs text-on-surface-variant">
@@ -370,15 +395,34 @@ export default function PartnerPage() {
                         >
                           {link.role === 'papa' ? 'Papá' : 'Solo Lectura'}
                         </span>
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            link.status === 'active'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {link.status === 'active' ? 'Conectado' : 'Pendiente'}
-                        </span>
+                        {(() => {
+                          if (link.status === 'active') {
+                            return (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                Conectado
+                              </span>
+                            );
+                          }
+                          if (isLinkPendingExpired(link)) {
+                            return (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+                                Vencido (15 min)
+                              </span>
+                            );
+                          }
+                          if (link.status === 'pending') {
+                            return (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 animate-pulse">
+                                Pendiente (15 min)
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                              Revocado
+                            </span>
+                          );
+                        })()}
                       </div>
                       <p className="font-body text-xs text-on-surface-variant mt-0.5">
                         Código: <code className="font-mono text-primary font-bold">{link.inviteCode}</code>
@@ -421,6 +465,8 @@ export default function PartnerPage() {
         onClose={() => setQrModalOpen(false)}
         initialRole={selectedRoleForQr}
         onLinkCreated={() => loadFamilyLinks()}
+        currentCount={validLinks.length}
+        maxLimit={10}
       />
     </AppLayout>
   );
