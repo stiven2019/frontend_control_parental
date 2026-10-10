@@ -19,6 +19,7 @@ export default function PartnerPage() {
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [selectedRoleForQr, setSelectedRoleForQr] = useState('papa');
   const [revokingId, setRevokingId] = useState(null);
+  const [refreshingId, setRefreshingId] = useState(null);
   const [feedback, setFeedback] = useState('');
 
   const loadDashboard = async () => {
@@ -103,6 +104,21 @@ export default function PartnerPage() {
     }
   };
 
+  const handleRefreshLink = async (id, linkName) => {
+    setRefreshingId(id);
+    setFeedback('');
+    try {
+      await api.refreshFamilyLink(id);
+      setFeedback(`Se ha renovado el código de "${linkName || 'el miembro'}" por 15 minutos adicionales.`);
+      await loadFamilyLinks();
+    } catch (err) {
+      alert(err.message || 'No se pudo refrescar el código de invitación.');
+    } finally {
+      setRefreshingId(null);
+      setTimeout(() => setFeedback(''), 4000);
+    }
+  };
+
   if (!data) return <AppLayout><LoadingState label="Cargando información familiar..." /></AppLayout>;
   const { partner } = data;
 
@@ -140,11 +156,11 @@ export default function PartnerPage() {
         {!isFamilyLink && (
           <button
             type="button"
-            onClick={() => handleOpenQrModal('papa')}
+            onClick={() => handleOpenQrModal(partnerLinkActive ? 'familia' : 'papa')}
             className="btn-primary !py-2.5 !px-4 text-xs font-semibold flex items-center gap-2 self-start sm:self-auto shadow-cloud"
           >
             <span>📱</span>
-            <span>Vincular por QR</span>
+            <span>{partnerLinkActive ? 'Vincular Familiar por QR' : 'Vincular por QR'}</span>
           </button>
         )}
       </header>
@@ -222,13 +238,20 @@ export default function PartnerPage() {
                   >
                     Editar nombre
                   </button>
-                  <button
-                    onClick={() => handleOpenQrModal('papa')}
-                    className="px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container text-xs font-semibold shadow-sm hover:opacity-90 transition-opacity flex items-center gap-1"
-                  >
-                    <span>📲</span>
-                    <span>Generar QR</span>
-                  </button>
+                  {!partnerLinkActive ? (
+                    <button
+                      onClick={() => handleOpenQrModal('papa')}
+                      className="px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container text-xs font-semibold shadow-sm hover:opacity-90 transition-opacity flex items-center gap-1"
+                    >
+                      <span>📲</span>
+                      <span>Generar QR</span>
+                    </button>
+                  ) : (
+                    <span className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 flex items-center gap-1">
+                      <span>✓</span>
+                      <span>Papá único vinculado</span>
+                    </span>
+                  )}
                 </div>
               )}
             </>
@@ -245,7 +268,7 @@ export default function PartnerPage() {
               ¿Qué puede ver cada persona vinculada?
             </h3>
             <p className="font-body text-xs text-on-surface-variant mt-1 leading-relaxed">
-              La mamá conserva siempre el control absoluto. En cualquier momento puedes desvincular a cualquier miembro con un solo toque.
+              La mamá conserva siempre el control absoluto. En cualquier momento puedes desvincular a cualquier miembro con un solo toque. Solo se permite un único papá vinculado.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
@@ -259,13 +282,18 @@ export default function PartnerPage() {
                   ✅ Redactar y leer el Diario íntimo<br />
                   ✅ Seguimiento de crecimiento del bebé
                 </p>
-                {!isFamilyLink && (
+                {!isFamilyLink && !partnerLinkActive && (
                   <button
                     onClick={() => handleOpenQrModal('papa')}
                     className="mt-2 text-[11px] font-bold text-primary text-left hover:underline"
                   >
                     + Generar QR para Papá
                   </button>
+                )}
+                {!isFamilyLink && partnerLinkActive && (
+                  <span className="mt-2 text-[11px] font-bold text-emerald-700 block">
+                    ✓ Papá único ya vinculado
+                  </span>
                 )}
               </div>
 
@@ -441,17 +469,33 @@ export default function PartnerPage() {
                     </div>
                   </div>
 
-                  {/* Botón de Desvincular para Mamá */}
-                  <button
-                    type="button"
-                    onClick={() => handleRevoke(link.id, link.name)}
-                    disabled={revokingId === link.id}
-                    className="self-end sm:self-auto px-3.5 py-1.5 rounded-full border border-error/30 text-error hover:bg-error/10 text-xs font-semibold transition-colors flex items-center gap-1.5"
-                    title="Revocar acceso inmediatamente"
-                  >
-                    <span>🗑️</span>
-                    <span>{revokingId === link.id ? 'Desvinculando...' : 'Desvincular'}</span>
-                  </button>
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    {/* Botón de Refrescar cada 15 min si no se ha conectado */}
+                    {(link.status === 'pending' || isLinkPendingExpired(link)) && (
+                      <button
+                        type="button"
+                        onClick={() => handleRefreshLink(link.id, link.name)}
+                        disabled={refreshingId === link.id}
+                        className="px-3 py-1.5 rounded-full border border-primary/40 text-primary hover:bg-primary-container/30 text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs"
+                        title="Refrescar código y reiniciar 15 minutos"
+                      >
+                        <span>🔄</span>
+                        <span>{refreshingId === link.id ? 'Refrescando...' : 'Refrescar (15 min)'}</span>
+                      </button>
+                    )}
+
+                    {/* Botón de Desvincular para Mamá */}
+                    <button
+                      type="button"
+                      onClick={() => handleRevoke(link.id, link.name)}
+                      disabled={revokingId === link.id}
+                      className="px-3.5 py-1.5 rounded-full border border-error/30 text-error hover:bg-error/10 text-xs font-semibold transition-colors flex items-center gap-1.5"
+                      title="Revocar acceso inmediatamente"
+                    >
+                      <span>🗑️</span>
+                      <span>{revokingId === link.id ? 'Desvinculando...' : 'Desvincular'}</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -467,6 +511,8 @@ export default function PartnerPage() {
         onLinkCreated={() => loadFamilyLinks()}
         currentCount={validLinks.length}
         maxLimit={10}
+        existingLinks={links}
+        partnerLinkActive={partnerLinkActive}
       />
     </AppLayout>
   );

@@ -146,7 +146,7 @@ export default function FamilyLinkPage() {
             <div className="w-full p-3.5 rounded-2xl bg-surface-container/60 text-xs font-body text-on-surface-variant text-left mb-5 border border-outline-variant/30 flex gap-2.5 items-start">
               <span className="text-base shrink-0">💡</span>
               <p>
-                Pídele a mamá que abra la sección <strong>Papá y Lazos Familiares</strong> en su aplicación y te genere un nuevo código QR o enlace.
+                Pídele a mamá que abra la sección <strong>Papá y Lazos Familiares</strong> en su aplicación y pulse <strong>"Refrescar (15 min)"</strong> para renovar el código, o te genere un nuevo enlace.
               </p>
             </div>
 
@@ -219,6 +219,9 @@ export default function FamilyLinkPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
+              <p className="text-[11px] text-on-surface-variant mt-1 text-center">
+                * Recuerda usar un nombre o apodo diferenciador para que no coincida con otro familiar conectado.
+              </p>
             </div>
 
             {redeemError && (

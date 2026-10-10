@@ -97,6 +97,12 @@ export default function Dashboard() {
 
   const isTestEmocionalLocked = isModuleLocked('test_emocional');
   const isFreePlan = (user?.plan === 'free' || !user?.plan) && !user?.isVip;
+  const isExpiringSoon = !user?.isVip && user?.subscriptionExpiresAt && (() => {
+    const diff = Math.ceil((new Date(user.subscriptionExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return diff > 0 && diff <= 7;
+  })();
+  const isSubExpired = !user?.isVip && user?.subscriptionExpiresAt && (new Date(user.subscriptionExpiresAt).getTime() < Date.now());
+  const daysLeft = user?.subscriptionExpiresAt ? Math.ceil((new Date(user.subscriptionExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
 
   return (
     <AppLayout>
@@ -114,7 +120,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {isFreePlan && !isFamilyLink && (
+        {!isFamilyLink && (
           <button
             type="button"
             onClick={() => {
@@ -124,10 +130,64 @@ export default function Dashboard() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-primary-container text-white font-body text-xs font-semibold shadow-cloud hover:opacity-95 transition-opacity self-start sm:self-auto"
           >
             <span>💎</span>
-            <span>Planes Mensuales</span>
+            <span>{isFreePlan ? 'Planes Mensuales' : 'Gestionar Plan'}</span>
           </button>
         )}
       </header>
+
+      {/* Alerta Preventiva: Vencimiento en 1 semana (7 días) */}
+      {isExpiringSoon && !isFamilyLink && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-body flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-cloud-sm animate-fade-in">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl shrink-0">⚠️</span>
+            <div>
+              <strong className="font-display text-sm font-bold text-amber-950 block">
+                Tu suscripción a Mi Bebé vence en {daysLeft} días
+              </strong>
+              <p className="text-[11.5px] text-amber-800 mt-0.5">
+                Te enviamos un aviso preventivo a tu correo ({user?.email}). Renueva para mantener tu acceso continuo.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedLockedModule(null);
+              setSubModalOpen(true);
+            }}
+            className="btn-primary !py-2 !px-4 text-xs font-semibold shrink-0"
+          >
+            Renovar Ahora 💎
+          </button>
+        </div>
+      )}
+
+      {/* Alerta de Suscripción Vencida */}
+      {isSubExpired && !isFamilyLink && (
+        <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-body flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-cloud-sm animate-fade-in">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl shrink-0">⏳</span>
+            <div>
+              <strong className="font-display text-sm font-bold text-rose-950 block">
+                Tu suscripción mensual a Mi Bebé ha vencido
+              </strong>
+              <p className="text-[11.5px] text-rose-800 mt-0.5">
+                Tus ecografías y datos médicos continúan guardados de forma segura. Renueva tu plan para reactivar todos tus módulos.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedLockedModule(null);
+              setSubModalOpen(true);
+            }}
+            className="btn-primary !py-2 !px-4 text-xs font-semibold shrink-0"
+          >
+            Reactivar Plan 💎
+          </button>
+        </div>
+      )}
 
       {/* Tarjeta principal del embarazo */}
       <section className="card flex flex-col items-center text-center mb-6">

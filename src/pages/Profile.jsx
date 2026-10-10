@@ -5,12 +5,14 @@ import { LoadingState } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useAlarm } from '../context/AlarmContext';
 import { api, uploadFile, getFileUrl } from '../api/client';
+import SubscriptionModal from '../components/SubscriptionModal';
 
 
 export default function Profile() {
   const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [section, setSection] = useState('perfil');
+  const [subModalOpen, setSubModalOpen] = useState(false);
 
   useEffect(() => {
     api.getDashboard().then(setDashboard).catch(() => setDashboard(false));
@@ -141,17 +143,24 @@ export default function Profile() {
 
       <div className="flex gap-2 mb-4 flex-wrap">
         <button onClick={() => setSection('perfil')} className={`pill-chip text-xs font-semibold ${section === 'perfil' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Editar información</button>
+        <button onClick={() => setSection('suscripcion')} className={`pill-chip text-xs font-semibold ${section === 'suscripcion' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>💎 Mi Suscripción</button>
         <button onClick={() => setSection('alarmas')} className={`pill-chip text-xs font-semibold ${section === 'alarmas' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>🔔 Alarmas y Sonido</button>
         <button onClick={() => setSection('privacidad')} className={`pill-chip text-xs font-semibold ${section === 'privacidad' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Privacidad y seguridad</button>
       </div>
 
       {section === 'perfil' && <EditProfileForm user={user} refreshUser={refreshUser} />}
+      {section === 'suscripcion' && <SubscriptionSection user={user} onOpenModal={() => setSubModalOpen(true)} />}
       {section === 'alarmas' && <AlarmSettingsSection />}
       {section === 'privacidad' && <PrivacySection logout={logout} navigate={navigate} />}
 
       <button onClick={() => { logout(); navigate('/'); }} className="btn-ghost mt-6 text-error">
         Cerrar sesión
       </button>
+
+      <SubscriptionModal
+        isOpen={subModalOpen}
+        onClose={() => setSubModalOpen(false)}
+      />
     </AppLayout>
   );
 }
@@ -433,6 +442,159 @@ function AlarmSettingsSection() {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function SubscriptionSection({ user, onOpenModal }) {
+  const [testingAlert, setTestingAlert] = useState(false);
+  const [testResult, setTestResult] = useState('');
+
+  const planNames = {
+    full: 'Plan VIP Toda la App ($50.000 COP)',
+    salud: 'Plan Gestación y Bebé Nacido ($30.000 COP)',
+    basico: 'Plan Esencial Médico ($15.000 COP)',
+    free: 'Plan Gratuito Permanente',
+  };
+
+  const planName = planNames[user?.plan] || `Plan ${user?.plan || 'Gratuito'}`;
+  const isVip = Boolean(user?.isVip);
+  const isExpiringSoon = Boolean(user?.isSubscriptionExpiringSoon);
+  const daysLeft = user?.daysUntilSubscriptionExpires;
+
+  const handleTestAlert = async () => {
+    setTestingAlert(true);
+    setTestResult('');
+    try {
+      const res = await api.testSubscriptionAlert();
+      setTestResult(res?.message || 'Alerta enviada exitosamente a tu correo.');
+    } catch (err) {
+      alert(err.message || 'No se pudo enviar la alerta de prueba.');
+    } finally {
+      setTestingAlert(false);
+      setTimeout(() => setTestResult(''), 6000);
+    }
+  };
+
+  return (
+    <div className="card space-y-6 p-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-outline-variant/30">
+        <div>
+          <span className="text-xs uppercase font-bold text-primary tracking-wider">
+            Gestión de Suscripción
+          </span>
+          <h3 className="font-display text-xl font-bold text-on-surface mt-0.5">
+            Estado de tu Plan Mi Bebé
+          </h3>
+          <p className="font-body text-xs text-on-surface-variant mt-1">
+            Revisa la vigencia de tu plan, módulos activos y alertas automáticas.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onOpenModal}
+          className="btn-primary !py-2.5 !px-5 text-xs font-semibold self-start sm:self-auto shadow-cloud"
+        >
+          <span>💎</span>
+          <span>Ver Planes y Renovar</span>
+        </button>
+      </div>
+
+      {/* Alerta de prueba enviada */}
+      {testResult && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+          <span>✓</span>
+          <span>{testResult}</span>
+        </div>
+      )}
+
+      {/* Tarjeta del Plan Actual */}
+      <div className="p-5 rounded-2xl bg-surface-container/50 border border-outline-variant/30 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+              Tu Plan Actual
+            </span>
+            <h4 className="font-display text-lg font-bold text-on-surface mt-0.5">
+              {planName}
+            </h4>
+          </div>
+
+          <div>
+            {isVip ? (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                💎 Acceso VIP Ilimitado
+              </span>
+            ) : isExpiringSoon ? (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
+                ⚠️ Vence en {daysLeft} días (Alerta al correo)
+              </span>
+            ) : user?.plan && user?.plan !== 'free' ? (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                🟢 Suscripción Activa
+              </span>
+            ) : (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800">
+                ⚪ Plan Gratuito
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Detalles de fecha de vencimiento y alerta */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-body">
+          <div className="p-3 bg-white rounded-xl border border-outline-variant/20">
+            <span className="text-[11px] text-on-surface-variant block font-semibold">
+              Fecha de Vencimiento:
+            </span>
+            <span className="text-sm font-bold text-on-surface mt-0.5 block">
+              {user?.subscriptionExpiresAt
+                ? new Date(user.subscriptionExpiresAt).toLocaleDateString('es-CO', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })
+                : isVip
+                ? 'Vitalicia / VIP'
+                : 'Sin fecha de expiración'}
+            </span>
+          </div>
+
+          <div className="p-3 bg-white rounded-xl border border-outline-variant/20">
+            <span className="text-[11px] text-on-surface-variant block font-semibold">
+              Alerta Preventiva al Correo:
+            </span>
+            <span className="text-xs font-medium text-on-surface mt-0.5 block">
+              📧 Se envía a <strong>{user?.email}</strong> exactamente <strong>7 días antes</strong> de vencer.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Explicación de políticas y botón de prueba */}
+      <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/60 text-xs font-body text-amber-950 space-y-2">
+        <div className="flex items-center gap-2 font-bold text-sm">
+          <span>🔔</span>
+          <span>Aviso automático a tu correo electrónico</span>
+        </div>
+        <p className="leading-relaxed text-[11.5px] text-amber-900">
+          Para que nunca te preocupes por perder el acceso a los registros médicos de tu bebé, ecografías o notas íntimas, nuestro sistema revisa automáticamente tu cuenta y te envía una alerta <strong>1 semana antes</strong> para que renueves cómodamente por Nequi o Daviplata.
+        </p>
+
+        <div className="pt-2 flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={testingAlert}
+            onClick={handleTestAlert}
+            className="px-3.5 py-1.5 rounded-full bg-white border border-amber-300 text-amber-900 text-xs font-bold hover:bg-amber-100 transition-colors shadow-2xs flex items-center gap-1.5"
+          >
+            <span>✉️</span>
+            <span>{testingAlert ? 'Enviando...' : 'Enviar correo de prueba a mi email'}</span>
+          </button>
+        </div>
       </div>
     </div>
   );
