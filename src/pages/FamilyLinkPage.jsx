@@ -14,22 +14,56 @@ export default function FamilyLinkPage() {
   const [inviteInfo, setInviteInfo] = useState(null);
   const [loadingInfo, setLoadingInfo] = useState(Boolean(codeFromUrl));
   const [infoError, setInfoError] = useState('');
+  const [isExpired, setIsExpired] = useState(false);
 
   const [name, setName] = useState('');
   const [redeeming, setRedeeming] = useState(false);
   const [redeemError, setRedeemError] = useState('');
+  const [remainingSecs, setRemainingSecs] = useState(0);
+
+  // Temporizador regresivo si el enlace está pendiente
+  useEffect(() => {
+    if (!remainingSecs || remainingSecs <= 0) return;
+
+    const timer = setInterval(() => {
+      setRemainingSecs((s) => {
+        if (s <= 1) {
+          clearInterval(timer);
+          setIsExpired(true);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [remainingSecs]);
+
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   // Cargar información de la invitación si hay código
   const fetchInfo = async (codeToFetch) => {
     if (!codeToFetch) return;
     setLoadingInfo(true);
     setInfoError('');
+    setIsExpired(false);
     try {
       const data = await api.getFamilyInviteInfo(codeToFetch);
       setInviteInfo(data);
       setName(data.suggestedName || (data.role === 'papa' ? 'Papá' : 'Familiar'));
+      if (data.remainingSeconds) {
+        setRemainingSecs(data.remainingSeconds);
+      }
     } catch (err) {
-      setInfoError(err.message || 'El código QR no es válido o ha expirado.');
+      if (err.expired || err.status === 410 || (err.message && err.message.toLowerCase().includes('vencid'))) {
+        setIsExpired(true);
+      } else {
+        setInfoError(err.message || 'El código no es válido o ha expirado.');
+      }
       setInviteInfo(null);
     } finally {
       setLoadingInfo(false);
@@ -66,7 +100,12 @@ export default function FamilyLinkPage() {
       loginWithFamilyLink(res.token, res.user);
       navigate('/inicio');
     } catch (err) {
-      setRedeemError(err.message || 'No se pudo completar la vinculación.');
+      if (err.expired || err.status === 410 || (err.message && err.message.toLowerCase().includes('vencid'))) {
+        setIsExpired(true);
+        setInviteInfo(null);
+      } else {
+        setRedeemError(err.message || 'No se pudo completar la vinculación.');
+      }
     } finally {
       setRedeeming(false);
     }
@@ -78,7 +117,7 @@ export default function FamilyLinkPage() {
         {/* Encabezado */}
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-16 h-16 rounded-3xl bg-primary-container/40 flex items-center justify-center text-3xl shadow-cloud-sm mb-3">
-            {inviteInfo?.role === 'papa' ? '🧑' : '👨‍👩‍👧'}
+            {isExpired ? '⏳' : inviteInfo?.role === 'papa' ? '🧑' : '👨‍👩‍👧'}
           </div>
           <h1 className="font-display text-2xl font-bold text-on-surface">
             Vínculo Familiar Mi Bebé
@@ -90,6 +129,40 @@ export default function FamilyLinkPage() {
 
         {loadingInfo ? (
           <LoadingState label="Verificando invitación..." />
+        ) : isExpired ? (
+          /* Estado Vencido (no se conectó en 15 min) */
+          <div className="flex flex-col items-center text-center py-2">
+            <div className="p-3 px-4 rounded-full bg-rose-100 text-rose-800 text-xs font-bold mb-3 flex items-center gap-1.5">
+              <span>⚠️</span>
+              <span>Enlace Vencido (Límite de 15 minutos)</span>
+            </div>
+            <h2 className="font-display text-lg font-bold text-on-surface mb-2">
+              Este código de invitación ha expirado
+            </h2>
+            <p className="font-body text-xs text-on-surface-variant max-w-xs mb-4 leading-relaxed">
+              Los enlaces para papá o familiares tienen una validez de <strong>15 minutos</strong> desde su creación para conectarse. Al no haberse conectado a tiempo, el enlace se invalidó automáticamente por seguridad.
+            </p>
+
+            <div className="w-full p-3.5 rounded-2xl bg-surface-container/60 text-xs font-body text-on-surface-variant text-left mb-5 border border-outline-variant/30 flex gap-2.5 items-start">
+              <span className="text-base shrink-0">💡</span>
+              <p>
+                Pídele a mamá que abra la sección <strong>Papá y Lazos Familiares</strong> en su aplicación y te genere un nuevo código QR o enlace.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsExpired(false);
+                setInfoError('');
+                setInviteInfo(null);
+                setCode('');
+              }}
+              className="btn-primary w-full !py-3 font-semibold text-xs shadow-cloud"
+            >
+              Ingresar otro código
+            </button>
+          </div>
         ) : inviteInfo ? (
           /* Pantalla de confirmación de invitación */
           <form onSubmit={handleRedeem} className="flex flex-col gap-4">
@@ -104,13 +177,22 @@ export default function FamilyLinkPage() {
                 Esperando a: <strong>{inviteInfo.babyName}</strong>
               </p>
 
-              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white shadow-sm border border-outline-variant/30">
-                <span>{inviteInfo.role === 'papa' ? '🧑' : '👁️'}</span>
-                <span>
-                  {inviteInfo.role === 'papa'
-                    ? 'Rol: Papá (Colaborativo)'
-                    : 'Rol: Familiar (Solo Lectura)'}
-                </span>
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white shadow-sm border border-outline-variant/30">
+                  <span>{inviteInfo.role === 'papa' ? '🧑' : '👁️'}</span>
+                  <span>
+                    {inviteInfo.role === 'papa'
+                      ? 'Rol: Papá (Colaborativo)'
+                      : 'Rol: Familiar (Solo Lectura)'}
+                  </span>
+                </div>
+
+                {remainingSecs > 0 && (
+                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 border border-amber-200 text-amber-900 shadow-sm animate-pulse">
+                    <span>⏱️</span>
+                    <span>Vence en: {formatTimer(remainingSecs)}</span>
+                  </div>
+                )}
               </div>
             </div>
 

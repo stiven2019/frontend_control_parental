@@ -22,7 +22,7 @@ const getLocalDateStr = () => {
 const EMPTY_FORM = { category: 'momento_especial', weekNumber: '', date: getLocalDateStr(), description: '', comment: '' };
 
 export default function Album() {
-  const { isFamilyMember } = useAuth();
+  const { isFamilyMember, isFamilyLink, isOwner } = useAuth();
   const [items, setItems] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -79,7 +79,7 @@ export default function Album() {
   };
 
   const remove = async (id) => { 
-    if (isFamilyMember) return;
+    if (isFamilyLink) return; // Ni las familias ni el papá pueden eliminar fotografías
     await api.deletePhoto(id); 
     setSelected(null); 
     load(); 
@@ -215,7 +215,9 @@ export default function Album() {
               {selected.comment && <p className="font-body text-sm">{selected.comment}</p>}
               <div className="flex gap-3 mt-4">
                 <button onClick={() => setSelected(null)} className="btn-secondary">Cerrar</button>
-                <button onClick={() => remove(selected.id)} className="btn-ghost text-error">Eliminar</button>
+                {isOwner && (
+                  <button onClick={() => remove(selected.id)} className="btn-ghost text-error">Eliminar</button>
+                )}
               </div>
             </div>
           </div>
