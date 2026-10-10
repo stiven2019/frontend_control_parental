@@ -246,9 +246,13 @@ export const api = {
 
   // Vínculos Familiares y Papá (QR)
   generateFamilyQr: (payload) => request('/familia/generar-qr', { method: 'POST', body: payload }),
+  refreshFamilyLink: (id) => request(`/familia/refrescar/${id}`, { method: 'POST' }),
   getFamilyInviteInfo: (code) => request(`/familia/info-invitacion?code=${encodeURIComponent(code)}`, { auth: false }),
   redeemFamilyQr: (payload) => request('/familia/canjear-qr', { method: 'POST', body: payload, auth: false }),
   listFamilyLinks: () => request('/familia/vinculos'),
   revokeFamilyLink: (id) => request(`/familia/vinculos/${id}`, { method: 'DELETE' }),
+
+  // Alerta preventiva de suscripción por correo
+  testSubscriptionAlert: () => request('/auth/test-subscription-alert', { method: 'POST' }),
 };
 

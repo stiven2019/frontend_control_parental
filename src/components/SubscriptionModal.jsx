@@ -284,7 +284,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
             </div>
 
             {/* Pasos y detalles */}
-            <div className="pt-2">
+            <div className="pt-2 space-y-2">
               <div className="p-3 bg-secondary-container/30 border border-secondary/20 rounded-lg text-xs space-y-1 text-on-surface">
                 <p className="font-semibold text-secondary flex items-center gap-1.5">
                   <span>📱</span> Pasos para activar tu cuenta de inmediato:
@@ -295,6 +295,17 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
                   <li>Envía el comprobante por WhatsApp al número <strong>3122031777</strong> indicando tu correo registrado.</li>
                   <li>Tu cuenta será desbloqueada inmediatamente en nuestro sistema.</li>
                 </ol>
+              </div>
+
+              {/* Aviso de Alerta Preventiva 1 Semana Antes */}
+              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
+                <span className="text-base shrink-0">📧</span>
+                <div>
+                  <strong className="block text-amber-950 font-bold">Alerta por Correo 1 Semana Antes:</strong>
+                  <span className="text-[11.5px] text-amber-900 leading-tight block mt-0.5">
+                    Te enviaremos automáticamente una notificación a tu correo registrado <strong>1 semana (7 días) antes</strong> del vencimiento para que renueves tranquilamente sin interrupciones ni pérdida de acceso.
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -18,6 +18,12 @@ export function hasModuleAccess(user, moduleKey) {
 
   if (!user) return false;
   if (user.isVip) return true;
+
+  // Si la suscripción venció y no es VIP, no tiene acceso a módulos de pago
+  if (user.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt).getTime() < Date.now()) {
+    return false;
+  }
+
   if (user.plan === 'full' || user.plan === 'libre' || user.plan === 'premium' || user.plan === 'vip') return true;
 
   // Si es una sesión vinculada de acompañante por QR
