@@ -5,7 +5,7 @@ import {
   NEWBORN_CARE_GUIDES,
   calculateGrowthMetrics,
 } from '../data/postnatalData';
-import { api, getFileUrl } from '../api/client';
+import { api, getFileUrl, getDirectMinioUrl } from '../api/client';
 import { useAlarm } from '../context/AlarmContext';
 
 export default function BornBabyCarnet({ baby, onUpdateBaby }) {
@@ -331,9 +331,12 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (!target.dataset.triedOriginal && baby.photoUrl && baby.photoUrl.startsWith('http')) {
+                    const direct = getDirectMinioUrl(baby.photoUrl);
+                    if (!target.dataset.triedOriginal && direct && target.src !== direct) {
                       target.dataset.triedOriginal = 'true';
-                      target.src = baby.photoUrl;
+                      target.src = direct;
+                    } else {
+                      target.style.display = 'none';
                     }
                   }}
                 />

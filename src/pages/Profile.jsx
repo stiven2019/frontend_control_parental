@@ -4,7 +4,7 @@ import AppLayout from '../components/AppLayout';
 import { LoadingState } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useAlarm } from '../context/AlarmContext';
-import { api, uploadFile, getFileUrl } from '../api/client';
+import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 import SubscriptionModal from '../components/SubscriptionModal';
 
 
@@ -113,15 +113,21 @@ export default function Profile() {
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.currentTarget;
-                if (!target.dataset.triedOriginal && user.avatarUrl && user.avatarUrl.startsWith('http')) {
-                  target.dataset.triedOriginal = 'true';
-                  target.src = user.avatarUrl;
+                if (!target.dataset.triedDirect && user.avatarUrl) {
+                  target.dataset.triedDirect = 'true';
+                  target.src = getDirectMinioUrl(user.avatarUrl);
+                  return;
+                }
+                target.style.display = 'none';
+                if (target.nextElementSibling) {
+                  target.nextElementSibling.classList.remove('hidden');
                 }
               }}
             />
           ) : (
             <span className="text-3xl">🤰</span>
           )}
+          <span className="hidden text-3xl absolute inset-0 flex items-center justify-center bg-primary-container">🤰</span>
           <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handleAvatar} />
         </label>
         <h2 className="font-display text-xl font-semibold">{user.firstName} {user.lastName}</h2>

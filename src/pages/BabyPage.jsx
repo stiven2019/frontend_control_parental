@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, ErrorState } from '../components/States';
-import { api, uploadFile, getFileUrl } from '../api/client';
+import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 import { testAlarmSound, stopAlarmLoop } from '../utils/soundAlarm';
 import { evaluateFetalHealth } from '../utils/healthEvaluations';
 import FetalHealthModal from '../components/FetalHealthModal';
@@ -572,9 +572,9 @@ export default function BabyPage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (!target.dataset.triedOriginal && photo.imageUrl && photo.imageUrl.startsWith('http')) {
-                      target.dataset.triedOriginal = 'true';
-                      target.src = photo.imageUrl;
+                    if (!target.dataset.triedDirect && photo.imageUrl) {
+                      target.dataset.triedDirect = 'true';
+                      target.src = getDirectMinioUrl(photo.imageUrl);
                     }
                   }}
                 />

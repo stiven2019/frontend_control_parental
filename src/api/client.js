@@ -13,6 +13,20 @@ const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
 import { compressImageIfPossible } from '../utils/imageOptimizer';
 
+export function getDirectMinioUrl(path) {
+  if (!path) return '';
+  const mediaIdx = path.indexOf('/mibebe-media/');
+  const host = typeof window !== 'undefined' && window.location?.hostname ? window.location.hostname : 'localhost';
+  if (mediaIdx !== -1) {
+    const relativeMediaPath = path.substring(mediaIdx);
+    return `http://${host}:9000${relativeMediaPath}`;
+  }
+  if (path.includes(':9000/')) {
+    return path.replace(/localhost:9000|127\.0\.0\.1:9000/, `${host}:9000`);
+  }
+  return path;
+}
+
 export function getFileUrl(path) {
   if (!path) return '';
   if (path.startsWith('data:') || path.startsWith('blob:')) {
@@ -23,10 +37,12 @@ export function getFileUrl(path) {
   const mediaIdx = path.indexOf('/mibebe-media/');
   if (mediaIdx !== -1) {
     const relativeMediaPath = path.substring(mediaIdx); // /mibebe-media/...
-    // Si API_BASE está configurado y no es localhost, anteponerlo si se desea
-    if (API_BASE && !API_BASE.includes('localhost')) {
+
+    // Si API_BASE está configurado explícitamente y es un servidor remoto fuera de localhost
+    if (API_BASE && !API_BASE.includes('localhost') && !API_BASE.includes('127.0.0.1')) {
       return `${API_BASE}${relativeMediaPath}`;
     }
+
     // Devolver ruta relativa para que pase directamente por el proxy de Vite (/mibebe-media -> 9000)
     // o Nginx, evitando que en móviles 'localhost:9000' falle o sea bloqueado por CORS
     return relativeMediaPath;
@@ -34,7 +50,7 @@ export function getFileUrl(path) {
 
   // Si la URL apunta a localhost:9000 y se accede desde un móvil u otra IP de red
   if (path.includes(':9000/')) {
-    if (typeof window !== 'undefined' && window.location?.hostname && window.location.hostname !== 'localhost') {
+    if (typeof window !== 'undefined' && window.location?.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
       return path.replace(/localhost:9000|127\.0\.0\.1:9000/, `${window.location.hostname}:9000`);
     }
   }

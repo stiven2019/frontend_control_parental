@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState } from '../components/States';
 import FamilyQrModal from '../components/FamilyQrModal';
-import { api, uploadFile, getFileUrl } from '../api/client';
+import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 export default function PartnerPage() {
@@ -185,15 +185,21 @@ export default function PartnerPage() {
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   const target = e.currentTarget;
-                  if (!target.dataset.triedOriginal && partner.photoUrl && partner.photoUrl.startsWith('http')) {
-                    target.dataset.triedOriginal = 'true';
-                    target.src = partner.photoUrl;
+                  if (!target.dataset.triedDirect && partner.photoUrl) {
+                    target.dataset.triedDirect = 'true';
+                    target.src = getDirectMinioUrl(partner.photoUrl);
+                    return;
+                  }
+                  target.style.display = 'none';
+                  if (target.nextElementSibling) {
+                    target.nextElementSibling.classList.remove('hidden');
                   }
                 }}
               />
             ) : (
               <span className="text-4xl">🧑</span>
             )}
+            <span className="hidden text-4xl absolute inset-0 flex items-center justify-center bg-tertiary-container">🧑</span>
             {!isFamilyLink && (
               <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
                 Cambiar foto

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
-import { api, uploadFile, getFileUrl } from '../api/client';
+import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 const CATEGORIES = [
@@ -30,6 +30,7 @@ export default function Album() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
+  const [modalImgError, setModalImgError] = useState(false);
 
   const load = async () => {
     try {
@@ -159,16 +160,23 @@ export default function Album() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {items.map((p) => (
-          <button key={p.id} onClick={() => setSelected(p)} className="aspect-square rounded-md overflow-hidden bg-surface-container relative group">
+          <button
+            key={p.id}
+            onClick={() => {
+              setModalImgError(false);
+              setSelected(p);
+            }}
+            className="aspect-square rounded-md overflow-hidden bg-surface-container relative group cursor-pointer"
+          >
             <img
               src={getFileUrl(p.imageUrl)}
               alt={p.description || ''}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
                 const target = e.currentTarget;
-                if (!target.dataset.triedOriginal && p.imageUrl && p.imageUrl.startsWith('http')) {
-                  target.dataset.triedOriginal = 'true';
-                  target.src = p.imageUrl;
+                if (!target.dataset.triedDirect && p.imageUrl) {
+                  target.dataset.triedDirect = 'true';
+                  target.src = getDirectMinioUrl(p.imageUrl);
                   return;
                 }
                 target.style.display = 'none';
@@ -190,20 +198,45 @@ export default function Album() {
       </div>
 
       {selected && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
-          <div className="bg-white rounded-md max-w-sm w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={getFileUrl(selected.imageUrl)}
-              alt={selected.description || ''}
-              className="w-full aspect-square object-cover"
-              onError={(e) => {
-                const target = e.currentTarget;
-                if (!target.dataset.triedOriginal && selected.imageUrl && selected.imageUrl.startsWith('http')) {
-                  target.dataset.triedOriginal = 'true';
-                  target.src = selected.imageUrl;
-                }
-              }}
-            />
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in" onClick={() => setSelected(null)}>
+          <div className="bg-white rounded-md max-w-sm w-full overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {modalImgError ? (
+              <div className="w-full aspect-square bg-surface-container/60 flex flex-col items-center justify-center p-6 text-center text-on-surface-variant">
+                <span className="text-4xl mb-2">📷</span>
+                <p className="font-display font-semibold text-sm text-on-surface">No se pudo cargar la imagen</p>
+                <p className="font-body text-xs text-on-surface-variant mt-1 max-w-[240px]">
+                  El archivo no se encuentra disponible en MinIO o hubo un problema de conexión.
+                </p>
+                {selected.imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalImgError(false);
+                    }}
+                    className="mt-3 px-3 py-1 rounded-full text-xs bg-primary-container text-primary font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    Reintentar cargar
+                  </button>
+                )}
+              </div>
+            ) : (
+              <img
+                src={getFileUrl(selected.imageUrl)}
+                alt={selected.description || ''}
+                className="w-full aspect-square object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  // Si falló por proxy de Vite o URL relativa, intentar conectar directamente con el puerto 9000 de MinIO
+                  if (!target.dataset.triedDirect && selected.imageUrl) {
+                    target.dataset.triedDirect = 'true';
+                    target.src = getDirectMinioUrl(selected.imageUrl);
+                    return;
+                  }
+                  // Si ambos métodos fallan, activar vista alternativa limpia
+                  setModalImgError(true);
+                }}
+              />
+            )}
             <div className="p-5">
               {selected.weekNumber && <p className="font-body text-xs font-semibold text-primary mb-1">Semana {selected.weekNumber}</p>}
               {selected.description && <p className="font-display text-lg font-semibold mb-1">{selected.description}</p>}
