@@ -97,7 +97,7 @@ export default function Profile() {
         </div>
         <Link
           to="/papa"
-          className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto"
+          className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto !w-auto"
         >
           <span>🧑‍🍼</span>
           <span>Lazos y QR Familiar</span>

@@ -270,5 +270,26 @@ export const api = {
 
   // Alerta preventiva de suscripción por correo
   testSubscriptionAlert: () => request('/auth/test-subscription-alert', { method: 'POST' }),
+
+  // Panel Administrativo & Control Maestro
+  adminLogin: (payload) => request('/admin/login', { method: 'POST', body: payload, auth: false }),
+  getAdminMetrics: () => request('/admin/metrics'),
+  getAdminEarnings: () => request('/admin/earnings'),
+  getAdminUsers: (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return request(`/admin/users${q ? `?${q}` : ''}`);
+  },
+  toggleBlockAdminUser: (id, payload) => request(`/admin/users/${id}/block`, { method: 'POST', body: payload }),
+  deleteAdminUser: (id, permanent = false) => request(`/admin/users/${id}${permanent ? '?permanent=true' : ''}`, { method: 'DELETE' }),
+  restoreAdminUser: (id) => request(`/admin/users/${id}/restore`, { method: 'POST' }),
+  updateAdminUserSubscription: (id, payload) => request(`/admin/users/${id}/subscription`, { method: 'PATCH', body: payload }),
+  sendAdminEmail: (payload) => request('/admin/send-email', { method: 'POST', body: payload }),
+  getAdminPayments: (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return request(`/admin/payments${q ? `?${q}` : ''}`);
+  },
+  createAdminPayment: (payload) => request('/admin/payments', { method: 'POST', body: payload }),
+  deleteAdminPayment: (id) => request(`/admin/payments/${id}`, { method: 'DELETE' }),
 };
+
 
