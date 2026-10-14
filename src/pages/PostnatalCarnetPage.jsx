@@ -56,9 +56,14 @@ export default function PostnatalCarnetPage() {
   const baby = data?.baby;
   const status = data?.status;
   const currentWeek = status?.week ? Number(status.week) : 0;
-  const isCarnetUnlocked = Boolean(baby?.isBorn || currentWeek >= 40);
+  const isCarnetUnlocked = !baby?.carnetLockedByAdmin && Boolean(baby?.isBorn || currentWeek >= 40);
+  const [revertingBirth, setRevertingBirth] = useState(false);
 
   const handleConfirmBirth = async () => {
+    if (baby?.carnetLockedByAdmin) {
+      alert('El carnet de salud infantil se encuentra bloqueado por la administración para mantener tu seguimiento prenatal.');
+      return;
+    }
     if (
       !window.confirm(
         '¿Confirmas que tu bebé ya nació? Al confirmar, se habilitará de inmediato el Carnet de Salud Infantil con las curvas de la OMS, esquema oficial de vacunas del PAI y controles pediátricos.'
@@ -77,6 +82,25 @@ export default function PostnatalCarnetPage() {
     }
   };
 
+  const handleRevertBirth = async () => {
+    if (
+      !window.confirm(
+        '¿Deseas volver al seguimiento prenatal de tu embarazo? Se restablecerá el modo de gestación y el carnet quedará en espera hasta la semana 40 o nacimiento real.'
+      )
+    ) {
+      return;
+    }
+    setRevertingBirth(true);
+    try {
+      await api.updateBaby({ isBorn: false, birthDate: null, birthTime: null });
+      await loadData();
+    } catch (err) {
+      alert(err.message || 'No se pudo restablecer al modo de gestación.');
+    } finally {
+      setRevertingBirth(false);
+    }
+  };
+
   // Si no ha nacido y la semana es menor a 40, mostrar pantalla de bloqueo explicativa
   if (!isCarnetUnlocked) {
     const weeksRemaining = Math.max(0, 40 - currentWeek);
@@ -85,21 +109,39 @@ export default function PostnatalCarnetPage() {
     return (
       <AppLayout>
         {/* Banner superior de navegación */}
-        <div className="mb-5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-on-surface">
-            <span className="text-base">⏳</span>
-            <span>
-              <strong>Módulo en espera:</strong> Este carnet pediátrico se activará automáticamente al alcanzar la <strong>Semana 40</strong> o cuando confirmes el nacimiento.
-            </span>
+        {baby?.carnetLockedByAdmin ? (
+          <div className="mb-5 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-rose-900 shadow-sm animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🔒</span>
+              <span>
+                <strong>Carnet en espera por administración:</strong> El carnet de salud infantil se encuentra temporalmente bloqueado para mantener tu seguimiento prenatal en curso.
+              </span>
+            </div>
+            <Link
+              to="/mi-bebe"
+              className="text-rose-700 hover:underline font-bold flex items-center gap-1 shrink-0"
+            >
+              <span>🤰 Ir a Gestación</span>
+              <span>→</span>
+            </Link>
           </div>
-          <Link
-            to="/mi-bebe"
-            className="text-primary hover:underline font-semibold flex items-center gap-1 shrink-0"
-          >
-            <span>🤰 Ir a Mi Bebé en Gestación</span>
-            <span>→</span>
-          </Link>
-        </div>
+        ) : (
+          <div className="mb-5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-on-surface">
+              <span className="text-base">⏳</span>
+              <span>
+                <strong>Módulo en espera:</strong> Este carnet pediátrico se activará automáticamente al alcanzar la <strong>Semana 40</strong> o cuando confirmes el nacimiento.
+              </span>
+            </div>
+            <Link
+              to="/mi-bebe"
+              className="text-primary hover:underline font-semibold flex items-center gap-1 shrink-0"
+            >
+              <span>🤰 Ir a Mi Bebé en Gestación</span>
+              <span>→</span>
+            </Link>
+          </div>
+        )}
 
         {/* TARJETA PRINCIPAL DE BLOQUEO POR ETAPA GESTACIONAL */}
         <div className="max-w-2xl mx-auto my-6 animate-fade-in">
@@ -114,7 +156,7 @@ export default function PostnatalCarnetPage() {
             </div>
 
             <span className="pill-chip bg-primary-container text-primary font-bold text-xs uppercase tracking-wider mb-2">
-              Módulo Bloqueado · Etapa Gestacional
+              {baby?.carnetLockedByAdmin ? 'Bloqueo Administrativo' : 'Módulo Bloqueado · Etapa Gestacional'}
             </span>
 
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-on-surface mb-2">
@@ -160,16 +202,23 @@ export default function PostnatalCarnetPage() {
                   <span>✨</span> ¿Tu bebé nació antes de la semana 40?
                 </h4>
                 <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
-                  Si tu parto o cesárea ya ocurrió, puedes activar el carnet ahora mismo indicando que tu bebé ya nació.
+                  {baby?.carnetLockedByAdmin
+                    ? 'El carnet está en pausa administrativa para mantener tu control prenatal. Si el parto ocurrió realmente, contacta a administración.'
+                    : 'Si tu parto o cesárea ya ocurrió, puedes activar el carnet ahora mismo indicando que tu bebé ya nació.'}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleConfirmBirth}
-                disabled={confirmingBirth}
-                className="btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold whitespace-nowrap bg-secondary hover:bg-secondary/90 text-white shrink-0 shadow-cloud flex items-center justify-center gap-2 rounded-full active:scale-95 transition-transform"
+                disabled={confirmingBirth || baby?.carnetLockedByAdmin}
+                className={`btn-primary !w-full sm:!w-auto !py-2.5 !px-5 text-xs font-semibold whitespace-nowrap shrink-0 shadow-cloud flex items-center justify-center gap-2 rounded-full active:scale-95 transition-transform ${
+                  baby?.carnetLockedByAdmin
+                    ? 'bg-gray-400 cursor-not-allowed opacity-75 text-white'
+                    : 'bg-secondary hover:bg-secondary/90 text-white'
+                }`}
               >
-                <span>{confirmingBirth ? 'Activando...' : '🎉 ¡Mi bebé ya nació! Activar carnet'}</span>
+                <span>{confirmingBirth ? '⏳' : baby?.carnetLockedByAdmin ? '🔒' : '👶'}</span>
+                <span>{confirmingBirth ? 'Activando...' : baby?.carnetLockedByAdmin ? 'Bloqueado por Admin' : '🎉 ¡Mi bebé ya nació! Activar carnet'}</span>
               </button>
             </div>
 
@@ -198,6 +247,28 @@ export default function PostnatalCarnetPage() {
   // Si está desbloqueado (semana >= 40 o ya nació), mostrar el Carnet Infantil completo
   return (
     <AppLayout>
+      {/* Alerta de reversión si fue activado innecesariamente antes de semana 40 */}
+      {baby?.isBorn && currentWeek < 40 && (
+        <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-amber-900 shadow-sm animate-fadeIn">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">⚠️</span>
+            <div>
+              <div className="font-bold">¿Activaste este carnet por error?</div>
+              <p className="text-[11px] text-amber-800 mt-0.5">
+                Tu fecha gestacional indica que aún estás en la <strong>Semana {currentWeek} de embarazo</strong>. Si aún estás en gestación, puedes volver al seguimiento prenatal sin perder tus registros.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleRevertBirth}
+            disabled={revertingBirth}
+            className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-full text-xs shadow-sm transition-transform active:scale-95 shrink-0"
+          >
+            {revertingBirth ? 'Restableciendo...' : 'Volver al Embarazo (Gestación)'}
+          </button>
+        </div>
+      )}
+
       {/* Aviso informativo de separación clara entre gestación y bebé nacido */}
       <div className="mb-5 p-3 rounded-2xl bg-secondary-container/20 border border-secondary/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 text-on-surface-variant">

@@ -5,6 +5,16 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    host: true,
+    port: 5173,
+    proxy: {
+      '/api': { target: 'http://localhost:4000', changeOrigin: true },
+      '/uploads': { target: 'http://localhost:4000', changeOrigin: true },
+      '/mibebe-media': { target: 'http://localhost:9000', changeOrigin: true },
+    },
+  },
+  preview: {
+    host: true,
     port: 5173,
     proxy: {
       '/api': { target: 'http://localhost:4000', changeOrigin: true },

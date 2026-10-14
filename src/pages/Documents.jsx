@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
-import { api, uploadFile, getFileUrl } from '../api/client';
+import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 
 const CATEGORIES = [
   { value: 'formula_medica', label: 'Fórmula médica', icon: '💊', color: 'emerald' },
@@ -528,8 +528,13 @@ export default function Documents() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                         onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling?.classList.remove('hidden');
+                          const directUrl = getDirectMinioUrl(d.fileUrl || d.thumbnailUrl);
+                          if (directUrl && e.currentTarget.src !== directUrl) {
+                            e.currentTarget.src = directUrl;
+                            return;
+                          }
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextSibling?.classList.remove('hidden');
                         }}
                       />
                       <div className="hidden flex-col items-center justify-center text-center p-2 text-on-surface-variant">
@@ -760,6 +765,12 @@ export default function Documents() {
                         src={docUrl}
                         alt={selectedDoc.name}
                         className="max-h-[64vh] max-w-full object-contain rounded-xl shadow-cloud-sm border border-outline-variant/20"
+                        onError={(e) => {
+                          const directUrl = getDirectMinioUrl(selectedDoc.fileUrl || selectedDoc.thumbnailUrl);
+                          if (directUrl && e.currentTarget.src !== directUrl) {
+                            e.currentTarget.src = directUrl;
+                          }
+                        }}
                       />
                     </div>
                   );

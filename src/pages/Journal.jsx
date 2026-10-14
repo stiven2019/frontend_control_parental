@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
-import { api, uploadFile, getFileUrl } from '../api/client';
+import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 const getLocalDateStr = () => {
@@ -449,10 +449,12 @@ export default function Journal() {
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (!target.dataset.triedOriginal && entry.photoUrl && entry.photoUrl.startsWith('http')) {
-                      target.dataset.triedOriginal = 'true';
-                      target.src = entry.photoUrl;
+                    if (!target.dataset.triedDirect && entry.photoUrl) {
+                      target.dataset.triedDirect = 'true';
+                      target.src = getDirectMinioUrl(entry.photoUrl);
+                      return;
                     }
+                    target.style.display = 'none';
                   }}
                 />
               </div>

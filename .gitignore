@@ -85,3 +85,10 @@ dist-ssr/
 # Caches
 .eslintcache
 .turbo/
+
+
+#ia 
+.agents
+AGENTS.md
+AI_HANDOFF.md
+GEMINI.md

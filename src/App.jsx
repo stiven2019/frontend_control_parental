@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { AlarmProvider } from "./context/AlarmContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SubscriptionGuard from "./components/SubscriptionGuard";
+import AdminGuard from "./components/AdminGuard";
 
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
@@ -10,6 +11,8 @@ import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
 import GuestExplore from "./pages/GuestExplore";
 import Dashboard from "./pages/Dashboard";
+import AdminPanel from "./pages/AdminPanel";
+import AdminLogin from "./pages/AdminLogin";
 import CalendarPage from "./pages/CalendarPage";
 import PregnancyTimeline from "./pages/PregnancyTimeline";
 import BabyPage from "./pages/BabyPage";
@@ -62,6 +65,23 @@ export default function App() {
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
+              }
+            />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminGuard>
+                  <AdminPanel />
+                </AdminGuard>
+              }
+            />
+            <Route
+              path="/panel-administrativo"
+              element={
+                <AdminGuard>
+                  <AdminPanel />
+                </AdminGuard>
               }
             />
             <Route
