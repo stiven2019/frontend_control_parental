@@ -207,6 +207,7 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 | `/cuenta-regresiva` | `Countdown.jsx` | Suscripción | `cuenta_regresiva`| Contador regresivo a la FPP |
 | `/cuidados-mama` | `MomCarePage` | Suscripción | `cuidados_mama` | Guía clínica de nutrición y ejercicio prenatal |
 | `/cuidados-bebe` | `BabyCarePage` | Suscripción | `cuidados_bebe` | Cuidados y desarrollo prenatal |
+| `*` (Ruta no encontrada) | `NotFound.jsx` | Universal | — | Pantalla 404 y módulo no encontrado (anti-pantalla blanca) |
 
 ---
 
@@ -244,6 +245,11 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 ---
 
 ## 📝 Historial de Cambios Recientes (Changelog de Evolución)
+- **Corrección de Bug en Carnet del Bebé Nacido y Protección Integral Anti-Pantallas Blancas (`ErrorBoundary.jsx`, `NotFound.jsx`, `PostnatalCarnetPage.jsx`)**:
+  - *Bug Solucionado en Carnet*: Se corrigió la violación de reglas de hooks de React en `PostnatalCarnetPage.jsx` donde `useState(revertingBirth)` se invocaba condicionalmente después de los retornos tempranos de `loading` y `error`. Esto provocaba la excepción `Rendered more hooks than during the previous render`, causando que la pantalla se desmontara y quedara totalmente en blanco al presionar el carnet.
+  - *Sanitización en Cálculos Postnatales*: En `BornBabyCarnet.jsx`, se blindó el cálculo de edad y fechas estimadas de vacunación contra fechas inválidas y `RangeError: Invalid time value` en `toISOString()`.
+  - *Componente Global `ErrorBoundary.jsx`*: Implementación de barrera de errores React envolviendo las rutas de la aplicación y módulos clave. En caso de fallas imprevistas, no se presenta pantalla blanca; se despliega una interfaz estética y tranquilizadora confirmando que los datos están a salvo, con opciones para reintentar la pantalla, recargar la app, volver al inicio o inspeccionar detalles técnicos.
+  - *Página 404 de Módulo No Encontrado (`NotFound.jsx`)*: Reemplazo del catch-all genérico por una pantalla 404 interactiva con accesos directos al panel principal, gestación, carnet o medicamentos, orientando tanto a usuarios autenticados como a visitantes.
 - **Formulario de Registro Único y Configuración Inicial del Administrador Maestro (`AdminRegister.jsx`)**:
   - Creación de la página y formulario `/admin/registro` (con alias `/admin/setup`) para el registro exclusivo del primer administrador del sistema.
   - Endpoints backend en `adminRoutes.js` y `adminController.js`:
