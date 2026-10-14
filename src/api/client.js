@@ -272,6 +272,8 @@ export const api = {
   testSubscriptionAlert: () => request('/auth/test-subscription-alert', { method: 'POST' }),
 
   // Panel Administrativo & Control Maestro
+  getAdminSetupStatus: () => request('/admin/setup-status', { auth: false }),
+  adminRegister: (payload) => request('/admin/register', { method: 'POST', body: payload, auth: false }),
   adminLogin: (payload) => request('/admin/login', { method: 'POST', body: payload, auth: false }),
   getAdminMetrics: () => request('/admin/metrics'),
   getAdminEarnings: () => request('/admin/earnings'),

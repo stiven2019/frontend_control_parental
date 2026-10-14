@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api, setToken } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +12,28 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [adminExists, setAdminExists] = useState(true);
+  const [checkingSetup, setCheckingSetup] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getAdminSetupStatus()
+      .then((res) => {
+        if (isMounted) {
+          setAdminExists(Boolean(res.adminExists));
+        }
+      })
+      .catch((err) => {
+        console.error('Error al comprobar setup de admin:', err);
+      })
+      .finally(() => {
+        if (isMounted) setCheckingSetup(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,6 +110,26 @@ export default function AdminLogin() {
             <div className="mb-6 p-4 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs font-medium flex items-start gap-3 animate-shake">
               <span className="text-base shrink-0">⚠️</span>
               <span className="leading-relaxed">{error}</span>
+            </div>
+          )}
+
+          {!checkingSetup && !adminExists && (
+            <div className="mb-6 p-4.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex flex-col gap-2.5 animate-fade-in shadow-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-base">⭐</span>
+                <span className="font-semibold text-amber-300">Configuración Inicial Requerida</span>
+              </div>
+              <p className="text-[11px] text-white/70 leading-relaxed">
+                No se ha detectado ningún Administrador registrado. Como es la primera vez, debes configurar al <strong className="text-white">único Administrador Maestro</strong> del sistema.
+              </p>
+              <Link
+                to="/admin/registro"
+                className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:opacity-95 text-white font-semibold text-xs transition-all shadow-md active:scale-95 text-center mt-1"
+              >
+                <span>🛡️</span>
+                <span>Registrar Administrador Maestro Aquí</span>
+                <span>→</span>
+              </Link>
             </div>
           )}
 
