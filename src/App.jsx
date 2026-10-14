@@ -13,6 +13,7 @@ import GuestExplore from "./pages/GuestExplore";
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/AdminPanel";
 import AdminLogin from "./pages/AdminLogin";
+import AdminRegister from "./pages/AdminRegister";
 import CalendarPage from "./pages/CalendarPage";
 import PregnancyTimeline from "./pages/PregnancyTimeline";
 import BabyPage from "./pages/BabyPage";
@@ -68,6 +69,8 @@ export default function App() {
               }
             />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/registro" element={<AdminRegister />} />
+            <Route path="/admin/setup" element={<AdminRegister />} />
             <Route
               path="/admin"
               element={

@@ -48,9 +48,14 @@ El proyecto está compuesto por:
 
 ---
 
-### 2. Panel Administrativo y Control Maestro (`AdminGuard.jsx`, `AdminPanel.jsx`, `AdminLogin.jsx`)
+### 2. Panel Administrativo y Control Maestro (`AdminGuard.jsx`, `AdminPanel.jsx`, `AdminLogin.jsx`, `AdminRegister.jsx`)
 Sistema integral para la supervisión global de la plataforma:
-- **Rutas**: `/admin/login`, `/admin` y `/panel-administrativo`.
+- **Rutas**: `/admin/login`, `/admin/registro` (setup único), `/admin/setup`, `/admin` y `/panel-administrativo`.
+- **Registro Único del Administrador Maestro (`AdminRegister.jsx`)**:
+  - Endpoints públicos: `GET /api/admin/setup-status` y `POST /api/admin/register`.
+  - **Regla Estricta de 1 Solo Administrador**: Si no existe ningún administrador en la base de datos (`totalAdmins === 0`), se habilita el formulario de configuración inicial.
+  - Una vez registrado el primer administrador maestro, el formulario desaparece permanentemente de la UI; la ruta `/admin/registro` queda bloqueada con pantalla de seguridad y la API responde `403 Forbidden` (`ADMIN_ALREADY_EXISTS`) a cualquier intento subsiguiente.
+  - En `/admin/login`, el aviso/banner de configuración inicial solo aparece si `adminExists === false`; en caso contrario, no existe ningún enlace de registro.
 - **Estructura y Navegación**:
   - Menú lateral vertical a la izquierda (`<aside>`) responsivo y colapsable en móviles, con insignia de estado de conexión al servidor y categorización temática:
     - *Operaciones*: Resumen General (`metrics`), Directorio de Usuarios (`users`), Comprobantes de Pago (`payments`).
@@ -175,6 +180,8 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 | `/terminos-y-condiciones`| `TermsPage.jsx` | Público | — | Términos y descargos legales de salud |
 | `/explorar/*` | `GuestExplore.jsx` | Público | — | Modo demostración e interactivo para invitados |
 | `/admin/login` | `AdminLogin.jsx` | Público | — | Inicio de sesión exclusivo para administradores |
+| `/admin/registro` | `AdminRegister.jsx`| Público (Setup) | — | Registro del Administrador Maestro (desaparece si ya existe) |
+| `/admin/setup` | `AdminRegister.jsx`| Público (Setup) | — | Alias de configuración inicial del Administrador Maestro |
 | `/admin` | `AdminPanel.jsx` | Administrador | — | Panel maestro de métricas, finanzas y usuarios |
 | `/panel-administrativo`| `AdminPanel.jsx` | Administrador | — | Alias del panel administrativo |
 | `/configuracion-inicial`| `Onboarding.jsx` | Autenticado | — | Configuración inicial FUR / ecografía |
@@ -237,6 +244,16 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 ---
 
 ## 📝 Historial de Cambios Recientes (Changelog de Evolución)
+- **Formulario de Registro Único y Configuración Inicial del Administrador Maestro (`AdminRegister.jsx`)**:
+  - Creación de la página y formulario `/admin/registro` (con alias `/admin/setup`) para el registro exclusivo del primer administrador del sistema.
+  - Endpoints backend en `adminRoutes.js` y `adminController.js`:
+    - `GET /api/admin/setup-status`: Determina si existe algún administrador registrado (`adminExists`, `canRegister`).
+    - `POST /api/admin/register`: Registro estricto del Administrador Maestro con rol `admin`, membresía `isVip: true`, plan `full` y módulos `['*']`.
+  - **Mecanismo de Desaparición y Bloqueo Definitivo**:
+    - Si ya existe un administrador en el sistema (`totalAdmins > 0`), el formulario de registro desaparece por completo:
+      - En `/admin/login` no se muestra ningún botón, enlace o aviso para crear cuenta de administrador.
+      - Al ingresar directamente a `/admin/registro`, la interfaz bloquea el acceso mostrando un escudo de seguridad con el mensaje *"Administrador Maestro Configurado • Registro Deshabilitado"* y redirige al login administrativo.
+      - En el backend, cualquier petición a `POST /api/admin/register` es rechazada con código `403 Forbidden` (`ADMIN_ALREADY_EXISTS`), garantizando la existencia de **un solo administrador** en la aplicación.
 - **Apartado de Configuración de Cuenta de Administrador & Limpieza de Menú**:
   - Eliminación de los accesos redundantes del menú lateral (`Volver a Mi Bebé App`, ficha superior con botones `Registrar Comprobante` y `Mensaje a Usuarias`).
   - Nuevo acceso directo interactivo en la cabecera del menú lateral y pestaña de navegación `Cuenta & Seguridad` -> `Configurar Cuenta` (`account`).
