@@ -283,6 +283,7 @@ export const api = {
   deleteAdminUser: (id, permanent = false) => request(`/admin/users/${id}${permanent ? '?permanent=true' : ''}`, { method: 'DELETE' }),
   restoreAdminUser: (id) => request(`/admin/users/${id}/restore`, { method: 'POST' }),
   updateAdminUserSubscription: (id, payload) => request(`/admin/users/${id}/subscription`, { method: 'PATCH', body: payload }),
+  toggleAdminBabyCarnet: (id, payload = {}) => request(`/admin/users/${id}/toggle-baby-carnet`, { method: 'POST', body: payload }),
   sendAdminEmail: (payload) => request('/admin/send-email', { method: 'POST', body: payload }),
   getAdminPayments: (params = {}) => {
     const q = new URLSearchParams(params).toString();

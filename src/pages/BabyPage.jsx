@@ -196,7 +196,7 @@ export default function BabyPage() {
   );
 
   const currentGestationalWeek = status?.week ? Number(status.week) : 0;
-  const isCarnetUnlocked = Boolean(baby?.isBorn || currentGestationalWeek >= 40);
+  const isCarnetUnlocked = !baby?.carnetLockedByAdmin && Boolean(baby?.isBorn || currentGestationalWeek >= 40);
 
   return (
     <AppLayout>

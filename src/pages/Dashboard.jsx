@@ -314,7 +314,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {quickActions.map((a) => {
             const isSubLocked = isModuleLocked(a.moduleKey);
-            const isGestationLocked = a.to === '/carnet-bebe' && !Boolean(data?.baby?.isBorn || (data?.status?.week && Number(data.status.week) >= 40));
+            const isGestationLocked = a.to === '/carnet-bebe' && (!Boolean(data?.baby?.isBorn || (data?.status?.week && Number(data.status.week) >= 40)) || Boolean(data?.baby?.carnetLockedByAdmin));
             const locked = isSubLocked || isGestationLocked;
 
             return (

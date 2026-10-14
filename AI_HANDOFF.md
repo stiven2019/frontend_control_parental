@@ -1,7 +1,23 @@
 # 🤖 AI Handoff & Technical Project Summary — Mi Bebé (Control Prenatal y Salud Infantil)
 
-> **Documento para Desarrolladores e Inteligencias Artificiales.**
-> Resume el estado actual del proyecto, la arquitectura técnica, las convenciones de código, la gestión de suscripciones y los puntos de extensión para continuar el desarrollo sin fricción.
+> **Documento Oficial para Inteligencias Artificiales y Desarrolladores.**  
+> Resume el estado actual del proyecto, arquitectura técnica, convenciones de código, gestión de suscripciones, panel administrativo y puntos de extensión.
+
+---
+
+## ⚡ ⚠️ PROTOCOLO OBLIGATORIO PARA TODA IA (LEER Y ACTUALIZAR)
+
+Cualquier modelo de Inteligencia Artificial que trabaje en este repositorio **DEBE CUMPLIR ESTRICTAMENTE** las siguientes dos reglas:
+
+### 1. 📖 Lectura Previa Obligatoria (Antes de Modificar Código)
+Antes de realizar cualquier ajuste, refactorización, corrección de bug, adición de endpoints o nueva interfaz:
+- **Consulta este archivo (`AI_HANDOFF.md`) y `AGENTS.md`**: Verifica cómo interactúan los módulos, las rutas registradas, el sistema de suscripciones (`SubscriptionGuard`), el panel administrativo (`AdminGuard`), la persistencia de autenticación y las convenciones de diseño (Tailwind v4 y paleta de colores).
+- **Evita reinventar o duplicar lógica existente**: Todos los endpoints deben centralizarse en [`src/api/client.js`](file:///c:/Users/jhers/Documents/LogicaDeProgramacion/mibebe/frontend_control_prenatal/src/api/client.js).
+
+### 2. 📝 Actualización Posterior Obligatoria (Al Concluir Ajustes)
+Cada vez que realices cambios o ajustes en el proyecto (nuevas rutas, nuevos endpoints, componentes clave, cambios en base de datos, módulos de suscripción o lógica de negocio):
+- **Actualiza inmediatamente este archivo (`AI_HANDOFF.md`)**: Registra la nueva funcionalidad, añade las nuevas rutas al mapa de navegación, documenta cualquier nueva migración o endpoint y mantén al día la sección de cambios recientes.
+- **Garantiza la continuidad del proyecto**: De este modo, la próxima sesión de la IA o el próximo desarrollador tendrá acceso inmediato al estado real y actualizado del software.
 
 ---
 
@@ -10,8 +26,8 @@
 **Mi Bebé** es una plataforma integral que acompaña a las madres gestantes, sus parejas y familias durante las 40 semanas de embarazo y la etapa postnatal del recién nacido (0 a 24 meses).
 
 El proyecto está compuesto por:
-- **Frontend SPA (`frontend_control_prenatal`)**: React 19, Vite, Tailwind CSS v4, Web Audio API, Web Workers para alarmas en segundo plano y React Router DOM v7.
-- **Backend API REST (`backend_control_prenatal`)**: Node.js, Express, PostgreSQL con Sequelize, autenticación JWT y Nodemailer configurado con Gmail SMTP.
+- **Frontend SPA (`frontend_control_prenatal`)**: React 19, Vite, Tailwind CSS v4, Web Audio API, Web Workers para alarmas en segundo plano, Service Worker con Web Push VAPID, y React Router DOM v7.
+- **Backend API REST (`backend_control_prenatal`)**: Node.js, Express, PostgreSQL con Sequelize, autenticación JWT, Nodemailer configurado con Gmail SMTP, Web Push nativo y crons automatizados de alertas y recordatorios.
 
 ---
 
@@ -20,8 +36,8 @@ El proyecto está compuesto por:
 ### 1. Autenticación, Seguridad y Recuperación (`src/context/AuthContext.jsx` & `src/api/client.js`)
 - **Persistencia Permanente de Sesión**:
   - El JWT se almacena en `localStorage` bajo `mibebe_token` con vigencia prolongada (`JWT_EXPIRES_IN=365d`).
-  - El perfil del usuario se respalda en `localStorage` (`mibebe_user`) para inicialización instantánea sin parpadeo de carga.
-  - La sesión **se mantiene abierta indefinidamente** mientras la usuaria no presione voluntariamente el botón de *"Cerrar sesión"*. Si ocurren fallos temporales de red, caídas de señal o reinicios del servidor, la app mantiene la sesión local activa sin cerrar la cuenta. Solo una respuesta explícita `401 Unauthorized` o la acción de logout elimina el token.
+  - El perfil del usuario se respalda en `localStorage` (`mibebe_user`) para renderizado instantáneo sin parpadeo de carga.
+  - La sesión **se mantiene abierta indefinidamente** mientras la usuaria no presione voluntariamente *"Cerrar sesión"*. Si ocurren fallos temporales de red, caídas de señal o reinicios del servidor, la app mantiene la sesión local activa sin cerrar la cuenta. Solo una respuesta explícita `401 Unauthorized` o la acción voluntaria de logout elimina el token.
 - **Inyección Automática**: `client.js` inyecta `Authorization: Bearer <token>` en todas las peticiones autenticadas.
 - **Onboarding Obligatorio**: Si la API retorna `{ needsSetup: true }`, la aplicación redirige de inmediato a `/configuracion-inicial`.
 - **Recuperación de Contraseña con Caducidad (15 min)**:
@@ -30,9 +46,58 @@ El proyecto está compuesto por:
   - Frontend (`ForgotPassword.jsx` & `ResetPassword.jsx`) con temporizador regresivo dinámico en vivo.
   - Envío automático de correo con **Gmail SMTP** sanitizado en backend (`pass.replace(/\s+/g, '')`).
 
+---
 
-### 2. Sistema de Suscripción y Módulos (`SubscriptionGuard.jsx` & `SubscriptionModal.jsx`)
-La aplicación cuenta con control de acceso por suscripción a nivel de ruta y navegación.
+### 2. Panel Administrativo y Control Maestro (`AdminGuard.jsx`, `AdminPanel.jsx`, `AdminLogin.jsx`)
+Sistema integral para la supervisión global de la plataforma:
+- **Rutas**: `/admin/login`, `/admin` y `/panel-administrativo`.
+- **Estructura y Navegación**:
+  - Menú lateral vertical a la izquierda (`<aside>`) responsivo y colapsable en móviles, con insignia de estado de conexión al servidor y categorización temática:
+    - *Operaciones*: Resumen General (`metrics`), Directorio de Usuarios (`users`), Comprobantes de Pago (`payments`).
+    - *Inteligencia y Finanzas*: Métricas Avanzadas (`advanced_metrics`), Ingresos y Reportes (`earnings`).
+    - *Comunicación*: Centro de Mensajería y Correo (`emails`).
+    - *Ajustes y Seguridad*: Apartado de Configurar Cuenta (`account`) para ver/editar datos personales del administrador y cambio de contraseña seguro.
+    - *Pie*: Sincronización en vivo y Cierre de Sesión Seguro.
+- **Protección de Acceso (`AdminGuard.jsx`)**:
+  - Valida el rol `user.role === 'admin'`.
+  - Si el usuario en caché local no tiene rol de admin, consulta en vivo al backend (`refreshUser()`) para evitar falsos bloqueos.
+  - Redirige a `/admin/login` si no está autenticado o muestra pantalla de acceso restringido con enlace de inicio de sesión administrativo si no cuenta con privilegios.
+- **Capacidades del Panel Administrativo**:
+  - 📊 **Métricas Globales y Avanzadas**:
+    - *Clínica Gestacional*: Conteo por Trimestres (T1: semanas 1-12, T2: semanas 13-26, T3: semanas 27-40+), distribución porcentual y total de bebés nacidos.
+    - *Auditoría de Carnets*: Detección en vivo de activaciones prematuras del carnet postnatal (< 40 semanas) y recuento de carnets bloqueados por el admin.
+    - *Crecimiento y Cohortes*: Tasas de conversión de usuarios gratuitos a VIP/Planes, Churn Rate (% bajas/expirados), nuevos usuarios en 7 y 30 días.
+    - *Financieras SaaS*: MRR proyectado mensual, ARPU (ingreso promedio por usuario activo) e ingresos en riesgo de vencimiento en los próximos 7 días.
+  - 💰 **Reporte de Ingresos (`earnings`)**: Control de facturación por planes, historial de cobros y gráficos de rendimiento financiero.
+  - 👥 **Gestión Total de Usuarios y Carnets de Bebé**:
+    - Listado paginado con búsqueda por nombre/email y filtros por estado de cuenta, plan o activación prematura de carnet.
+    - **Bloqueo y Reversión de Carnet de Bebé (`toggleAdminBabyCarnet`)**: Permite al administrador re-bloquear el carnet de salud infantil para cuentas que lo activaron por error antes de la semana 40, restaurando la cuenta a seguimiento gestacional prenatal (`is_born = false`, `carnet_locked_by_admin = true`).
+    - Bloqueo y desbloqueo temporal de cuentas (`toggleBlockAdminUser`).
+    - Eliminación suave (*soft-delete*) y eliminación permanente (`deleteAdminUser`).
+    - Restauración de usuarios borrados (`restoreAdminUser`).
+    - Asignación manual de planes y módulos desbloqueados en caliente (`updateAdminUserSubscription`).
+  - 📧 **Mensajería Directa y Masiva**: Envío de correos por Gmail SMTP directamente desde el panel a un usuario específico o a toda la base de datos (`sendAdminEmail`).
+  - 💳 **Gestión y Auditoría de Pagos**: Registro manual de pagos recibidos por transferencias (Nequi, Daviplata, Bancolombia) y borrado de comprobantes erróneos.
+
+---
+
+### 3. Vínculos Familiares y Papá con QR Dinámico (`FamilyQrModal.jsx`, `FamilyLinkPage.jsx`, `/vincular`)
+Permite a la mamá gestante compartir el seguimiento de su embarazo con su pareja y familiares cercanos:
+- **Generación de QR y Enlace Seguro (`generateFamilyQr`)**:
+  - Rol configurable: `papa` (exclusivo, solo 1 activo) o `familia` (múltiples parientes).
+  - Enlace con código único y caducidad automática de **15 minutos**.
+  - Temporizador visual regresivo en tiempo real con refresco automático si expira sin ser canjeado.
+- **Canje de Invitación (`redeemFamilyQr`)**:
+  - Acceso mediante la ruta `/vincular?code=...` o escaneo directo con cámara móvil.
+  - Permite al familiar crear cuenta o vincularse directamente a la ficha del bebé.
+- **Administración de Vínculos**:
+  - Lista de familiares activos en `/papa` y `/perfil`.
+  - Posibilidad de revocar o eliminar cualquier vínculo familiar en cualquier momento (`revokeFamilyLink`).
+
+---
+
+### 4. Sistema de Suscripción, Módulos y Alertas Preventivas
+Control de acceso por suscripción a nivel de ruta y navegación.
 
 #### A. Módulos 100% Gratuitos (Sin Suscripción Requerida)
 - 💊 **Medicamentos** (`/medicamentos`)
@@ -41,11 +106,10 @@ La aplicación cuenta con control de acceso por suscripción a nivel de ruta y n
 - 🏠 **Inicio / Dashboard** (`/inicio`)
 - 👤 **Perfil de Usuario** (`/perfil`)
 
-#### B. Módulos Restringidos bajo Suscripción
-Todos los demás módulos están protegidos mediante `<SubscriptionGuard moduleKey="..." moduleName="...">`:
+#### B. Módulos Restringidos bajo Suscripción (`SubscriptionGuard.jsx`)
 - `gestacion`: Mi Bebé en Gestación (`/mi-bebe`)
 - `carnet_bebe`: Carnet de Salud Infantil del Bebé Nacido (`/carnet-bebe`, `/bebe-nacido`)
-- `control_medico`: Controles Médicos Prenatales y Pediátricos (`/controles`)
+- `control_medico`: Controles Médicos Prenatales y Pediátricos (`/controles`, `/controles-bebe`)
 - `recordatorios`: Recordatorios y Alarmas (`/recordatorios`)
 - `calendario`: Calendario de Citas y Embarazo (`/calendario`)
 - `embarazo_timeline`: Línea de Tiempo del Embarazo (`/mi-embarazo`)
@@ -58,34 +122,21 @@ Todos los demás módulos están protegidos mediante `<SubscriptionGuard moduleK
 - `cuidados_mama`: Guía de Cuidados de Mamá (`/cuidados-mama`)
 - `cuidados_bebe`: Guía de Cuidados del Bebé (`/cuidados-bebe`)
 
-#### C. Array de Configuración de Módulos (Base de Datos y Frontend)
-```javascript
-// Array de todos los módulos bloqueables
-export const ALL_LOCKABLE_MODULES = [
-  'gestacion', 'carnet_bebe', 'control_medico', 'recordatorios',
-  'calendario', 'embarazo_timeline', 'album', 'documentos',
-  'test_emocional', 'diario', 'papa', 'cuenta_regresiva',
-  'cuidados_mama', 'cuidados_bebe'
-];
-
-// Comodín para acceso VIP / Total
-user.unlockedModules = ['*']; // o user.plan = 'full'
-```
-
-#### D. Planes de Suscripción Equivalentes
-- **Plan VIP Toda la App ($50.000 COP/mes)**: Acceso total (`['*']`).
-- **Plan Gestación y Bebé Nacido ($30.000 COP/mes)**: Clínico (`gestacion`, `carnet_bebe`, `control_medico`, `recordatorios`, `calendario`, `embarazo_timeline`, `test_emocional`).
-- **Plan Esencial Médico ($15.000 COP/mes)**: Básico (`gestacion`, `control_medico`, `recordatorios`, `calendario`).
+#### C. Alertas de Vencimiento de Suscripción por Correo y Límites
+- El backend monitorea las fechas de vigencia y envía correos preventivos automáticos antes del vencimiento del plan.
+- Endpoint de prueba para verificar plantilla y despacho de correo: `POST /api/auth/test-subscription-alert`.
+- En el cliente (`client.js`), los errores de servidor identifican flags especiales: `err.expired = true` y `err.limitReached = true` para desplegar interfaces contextuales al usuario.
 
 ---
 
-### 3. Separación de Etapas: Gestación vs. Bebé Nacido
-
+### 5. Separación Clínica de Etapas: Gestación vs. Bebé Nacido
 Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez el embarazo del recién nacido:
 
 1. **Mi Bebé en Gestación (`/mi-bebe` - `BabyPage.jsx`)**:
    - Solo métricas prenatales: desarrollo fetal intrauterino semana a semana, tamaño comparativo, FCF (Frecuencia Cardíaca Fetal en lpm), altura uterina del control prenatal, contador de pataditas en el vientre materno y estimulación auditiva con melodía relajante.
 2. **Carnet de Salud Infantil (`/carnet-bebe` - `PostnatalCarnetPage.jsx` & `BornBabyCarnet.jsx`)**:
+   - **Condición de Desbloqueo Clínico**: Se activa si el bebé ya nació (`baby.isBorn`) o si la gestación supera la semana 40 (`currentWeek >= 40`), **siempre y cuando no esté bloqueado por el administrador** (`!baby.carnetLockedByAdmin`).
+   - **Mecanismo Anti-Activación Prematura**: Si una gestante activa el carnet por error antes de la semana 40, tanto el usuario (`handleRevertBirth` en `PostnatalCarnetPage.jsx`) como el administrador (`toggleAdminBabyCarnet` en `AdminPanel.jsx`) pueden bloquear/revertir el carnet, retornando inmediatamente al modo gestacional (`/mi-bebe` y dashboard prenatal) y reseteando `baby.isBorn = false`.
    - Solo métricas postparto del recién nacido: fecha y hora de parto, peso, talla y perímetro cefálico al nacer, tipo de parto y grupo sanguíneo.
    - **Curvas de Crecimiento OMS (0 a 24 meses)**: Diagnósticos de peso/edad, talla/edad, perímetro cefálico e IMC infantil comparados con tablas OMS para niñas y niños.
    - **Carnet de Vacunación PAI (Colombia)**: 20 dosis programadas con checklist, fecha de aplicación y botón directo de alarma/recordatorio para cada vacuna.
@@ -95,17 +146,19 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 
 ---
 
-### 4. Sistema de Alarmas y Recordatorios en Segundo Plano (`AlarmContext.jsx`, Service Worker, Web Push y `soundAlarm.js`)
+### 6. Sistema de Alarmas y Recordatorios en Segundo Plano (`AlarmContext.jsx`, Service Worker y Web Push)
+- **Notificaciones Push Fuera del Navegador**:
+  - **Service Worker (`public/sw.js`)**: Escucha eventos `push` y despliega alertas a través de `self.registration.showNotification(...)` con sonido, vibración y retención (`requireInteraction: true`). Al pulsar la alerta, enfoca o navega a la ruta respectiva.
+  - **Web Push API + VAPID**: Llaves VAPID configuradas en cliente y servidor.
+  - **Servicio Cron en Backend (`reminderCron.js`)**: Monitorea de manera autónoma cada 45 segundos recordatorios, medicamentos y citas médicas del día.
+- **Web Worker Anti-Throttling (Pestaña minimizada)**: Evita que el navegador congele o ralentice los temporizadores cuando la ventana no está visible.
+- **Web Audio API**: Melodías sintetizadas armónicamente (cuna, campana, alerta médica).
 
-- **Notificaciones Push en Segundo Plano (Fuera de la App / Navegador Cerrado)**:
-  - **Service Worker (`public/sw.js`)**: Escucha eventos `push` y despliega alertas a través de `self.registration.showNotification(...)` con sonido, vibración y retención (`requireInteraction: true`). Al pulsar la alerta (`notificationclick`), abre o enfoca la aplicación en la ruta correspondiente (`/recordatorios`, `/medicamentos`, etc.).
-  - **Web Push API + VAPID**: Llaves criptográficas VAPID configuradas en backend y frontend. Las suscripciones de los dispositivos se guardan en PostgreSQL (`push_subscriptions`).
-  - **Servicio Cron en Backend (`reminderCron.js`)**: Monitorea de manera autónoma cada 45 segundos los recordatorios, medicamentos activos y citas médicas del día y despacha notificaciones push nativas al sistema operativo del usuario.
-- **Web Worker Anti-Throttling (Pestaña en uso/minimizada)**: Ejecuta un temporizador continuo en segundo plano independiente para evitar que el navegador reduzca la frecuencia de los temporizadores cuando la pestaña está minimizada o inactiva.
-- **Web Audio API + Melodías PCM**: Generación de tonos armónicos mediante osciladores sintetizados y buffer WAV para alertar con el sonido de cuna o campana seleccionada.
-- **Categorías de Alarmas Soportadas**:
-  - `vacuna_bebe` (💉), `control_pediatrico` (🩺), `cuidado_bebe` (👶), `vitamina_bebe` (🥄), `medicamento` (💊), `control_medico` (🩺), `ecografia` (📷), `cita` (📅).
+---
 
+### 7. Optimización y Compresión de Archivos Multimedia
+- **Compresión de Imágenes en Cliente (`compressImageIfPossible`)**: Integrada directamente en `uploadFile` en `src/api/client.js` para reducir el tamaño de fotos de cámaras modernas antes de viajar al servidor.
+- **Visores de Imágenes Enriquecidos**: Integrados en Álbum (`Album.jsx`), Documentos y Ecografías con soporte para ampliación modal, inspección nítida y descarga.
 
 ---
 
@@ -113,33 +166,39 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 
 | Ruta | Componente | Acceso | Módulo Key | Descripción |
 |---|---|---|---|---|
-| `/` | `Welcome.jsx` | Público | — | Landing de bienvenida |
+| `/` | `Welcome.jsx` | Público | — | Landing de bienvenida principal |
 | `/iniciar-sesion` | `Login.jsx` | Público | — | Inicio de sesión |
-| `/crear-cuenta` | `Register.jsx` | Público | — | Registro |
-| `/recuperar-contrasena` | `ForgotPassword.jsx` | Público | — | Recuperación Gmail / WhatsApp (15m) |
-| `/restablecer-contrasena`| `ResetPassword.jsx` | Público | — | Cambio de contraseña con token |
-| `/terminos-y-condiciones`| `TermsPage.jsx` | Público | — | Términos legales de salud |
-| `/explorar/*` | `GuestExplore.jsx` | Público | — | Modo invitado |
+| `/crear-cuenta` | `Register.jsx` | Público | — | Registro de nuevos usuarios |
+| `/recuperar-contrasena` | `ForgotPassword.jsx` | Público | — | Recuperación de clave por Gmail / WhatsApp (15 min) |
+| `/restablecer-contrasena`| `ResetPassword.jsx` | Público | — | Cambio de contraseña con token de un solo uso |
+| `/vincular` | `FamilyLinkPage.jsx` | Público | — | Canje de invitación familiar / papá con QR o código |
+| `/terminos-y-condiciones`| `TermsPage.jsx` | Público | — | Términos y descargos legales de salud |
+| `/explorar/*` | `GuestExplore.jsx` | Público | — | Modo demostración e interactivo para invitados |
+| `/admin/login` | `AdminLogin.jsx` | Público | — | Inicio de sesión exclusivo para administradores |
+| `/admin` | `AdminPanel.jsx` | Administrador | — | Panel maestro de métricas, finanzas y usuarios |
+| `/panel-administrativo`| `AdminPanel.jsx` | Administrador | — | Alias del panel administrativo |
 | `/configuracion-inicial`| `Onboarding.jsx` | Autenticado | — | Configuración inicial FUR / ecografía |
-| `/inicio` | `Dashboard.jsx` | **Gratuito** | — | Panel principal con resumen y accesos |
-| `/medicamentos` | `Medications.jsx` | **Gratuito** | `medicamentos` | Dosis y tomas de medicamentos |
-| `/sintomas` | `Symptoms.jsx` | **Gratuito** | `sintomas` | Registro de síntomas y malestares |
-| `/guia-desarrollo` | `BabyDevelopmentGuide.jsx` | **Gratuito** | `guia_desarrollo`| Guía fetal semana a semana |
-| `/perfil` | `Profile.jsx` | **Gratuito** | — | Ajustes de cuenta y sonido de alarmas |
+| `/inicio` | `Dashboard.jsx` | **Gratuito** | — | Panel principal con resumen y accesos directos |
+| `/medicamentos` | `Medications.jsx` | **Gratuito** | `medicamentos` | Dosis, tomas y horarios de medicamentos |
+| `/sintomas` | `Symptoms.jsx` | **Gratuito** | `sintomas` | Registro de síntomas y malestares de salud |
+| `/guia-desarrollo` | `BabyDevelopmentGuide.jsx` | **Gratuito** | `guia_desarrollo`| Guía anatómica fetal semana a semana |
+| `/perfil` | `Profile.jsx` | **Gratuito** | — | Ajustes de cuenta, vínculos, sonido y suscripción |
 | `/mi-bebe` | `BabyPage.jsx` | Suscripción | `gestacion` | Feto en gestación, pataditas y FCF |
-| `/carnet-bebe` | `PostnatalCarnetPage.jsx` | Suscripción | `carnet_bebe` | Carnet de salud infantil y vacunas |
-| `/calendario` | `CalendarPage.jsx` | Suscripción | `calendario` | Calendario mensual de citas |
-| `/mi-embarazo` | `PregnancyTimeline.jsx` | Suscripción | `embarazo_timeline`| Línea de tiempo de 40 semanas |
-| `/papa` | `PartnerPage.jsx` | Suscripción | `papa` | Acompañamiento del padre/pareja |
-| `/album` | `Album.jsx` | Suscripción | `album` | Álbum fotográfico y ecografías |
-| `/diario` | `Journal.jsx` | Suscripción | `diario` | Diario íntimo de emociones |
-| `/controles` | `MedicalControls.jsx` | Suscripción | `control_medico` | Consultas médicas prenatales de Mamá y Bebé con diagnóstico clínico |
-| `/controles-bebe` | `BabyGestationalControls.jsx` | Suscripción | `control_medico` | Control gestacional del bebé, biometría, percentiles y predicción |
+| `/carnet-bebe` | `PostnatalCarnetPage.jsx` | Suscripción | `carnet_bebe` | Carnet de salud infantil OMS y vacunas PAI |
+| `/bebe-nacido` | `PostnatalCarnetPage.jsx` | Suscripción | `carnet_bebe` | Alias directo al carnet del recién nacido |
+| `/calendario` | `CalendarPage.jsx` | Suscripción | `calendario` | Calendario mensual interactivo de citas |
+| `/mi-embarazo` | `PregnancyTimeline.jsx` | Suscripción | `embarazo_timeline`| Línea de tiempo de 40 semanas de gestación |
+| `/papa` | `PartnerPage.jsx` | Suscripción | `papa` | Acompañamiento del padre/pareja y vínculos |
+| `/album` | `Album.jsx` | Suscripción | `album` | Álbum fotográfico y visor de ecografías |
+| `/diario` | `Journal.jsx` | Suscripción | `diario` | Diario íntimo de emociones maternales |
+| `/controles` | `MedicalControls.jsx` | Suscripción | `control_medico` | Consultas médicas prenatales y diagnósticos |
+| `/controles-bebe` | `BabyGestationalControls.jsx` | Suscripción | `control_medico` | Biometría gestacional, percentiles y curvas fetales |
 | `/recordatorios` | `Reminders.jsx` | Suscripción | `recordatorios` | Alarmas y recordatorios programados |
-| `/documentos` | `Documents.jsx` | Suscripción | `documentos` | Órdenes médicas y ecografías |
-| `/bienestar-emocional` | `EmotionalWellbeingPage.jsx`| Suscripción | `test_emocional` | Test psicológico y bienestar |
-| `/cuenta-regresiva` | `Countdown.jsx` | Suscripción | `cuenta_regresiva`| Contador regresivo a FPP |
-| `/cuidados-mama` | `MomCarePage` | Suscripción | `cuidados_mama` | Guía clínica de nutrición y ejercicio |
+| `/documentos` | `Documents.jsx` | Suscripción | `documentos` | Órdenes médicas, ecografías y visor de archivos |
+| `/bienestar-emocional` | `EmotionalWellbeingPage.jsx`| Suscripción | `test_emocional` | Test psicológico y de bienestar materno |
+| `/test-emocional` | `EmotionalWellbeingPage.jsx`| Suscripción | `test_emocional` | Alias del test de bienestar emocional |
+| `/cuenta-regresiva` | `Countdown.jsx` | Suscripción | `cuenta_regresiva`| Contador regresivo a la FPP |
+| `/cuidados-mama` | `MomCarePage` | Suscripción | `cuidados_mama` | Guía clínica de nutrición y ejercicio prenatal |
 | `/cuidados-bebe` | `BabyCarePage` | Suscripción | `cuidados_bebe` | Cuidados y desarrollo prenatal |
 
 ---
@@ -147,8 +206,8 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 ## 🎨 Convenciones de Diseño y UI Responsiva
 
 - **Alineación de Botones**: Todos los grupos de botones usan `flex-wrap`, `gap-2`, padding consistente (`!py-2.5 !px-3.5` o `!py-3 !px-4`), `w-full sm:w-auto` y escala táctil interactiva (`active:scale-95`).
-- **Paleta de Colores (Tailwind v4 en `src/styles/index.css`)**:
-  - `primary`: `#745662` (Rosa pardo maternal)
+- **Paleta de Colores Oficial (Tailwind v4 en `src/styles/index.css`)**:
+  - `primary`: `#745662` (Rosa pardo maternal cálido)
   - `secondary`: `#4f635b` (Verde salvia clínico)
   - `tertiary`: `#516070` (Azul sereno pediátrico)
   - `surface`: `#fff8f8` (Blanco cálido suave)
@@ -162,45 +221,38 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 ## 🚀 Guía Rápida para Continuar el Desarrollo y Despliegue en Servidores
 
 ### 1. Despliegue en Servidor (VPS / Docker / Producción)
-- **Error habitual**: `{ error: "column \"is_born\" does not exist" }` en endpoints como `/api/embarazo/dashboard`.
-  - **Causa**: La tabla `babies` en PostgreSQL se creó antes de añadir las métricas del recién nacido.
-  - **Solución Automática**: `backend_control_prenatal/src/server.js` ahora ejecuta automáticamente las migraciones `ALTER TABLE babies ADD COLUMN IF NOT EXISTS ...` y `ALTER TABLE users ...` en el arranque del servidor.
-  - **Solución Manual Inmediata (Docker en Servidor)**:
-    ```bash
-    docker exec -i mibebe-postgres psql -U postgres -d mi_bebe -f /app/migration_postnatal_babies.sql
-    # O directamente con una sola línea:
-    docker exec -i mibebe-postgres psql -U postgres -d mi_bebe -c "
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS is_born BOOLEAN DEFAULT false;
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_date DATE;
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_time VARCHAR(10);
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_weight_g INTEGER;
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_length_cm NUMERIC(5,2);
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_head_circ_cm NUMERIC(5,2);
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS delivery_type VARCHAR(50);
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS blood_type VARCHAR(10);
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS birth_place VARCHAR(150);
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS postnatal_controls JSONB DEFAULT '[]'::jsonb;
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS vaccines JSONB DEFAULT '[]'::jsonb;
-    ALTER TABLE babies ADD COLUMN IF NOT EXISTS developmental_milestones JSONB DEFAULT '[]'::jsonb;
-    "
-    ```
-- **Conexión Frontend -> Backend (`VITE_API_URL`)**:
-  - `src/api/client.js` soporta `VITE_API_URL`. Si el frontend corre desacoplado del backend, define en `.env`:
-    ```env
-    VITE_API_URL=http://38.242.149.219:4000
-    ```
-  - Si pasa por el Nginx del contenedor en el puerto `3011` (proxy inverso), las peticiones a `/api/` y `/uploads/` se redirigen automáticamente.
-
-### 2. Para desbloquear todos los módulos en desarrollo / producción:
-- En la base de datos PostgreSQL:
-  ```sql
-  UPDATE users SET plan = 'full', custom_unlocked_modules = '["*"]'::jsonb WHERE email = 'tu_correo@gmail.com';
+- **Migraciones Automáticas de Base de Datos**:
+  `backend_control_prenatal/src/server.js` ejecuta de forma preventiva `ALTER TABLE babies ADD COLUMN IF NOT EXISTS ...` y `ALTER TABLE users ...` al iniciar.
+- **Variables de Entorno Clave (`.env`)**:
+  ```env
+  VITE_API_URL=http://localhost:4000 # O la IP/dominio de producción
   ```
-- O activa `is_vip = true` en el usuario.
 
-### 3. Para probar alarmas audibles fuera de la app:
-- Entra a `/perfil` o `/recordatorios` y pulsa el botón *"Probar fuera (5s)"*. Cambia de pestaña o minimiza el navegador; a los 5 segundos sonará el timbre continuo y se activará la notificación del sistema.
+### 2. Comandos Útiles de Administración:
+- Para promover un usuario a Administrador en PostgreSQL:
+  ```sql
+  UPDATE users SET role = 'admin', is_vip = true, plan = 'full', custom_unlocked_modules = '["*"]'::jsonb WHERE email = 'tu_correo@gmail.com';
+  ```
 
-### 4. Para registrar una nueva vacuna o control pediátrico:
-- En `/carnet-bebe`, usa el botón *"+ Nuevo Control Pediátrico"* o pulsa *`🔔 Poner Alarma`* en cualquiera de las 20 vacunas del PAI.
+---
 
+## 📝 Historial de Cambios Recientes (Changelog de Evolución)
+- **Apartado de Configuración de Cuenta de Administrador & Limpieza de Menú**:
+  - Eliminación de los accesos redundantes del menú lateral (`Volver a Mi Bebé App`, ficha superior con botones `Registrar Comprobante` y `Mensaje a Usuarias`).
+  - Nuevo acceso directo interactivo en la cabecera del menú lateral y pestaña de navegación `Cuenta & Seguridad` -> `Configurar Cuenta` (`account`).
+  - Vista completa con:
+    - *Datos Registrados*: Visualización y edición en tiempo real de Nombre, Apellido, Teléfono de contacto, Email maestro (protegido), rol y estado de cuenta con persistencia vía `api.updateMe`.
+    - *Cambio de Contraseña*: Formulario de cambio de clave criptográfica con contraseña actual, nueva contraseña (mínimo 8 caracteres), confirmación y botones de alternancia de visibilidad mediante `api.changePassword`.
+- **Panel Administrativo Rediseñado (Menú Lateral Vertical)**:
+  - Navegación lateral fija izquierda con categorías (`Operaciones`, `Inteligencia y Finanzas`, `Comunicación`, `Cuenta`), drawer móvil responsivo y estado de conectividad en vivo.
+- **Métricas Avanzadas Clínicas, de Crecimiento y Financieras**:
+  - Pestaña `advanced_metrics` con desglose trimestral (Trimestre 1, 2, 3), barra de distribución gestacional, cohortes de crecimiento (conversión, churn, nuevos usuarios 7d/30d), indicadores SaaS (MRR proyectado, ARPU, ingresos en riesgo) y auditoría de carnets prematuros.
+- **Auditoría y Bloqueo Administrativo del Carnet de Bebé**:
+  - Campo `carnet_locked_by_admin` en modelo `Baby` y migración automática en backend.
+  - Endpoint `POST /admin/users/:id/toggle-baby-carnet` para que el administrador pueda bloquear/desbloquear el carnet de salud infantil y revertir cuentas que lo activaron prematuramente antes de la semana 40.
+  - Soporte de reversión voluntaria en `PostnatalCarnetPage.jsx` para usuarias que marcaron nacimiento por error.
+- **Panel Administrativo Base**: Creación de `/admin`, `/admin/login`, `/panel-administrativo`, `AdminGuard.jsx`, métricas en vivo, finanzas, gestión de usuarios (bloquear, restaurar, borrar, editar suscripción), envío masivo de emails y auditoría de pagos.
+- **Vínculos Familiares y Papá (QR Dinámico)**: Temporizador regresivo de 15 minutos, auto-refresco, validación de un único papá activo, página de canje en `/vincular` y revocación en tiempo real.
+- **Alertas de Suscripción por Correo**: Despacho automático de notificaciones por email al aproximarse o cumplirse el tiempo de suscripción, con gestión de flags `err.expired` y `err.limitReached`.
+- **Visor de Imágenes y Compresión en Cliente**: Compresión automática en `uploadFile` y modales de inspección fotográfica para ecografías y álbum.
+- **Guía Exploratoria Mejorada**: Optimización de la experiencia de usuario en modo invitado (`GuestExplore.jsx`).
