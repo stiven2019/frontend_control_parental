@@ -10,6 +10,7 @@ export default function PostnatalCarnetPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confirmingBirth, setConfirmingBirth] = useState(false);
+  const [revertingBirth, setRevertingBirth] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -57,7 +58,6 @@ export default function PostnatalCarnetPage() {
   const status = data?.status;
   const currentWeek = status?.week ? Number(status.week) : 0;
   const isCarnetUnlocked = !baby?.carnetLockedByAdmin && Boolean(baby?.isBorn || currentWeek >= 40);
-  const [revertingBirth, setRevertingBirth] = useState(false);
 
   const handleConfirmBirth = async () => {
     if (baby?.carnetLockedByAdmin) {

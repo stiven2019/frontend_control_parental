@@ -4,8 +4,10 @@ import { AlarmProvider } from "./context/AlarmContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SubscriptionGuard from "./components/SubscriptionGuard";
 import AdminGuard from "./components/AdminGuard";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 import Welcome from "./pages/Welcome";
+import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
@@ -42,8 +44,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AlarmProvider>
-          <Routes>
-            <Route path="/" element={<Welcome />} />
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<Welcome />} />
             <Route path="/iniciar-sesion" element={<Login />} />
             <Route path="/crear-cuenta" element={<Register />} />
             <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
@@ -134,7 +137,9 @@ export default function App() {
                     moduleKey="carnet_bebe"
                     moduleName="Carnet de Salud Infantil"
                   >
-                    <PostnatalCarnetPage />
+                    <ErrorBoundary moduleName="Carnet de Salud Infantil">
+                      <PostnatalCarnetPage />
+                    </ErrorBoundary>
                   </SubscriptionGuard>
                 </ProtectedRoute>
               }
@@ -147,7 +152,9 @@ export default function App() {
                     moduleKey="carnet_bebe"
                     moduleName="Carnet de Salud Infantil"
                   >
-                    <PostnatalCarnetPage />
+                    <ErrorBoundary moduleName="Carnet de Salud Infantil">
+                      <PostnatalCarnetPage />
+                    </ErrorBoundary>
                   </SubscriptionGuard>
                 </ProtectedRoute>
               }
@@ -360,10 +367,11 @@ export default function App() {
               }
             />
 
-            <Route path="*" element={<Welcome />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
-        </AlarmProvider>
-      </AuthProvider>
-    </BrowserRouter>
+        </ErrorBoundary>
+      </AlarmProvider>
+    </AuthProvider>
+  </BrowserRouter>
   );
 }

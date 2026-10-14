@@ -80,46 +80,55 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
 
   const postnatalControls = baby?.postnatalControls || [];
 
-  // Calcular edad actual en meses y días
-  const birthDateObj = baby?.birthDate ? new Date(baby.birthDate) : new Date();
+  // Calcular edad actual en meses y días de manera segura
+  const rawBirthDate = baby?.birthDate;
+  let birthDateObj = rawBirthDate ? new Date(rawBirthDate) : new Date();
+  if (isNaN(birthDateObj.getTime())) {
+    birthDateObj = new Date();
+  }
   const todayObj = new Date();
-  const diffTime = Math.max(0, todayObj - birthDateObj);
-  const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const ageMonthsExact = Number((totalDays / 30.44).toFixed(1));
-  const ageMonthsInt = Math.floor(totalDays / 30.44);
-  const remainingDays = Math.floor(totalDays % 30.44);
+  const diffTime = Math.max(0, todayObj.getTime() - birthDateObj.getTime());
+  const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) || 0;
+  const ageMonthsExact = Number((totalDays / 30.44).toFixed(1)) || 0;
+  const ageMonthsInt = Math.floor(totalDays / 30.44) || 0;
+  const remainingDays = Math.floor(totalDays % 30.44) || 0;
 
   // Último control registrado o datos de nacimiento
   const latestControl = postnatalControls.length > 0
     ? [...postnatalControls].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
     : null;
 
-  const currentWeightKg = latestControl?.weightKg || (baby?.birthWeightG ? baby.birthWeightG / 1000 : 3.3);
-  const currentLengthCm = latestControl?.lengthCm || baby?.birthLengthCm || 50.0;
-  const currentHeadCircCm = latestControl?.headCircCm || baby?.birthHeadCircCm || 34.5;
+  const currentWeightKg = Number(latestControl?.weightKg) || (baby?.birthWeightG ? Number(baby.birthWeightG) / 1000 : 3.3);
+  const currentLengthCm = Number(latestControl?.lengthCm) || Number(baby?.birthLengthCm) || 50.0;
+  const currentHeadCircCm = Number(latestControl?.headCircCm) || Number(baby?.birthHeadCircCm) || 34.5;
 
   // Diagnóstico OMS
   const diagnosis = calculateGrowthMetrics({
-    ageMonths: Math.min(24, Math.round(ageMonthsExact)),
-    weightKg: Number(currentWeightKg),
-    lengthCm: Number(currentLengthCm),
-    headCircCm: Number(currentHeadCircCm),
+    ageMonths: Math.min(24, Math.max(0, Math.round(ageMonthsExact))),
+    weightKg: Number(currentWeightKg) || 3.3,
+    lengthCm: Number(currentLengthCm) || 50.0,
+    headCircCm: Number(currentHeadCircCm) || 34.5,
     sex: baby?.sex || 'desconocido',
   });
 
   // Estimar fecha recomendada para cada grupo de edad de vacuna
   const getEstimatedVaccineDate = (ageGroup) => {
-    const base = new Date(birthDateObj.getTime());
-    let daysToAdd = 0;
-    if (ageGroup === 'Recién nacido') daysToAdd = 1;
-    else if (ageGroup === '2 meses') daysToAdd = 60;
-    else if (ageGroup === '4 meses') daysToAdd = 120;
-    else if (ageGroup === '6 meses') daysToAdd = 180;
-    else if (ageGroup === '7 meses') daysToAdd = 210;
-    else if (ageGroup === '12 meses') daysToAdd = 365;
-    else if (ageGroup === '18 meses') daysToAdd = 545;
-    base.setDate(base.getDate() + daysToAdd);
-    return base.toISOString().split('T')[0];
+    try {
+      const base = new Date(birthDateObj.getTime());
+      if (isNaN(base.getTime())) return new Date().toISOString().split('T')[0];
+      let daysToAdd = 0;
+      if (ageGroup === 'Recién nacido') daysToAdd = 1;
+      else if (ageGroup === '2 meses') daysToAdd = 60;
+      else if (ageGroup === '4 meses') daysToAdd = 120;
+      else if (ageGroup === '6 meses') daysToAdd = 180;
+      else if (ageGroup === '7 meses') daysToAdd = 210;
+      else if (ageGroup === '12 meses') daysToAdd = 365;
+      else if (ageGroup === '18 meses') daysToAdd = 545;
+      base.setDate(base.getDate() + daysToAdd);
+      return base.toISOString().split('T')[0];
+    } catch {
+      return new Date().toISOString().split('T')[0];
+    }
   };
 
   // Abrir modal de recordatorio para una vacuna
