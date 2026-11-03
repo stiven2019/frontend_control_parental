@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
+import ModuleIcon from '../components/ModuleIcons';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -103,11 +104,11 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col justify-center px-6 py-10">
+    <div className="auth-shell min-h-screen bg-surface flex flex-col justify-center px-6 py-10">
       <div className="w-full max-w-md mx-auto">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-primary-container/60 mx-auto flex items-center justify-center text-3xl mb-3 shadow-cloud-sm">
-            🔑
+          <div className="w-16 h-16 rounded-full bg-primary-container text-on-primary-container mx-auto flex items-center justify-center mb-3 shadow-cloud-sm">
+            <ModuleIcon name="lock" className="w-8 h-8" />
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary">
             Restablecer Contraseña
@@ -119,9 +120,9 @@ export default function ResetPassword() {
 
         {/* Alerta de caducidad estricta de 15 minutos */}
         {secondsRemaining !== null && !isExpired && (
-          <div className="mb-4 p-3 rounded-xl bg-secondary-container/40 border border-secondary/30 flex items-center justify-between text-xs font-body text-on-surface">
+          <div className="mb-4 p-3.5 rounded-3xl bg-secondary-container flex items-center justify-between text-xs font-body text-on-surface">
             <div className="flex items-center gap-2">
-              <span className="text-base animate-pulse">⏱️</span>
+              <ModuleIcon name="hourglass" className="w-4 h-4 animate-pulse" />
               <span>Enlace válido por <strong>15 minutos</strong>:</span>
             </div>
             <span className="font-mono font-bold bg-secondary text-white px-2 py-0.5 rounded text-xs">
@@ -147,8 +148,8 @@ export default function ResetPassword() {
             </Link>
           </div>
         ) : success ? (
-          <div className="card p-6 text-center border-2 border-secondary/30 shadow-cloud bg-white animate-fadeIn">
-            <span className="text-5xl block mb-3">🎉</span>
+          <div className="card p-6 text-center bg-white animate-fadeIn">
+            <span className="w-16 h-16 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center mx-auto mb-3"><ModuleIcon name="check" className="w-8 h-8" strokeWidth={2.4} /></span>
             <h2 className="font-display text-xl font-bold text-secondary mb-2">
               ¡Contraseña restablecida con éxito!
             </h2>
@@ -197,9 +198,8 @@ export default function ResetPassword() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-error-container/30 border border-error/20 flex items-start gap-2">
-                <span className="text-error text-sm shrink-0 mt-0.5">⚠️</span>
-                <p className="text-xs text-error font-body leading-relaxed">{error}</p>
+              <div className="p-3.5 rounded-2xl bg-error-container flex items-start gap-2">
+                                <p className="text-xs text-on-error-container font-body font-semibold leading-relaxed">{error}</p>
               </div>
             )}
 

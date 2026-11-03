@@ -16,7 +16,7 @@ export default function Countdown() {
   return (
     <AppLayout>
       <header className="mb-8 text-center">
-        <h1 className="font-display text-2xl font-semibold">Cuenta regresiva para conocer a tu bebé ❤️</h1>
+        <h1 className="font-display text-2xl font-semibold">Cuenta regresiva para conocer a tu bebé</h1>
       </header>
 
       <section className="card flex flex-col items-center text-center">

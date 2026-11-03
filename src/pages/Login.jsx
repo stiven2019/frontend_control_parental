@@ -26,10 +26,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col justify-center px-6 py-10">
-      <div className="w-full max-w-sm mx-auto">
+    <div className="auth-shell min-h-screen bg-surface flex flex-col justify-center px-6 py-10">
+      <div className="w-full max-w-sm mx-auto bg-white rounded-lg shadow-cloud p-6 sm:p-8">
         <h1 className="font-display text-3xl font-semibold text-primary mb-2">
-          Hola de nuevo ❤️
+          Hola de nuevo
         </h1>
         <p className="font-body text-sm text-on-surface-variant mb-8">
           Inicia sesión para seguir el camino junto a tu bebé.
@@ -68,7 +68,7 @@ export default function Login() {
                   showPassword ? "Ocultar contraseña" : "Ver contraseña"
                 }
               >
-                {showPassword ? "🙈" : "👁️"}
+                <span className="text-xs font-bold">{showPassword ? "Ocultar" : "Ver"}</span>
               </button>
             </div>
 
@@ -77,7 +77,6 @@ export default function Login() {
                 to="/recuperar-contrasena"
                 className="text-xs text-primary font-semibold hover:underline flex items-center gap-1"
               >
-                <span>🔐</span>
                 <span>¿Olvidaste tu contraseña?</span>
               </Link>
             </div>
@@ -89,7 +88,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-6 pt-5 border-t border-outline-variant/30 flex flex-col gap-3">
+        <div className="mt-6 pt-5 flex flex-col gap-3">
           <p className="text-center font-body text-sm text-on-surface-variant">
             ¿Aún no tienes cuenta?{" "}
             <Link to="/crear-cuenta" className="text-primary font-semibold">
@@ -97,7 +96,7 @@ export default function Login() {
             </Link>
           </p>
           <p className="text-center font-body text-sm">
-            <Link to="/" className="text-outline">
+            <Link to="/" className="text-on-surface-variant font-semibold">
               Volver
             </Link>
           </p>

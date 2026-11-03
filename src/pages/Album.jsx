@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
-import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
+import { api, uploadFile, getFileUrl, getDirectMinioUrl, downloadAlbumZip } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import ModuleIcon from '../components/ModuleIcons';
+import { PageHeader, Fab } from '../components/PageParts';
 
 const CATEGORIES = [
   { value: 'ecografia', label: 'Ecografía' },
@@ -31,6 +33,7 @@ export default function Album() {
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
   const [modalImgError, setModalImgError] = useState(false);
+  const [zipBusy, setZipBusy] = useState(false);
 
   const load = async () => {
     try {
@@ -44,6 +47,26 @@ export default function Album() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const handleDownloadZip = async () => {
+    setZipBusy(true);
+    setError('');
+    try {
+      const { blob, fileName } = await downloadAlbumZip();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      setError(err.message || 'No se pudo descargar el album.');
+    } finally {
+      setZipBusy(false);
+    }
+  };
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -90,21 +113,27 @@ export default function Album() {
 
   return (
     <AppLayout>
-      <header className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">Mi álbum ❤️</h1>
-          <p className="font-body text-xs text-on-surface-variant mt-0.5">Recuerdos, ecografías y momentos especiales.</p>
-        </div>
-        {!isFamilyMember && (
-          <button onClick={() => setShowForm((s) => !s)} className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center text-xl shrink-0 shadow-cloud">
-            {showForm ? '×' : '+'}
+      <PageHeader
+        title="Mi álbum"
+        subtitle="Recuerdos, ecografías y momentos especiales."
+        action={!isFamilyMember && items.length > 0 ? (
+          <button
+            type="button"
+            onClick={handleDownloadZip}
+            disabled={zipBusy}
+            className="h-11 px-4 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold disabled:opacity-60 shrink-0"
+            title="Descargar todas las fotos del album en un archivo ZIP"
+          >
+            {zipBusy ? 'Preparando...' : 'Descargar ZIP'}
           </button>
-        )}
-      </header>
+        ) : null}
+      />
+      {!isFamilyMember && <Fab open={showForm} onClick={() => setShowForm((v) => !v)} label="Agregar fotografía" />}
+      {!showForm && error && <p role="alert" className="mb-4 text-xs text-error font-body">{error}</p>}
 
       {isFamilyMember && (
-        <div className="mb-6 p-4 rounded-2xl bg-secondary-container/50 border border-secondary/20 text-on-secondary-container text-xs font-semibold flex items-center gap-2 shadow-sm">
-          <span>👁️</span>
+        <div className="mb-6 p-4 rounded-3xl bg-secondary-container text-on-secondary-container text-xs font-bold flex items-center gap-2">
+          <ModuleIcon name="info" className="w-5 h-5 shrink-0" />
           <span>Modo Acompañante Familiar: Tienes acceso de solo lectura para disfrutar de las memorias y fotos del bebé.</span>
         </div>
       )}
@@ -121,11 +150,11 @@ export default function Album() {
               className="input-field"
             />
             {file && (
-              <div className="mt-2 flex items-center gap-3 p-2 bg-surface-container/50 rounded-xl border border-outline-variant/30">
+              <div className="mt-2 flex items-center gap-3 p-2 bg-surface-container/50 rounded-2xl">
                 <img
                   src={URL.createObjectURL(file)}
                   alt="Vista previa"
-                  className="w-14 h-14 rounded-lg object-cover border border-outline-variant/30"
+                  className="w-14 h-14 rounded-xl object-cover"
                 />
                 <div className="text-xs">
                   <p className="font-medium text-on-surface truncate max-w-[200px]">{file.name}</p>
@@ -144,7 +173,7 @@ export default function Album() {
             <div><label className="field-label">Semana</label><input type="number" min={1} max={42} className="input-field" value={form.weekNumber} onChange={set('weekNumber')} /></div>
           </div>
           <div><label className="field-label">Fecha</label><input type="date" required className="input-field" value={form.date} onChange={set('date')} /></div>
-          <div><label className="field-label">Descripción</label><input className="input-field" placeholder="Ej. Primera ecografía ❤️" value={form.description} onChange={set('description')} /></div>
+          <div><label className="field-label">Descripción</label><input className="input-field" placeholder="Ej. Primera ecografía" value={form.description} onChange={set('description')} /></div>
           <div>
             <label className="field-label">Recuerdo / comentario</label>
             <textarea className="input-field" rows={2} placeholder="Hoy escuchamos por primera vez los latidos de nuestro bebé." value={form.comment} onChange={set('comment')} />
@@ -155,7 +184,7 @@ export default function Album() {
       )}
 
       {items.length === 0 && !showForm && (
-        <EmptyState icon="📷" title="Tu álbum está vacío" description="Guarda ecografías y fotografías especiales de tu embarazo aquí." />
+        <EmptyState icon="camera" title="Tu álbum está vacío" description="Guarda ecografías y fotografías especiales de tu embarazo aquí." />
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -166,7 +195,7 @@ export default function Album() {
               setModalImgError(false);
               setSelected(p);
             }}
-            className="aspect-square rounded-md overflow-hidden bg-surface-container relative group cursor-pointer"
+            className="aspect-square rounded-3xl overflow-hidden bg-surface-container relative group cursor-pointer shadow-cloud-sm"
           >
             <img
               src={getFileUrl(p.imageUrl)}
@@ -187,11 +216,11 @@ export default function Album() {
               }}
             />
             <div className="hidden absolute inset-0 bg-surface-container flex-col items-center justify-center p-2 text-center text-on-surface-variant">
-              <span className="text-2xl mb-1">📷</span>
+              <ModuleIcon name="camera" className="w-7 h-7 mb-1" />
               <span className="text-[11px] font-medium truncate w-full">{p.description || 'Fotografía'}</span>
             </div>
             {p.weekNumber && (
-              <span className="absolute bottom-2 left-2 pill-chip bg-white/85 text-on-surface text-[10px] shadow-sm">Semana {p.weekNumber}</span>
+              <span className="absolute bottom-2 left-2 pill-chip bg-white/90 text-on-surface text-[10px] shadow-sm">Semana {p.weekNumber}</span>
             )}
           </button>
         ))}
@@ -199,10 +228,10 @@ export default function Album() {
 
       {selected && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in" onClick={() => setSelected(null)}>
-          <div className="bg-white rounded-md max-w-sm w-full overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-lg max-w-sm w-full overflow-hidden shadow-2xl" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
             {modalImgError ? (
               <div className="w-full aspect-square bg-surface-container/60 flex flex-col items-center justify-center p-6 text-center text-on-surface-variant">
-                <span className="text-4xl mb-2">📷</span>
+                <ModuleIcon name="camera" className="w-10 h-10 mb-2" />
                 <p className="font-display font-semibold text-sm text-on-surface">No se pudo cargar la imagen</p>
                 <p className="font-body text-xs text-on-surface-variant mt-1 max-w-[240px]">
                   El archivo no se encuentra disponible en MinIO o hubo un problema de conexión.

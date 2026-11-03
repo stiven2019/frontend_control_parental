@@ -1,14 +1,41 @@
 // Service Worker para "Mi Bebé" — Notificaciones Push y en Segundo Plano
 // Diseñado para compatibilidad universal: Android (Chrome, Samsung, Edge), iOS (Safari PWA), macOS, Windows y Linux.
 
-const CACHE_NAME = 'mibebe-v2';
+const CACHE_NAME = 'mibebe-v3';
+const SHELL_URL = '/index.html';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+// Pantalla de respaldo sin conexion. Solo se guarda el HTML de la app (sin datos de salud):
+// nunca se cachean /api, /uploads ni /mibebe-media.
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET' || req.mode !== 'navigate') return;
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+  if (/^\/(api|uploads|mibebe-media)\//.test(url.pathname)) return;
+
+  event.respondWith(
+    fetch(req)
+      .then((res) => {
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(SHELL_URL, copy)).catch(() => {});
+        }
+        return res;
+      })
+      .catch(() => caches.match(SHELL_URL).then((cached) => cached || Response.error()))
+  );
 });
 
 // Escucha de Notificaciones Push entrantes del servidor (incluso si la app o navegador están cerrados)
@@ -57,7 +84,12 @@ self.addEventListener('notificationclick', (event) => {
   }
 
   const rawUrl = event.notification.data?.url || '/recordatorios';
-  const fullUrl = new URL(rawUrl, self.location.origin).href;
+  let fullUrl = new URL('/recordatorios', self.location.origin).href;
+  try {
+    const candidate = new URL(rawUrl, self.location.origin);
+    // Solo se abren rutas de esta misma app (evita redirecciones a sitios externos)
+    if (candidate.origin === self.location.origin) fullUrl = candidate.href;
+  } catch (e) { /* se usa la ruta por defecto */ }
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

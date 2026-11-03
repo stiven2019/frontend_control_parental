@@ -7,6 +7,8 @@ import { useAlarm } from '../context/AlarmContext';
 import { evaluateMaternalHealth, evaluateFetalHealth } from '../utils/healthEvaluations';
 import MaternalHealthModal from '../components/MaternalHealthModal';
 import FetalHealthModal from '../components/FetalHealthModal';
+import ModuleIcon from '../components/ModuleIcons';
+import { PageHeader, Fab } from '../components/PageParts';
 
 const EMPTY_FORM = {
   date: new Date().toISOString().split('T')[0],
@@ -109,11 +111,11 @@ export default function MedicalControls() {
         time: form.time || null,
       };
 
-      // 👩‍⚕️ Evaluar salud de Mamá
+      // Evaluar salud de Mamá
       const maternalAssessment = evaluateMaternalHealth(cleanPayload, { week });
       cleanPayload.maternalAssessment = maternalAssessment;
 
-      // 👶 Evaluar salud y percentil del Bebé si se ingresaron datos fetales
+      // Evaluar salud y percentil del Bebé si se ingresaron datos fetales
       let fetalAssessment = null;
       if (cleanPayload.fetalHeartRate || cleanPayload.fetalWeightG) {
         fetalAssessment = evaluateFetalHealth(cleanPayload, {
@@ -181,35 +183,47 @@ export default function MedicalControls() {
     return true; // 'todos'
   });
 
+  const todayStart = new Date(new Date().toDateString()).getTime();
+  const nextAppt = items
+    .filter((c) => c.nextAppointment && new Date(`${String(c.nextAppointment).split('T')[0]}T00:00:00`).getTime() >= todayStart)
+    .sort((x, y) => String(x.nextAppointment).localeCompare(String(y.nextAppointment)))[0];
+
   return (
     <AppLayout>
-      {/* Encabezado limpio y proporcionado */}
-      <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold text-on-surface">
-            Controles médicos
-          </h1>
-          <p className="font-body text-xs sm:text-sm text-on-surface-variant mt-0.5">
-            Historial clínico de la mamá y monitoreo del desarrollo del bebé.
-          </p>
-        </div>
+      <PageHeader
+        title="Controles médicos"
+        subtitle="Historial clínico de la mamá y desarrollo del bebé."
+      />
+      <Fab open={showForm} onClick={() => setShowForm((v) => !v)} label="Agregar control" />
 
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="btn-primary !w-auto !py-2.5 !px-4 text-xs font-semibold flex items-center gap-1.5 shadow-cloud shrink-0 self-start sm:self-auto rounded-full"
-        >
-          <span>{showForm ? '✕ Cancelar' : '+ Agregar control'}</span>
-        </button>
-      </header>
+      {nextAppt && (() => {
+        const rawNext = String(nextAppt.nextAppointment).split('T')[0];
+        const nextDate = new Date(`${rawNext}T00:00:00`);
+        const daysLeft = Math.max(0, Math.round((nextDate.getTime() - new Date(new Date().toDateString()).getTime()) / 86400000));
+        return (
+          <section className="rounded-lg p-5 sm:p-6 mb-5 shadow-cloud bg-gradient-to-br from-tertiary-container to-lilac-container text-on-tertiary-container">
+            <p className="font-body text-xs font-bold uppercase tracking-wide">Próxima cita</p>
+            <p className="font-display text-2xl font-semibold leading-tight mt-1.5 text-on-surface first-letter:uppercase">
+              {nextDate.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+            {nextAppt.doctorName && <p className="font-body text-sm font-semibold mt-1.5">Dr(a). {nextAppt.doctorName}</p>}
+            <div className="flex gap-2 mt-3.5 flex-wrap">
+              <span className="px-3.5 py-2 rounded-full bg-white/85 text-xs font-bold">
+                {daysLeft === 0 ? 'Es hoy' : daysLeft === 1 ? 'Falta 1 día' : `Faltan ${daysLeft} días`}
+              </span>
+            </div>
+          </section>
+        );
+      })()}
 
       {error && <p className="text-error text-sm font-body mb-4">{error}</p>}
 
       {/* FORMULARIO INTEGRAL DE CONTROL */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="card mb-6 flex flex-col gap-4 border-2 border-primary/20 shadow-cloud animate-fade-in">
+        <form onSubmit={handleSubmit} className="card mb-6 flex flex-col gap-4 animate-fade-in">
           <div className="flex items-center justify-between pb-2 border-b border-surface-container">
             <h3 className="font-display text-lg font-bold text-on-surface flex items-center gap-2">
-              <span>🩺</span> Nuevo Control Prenatal
+              <ModuleIcon name="steth" className="w-5 h-5 text-primary" /> Nuevo control prenatal
             </h3>
             <span className="text-[11px] font-semibold text-primary bg-primary-container/30 px-2.5 py-1 rounded-full">
               Evaluación de Mamá y Bebé
@@ -259,7 +273,7 @@ export default function MedicalControls() {
           {/* SECCIÓN 1: SALUD DE MAMÁ */}
           <div className="p-3.5 bg-surface-container/30 rounded-xl border border-outline-variant/30 space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-on-surface flex items-center gap-1.5">
-              <span>👩‍🍼</span> Valores y Signos de la Mamá
+              <ModuleIcon name="heart" className="w-4 h-4" /> Valores y Signos de la Mamá
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -332,7 +346,7 @@ export default function MedicalControls() {
           <div className="p-3.5 bg-primary-container/15 rounded-xl border border-primary/20 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                <span>👶</span> Valores del Bebé en Gestación (Ecografía y FCF)
+                <ModuleIcon name="heart" className="w-4 h-4" /> Valores del Bebé en Gestación (Ecografía y FCF)
               </span>
               <span className="text-[10px] text-primary font-semibold">Predicción Fetal</span>
             </div>
@@ -392,25 +406,25 @@ export default function MedicalControls() {
               <div>
                 <label className="field-label">Líquido Amniótico (ILA)</label>
                 <select className="input-field" value={form.amnioticFluid} onChange={setField('amnioticFluid')}>
-                  <option value="normal">Adecuado / Normal ✅</option>
-                  <option value="bajo">Disminuido (Oligohidramnios) ⚠️</option>
-                  <option value="aumentado">Aumentado (Polihidramnios) ⚠️</option>
+                  <option value="normal">Adecuado / Normal </option>
+                  <option value="bajo">Disminuido (Oligohidramnios) </option>
+                  <option value="aumentado">Aumentado (Polihidramnios) </option>
                 </select>
               </div>
 
               <div>
                 <label className="field-label">Movimientos Fetales</label>
                 <select className="input-field" value={form.fetalMovements} onChange={setField('fetalMovements')}>
-                  <option value="activo">Activo y vigoroso 🦶</option>
+                  <option value="activo">Activo y vigoroso </option>
                   <option value="normal">Normal y constante</option>
-                  <option value="disminuido">Disminuido ⚠️</option>
+                  <option value="disminuido">Disminuido </option>
                 </select>
               </div>
 
               <div>
                 <label className="field-label">Presentación Fetal</label>
                 <select className="input-field" value={form.fetalPresentation} onChange={setField('fetalPresentation')}>
-                  <option value="cefalica">Cefálica (Cabeza abajo) 👶</option>
+                  <option value="cefalica">Cefálica (Cabeza abajo) </option>
                   <option value="podalica">Podálica / De nalgas</option>
                   <option value="transversa">Transversa (Atravesado)</option>
                 </select>
@@ -439,7 +453,7 @@ export default function MedicalControls() {
                 disabled={saving}
                 className="btn-primary w-full !py-3 font-semibold flex items-center justify-center gap-2 shadow-cloud"
               >
-                <span>{saving ? 'Guardando y evaluando...' : 'Guardar control y ver salud 💖'}</span>
+                <span>{saving ? 'Guardando y evaluando...' : 'Guardar control y ver salud '}</span>
               </button>
             </div>
           </div>
@@ -471,7 +485,7 @@ export default function MedicalControls() {
                   : 'bg-surface-container/50 text-on-surface-variant hover:bg-surface-container'
               }`}
             >
-              <span>👩‍🍼</span>
+              <ModuleIcon name="heart" className="w-4 h-4" />
               <span>Salud de Mamá</span>
             </button>
             <button
@@ -482,7 +496,7 @@ export default function MedicalControls() {
                   : 'bg-surface-container/50 text-on-surface-variant hover:bg-surface-container'
               }`}
             >
-              <span>👶</span>
+              <ModuleIcon name="heart" className="w-4 h-4" />
               <span>Datos del Bebé</span>
             </button>
           </div>
@@ -496,7 +510,7 @@ export default function MedicalControls() {
       {/* ESTADO VACÍO */}
       {items.length === 0 && !showForm && (
         <EmptyState
-          icon="🩺"
+          icon=""
           title="Aún no tienes controles registrados"
           description="Registra tu control prenatal para llevar el historial médico de mamá y ver cómo viene creciendo tu bebé."
           action={
@@ -536,7 +550,7 @@ export default function MedicalControls() {
           }
 
           return (
-            <div key={c.id} className="card !p-5 hover:shadow-cloud transition-all border border-outline-variant/30">
+            <div key={c.id} className="card !p-5 hover:shadow-cloud transition-all">
               <div className="flex items-start justify-between gap-3 mb-1">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -545,12 +559,12 @@ export default function MedicalControls() {
                     </span>
                     {maternalAssessment && (
                       <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${maternalAssessment.badgeColor}`}>
-                        {maternalAssessment.level === 'optimo' ? 'Mamá Óptima 💚' : maternalAssessment.level === 'atencion' ? 'Mamá: Monitoreo ⚠️' : 'Mamá: Alerta 🚨'}
+                        {maternalAssessment.level === 'optimo' ? 'Mamá óptima' : maternalAssessment.level === 'atencion' ? 'Mamá: monitoreo' : 'Mamá: alerta'}
                       </span>
                     )}
                     {fetalAssessment && (
                       <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${fetalAssessment.statusBadge}`}>
-                        {fetalAssessment.level === 'optimo' ? 'Bebé Saludable 🌟' : 'Bebé: Seguimiento ⚠️'}
+                        {fetalAssessment.level === 'optimo' ? 'Bebé saludable' : 'Bebé: seguimiento'}
                       </span>
                     )}
                   </div>
@@ -574,40 +588,40 @@ export default function MedicalControls() {
               <div className="flex flex-wrap gap-2 my-3">
                 {/* Métricas de Mamá */}
                 {c.bloodPressure && (
-                  <span className="pill-chip bg-surface-container text-on-surface-variant font-bold">
+                  <span className="pill-chip bg-tertiary-container text-on-tertiary-container font-bold">
                     PA {c.bloodPressure}
                   </span>
                 )}
                 {c.heartRate && (
-                  <span className="pill-chip bg-surface-container text-on-surface-variant font-medium">
+                  <span className="pill-chip bg-tertiary-container text-on-tertiary-container font-semibold">
                     FC {c.heartRate} lpm
                   </span>
                 )}
                 {c.weightKg && (
-                  <span className="pill-chip bg-surface-container text-on-surface-variant font-medium">
+                  <span className="pill-chip bg-tertiary-container text-on-tertiary-container font-semibold">
                     Peso {c.weightKg} kg
                   </span>
                 )}
                 {c.uterineHeightCm && (
-                  <span className="pill-chip bg-surface-container text-on-surface-variant font-medium">
+                  <span className="pill-chip bg-tertiary-container text-on-tertiary-container font-semibold">
                     AU {c.uterineHeightCm} cm
                   </span>
                 )}
 
                 {/* Métricas del Bebé */}
                 {c.fetalHeartRate && (
-                  <span className="pill-chip bg-rose-50 border border-rose-200 text-rose-800 font-bold">
-                    💓 FCF Bebé: {c.fetalHeartRate} lpm
+                  <span className="pill-chip bg-primary-container text-on-primary-container font-bold">
+                    FCF bebé: {c.fetalHeartRate} lpm
                   </span>
                 )}
                 {c.fetalWeightG && (
-                  <span className="pill-chip bg-secondary-container/40 border border-secondary/30 text-secondary font-bold">
-                    ⚖️ Peso Bebé: {c.fetalWeightG} g {fetalAssessment ? `(P${fetalAssessment.percentile})` : ''}
+                  <span className="pill-chip bg-secondary-container text-on-secondary-container font-bold">
+                    Peso bebé: {c.fetalWeightG} g {fetalAssessment ? `(P${fetalAssessment.percentile})` : ''}
                   </span>
                 )}
                 {c.fetalLengthCm && (
                   <span className="pill-chip bg-surface-container text-on-surface-variant">
-                    📏 {c.fetalLengthCm} cm
+                    Talla {c.fetalLengthCm} cm
                   </span>
                 )}
               </div>
@@ -627,8 +641,8 @@ export default function MedicalControls() {
                       onClick={() => openMaternalAssessment(c)}
                       className="btn-secondary !w-auto !py-1.5 !px-3.5 text-xs font-semibold inline-flex items-center gap-1.5 border border-primary/30 text-primary bg-primary-container/20 hover:bg-primary-container/40 rounded-full shadow-cloud-sm transition-all active:scale-95"
                     >
-                      <span>👩‍⚕️</span>
-                      <span>Salud de Mamá</span>
+                      <ModuleIcon name="heart" className="w-4 h-4" />
+                      <span>Salud de mamá</span>
                     </button>
                   )}
                   {hasBabyData && (
@@ -637,9 +651,8 @@ export default function MedicalControls() {
                       onClick={() => openFetalAssessment(c)}
                       className="btn-secondary !w-auto !py-1.5 !px-3.5 text-xs font-semibold inline-flex items-center gap-1.5 border border-secondary/30 text-secondary bg-secondary-container/20 hover:bg-secondary-container/40 rounded-full shadow-cloud-sm transition-all active:scale-95"
                     >
-                      <span>👶</span>
-                      <span>Pronóstico Fetal</span>
-                      <span>✨</span>
+                      <ModuleIcon name="baby" className="w-4 h-4" />
+                      <span>Pronóstico fetal</span>
                     </button>
                   )}
                 </div>

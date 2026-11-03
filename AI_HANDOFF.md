@@ -105,7 +105,7 @@ Permite a la mamá gestante compartir el seguimiento de su embarazo con su parej
 Control de acceso por suscripción a nivel de ruta y navegación.
 
 #### A. Módulos 100% Gratuitos (Sin Suscripción Requerida)
-- 💊 **Medicamentos** (`/medicamentos`)
+- 💊 **Medicamentos** (`/medicamentos`)  (Ejercicios, Cuentos y Libro de recuerdos ahora requieren plan `crianza` o `full`)
 - 📋 **Síntomas** (`/sintomas`)
 - 🌱 **Guía de Desarrollo Fetal** (`/guia-desarrollo`)
 - 🏠 **Inicio / Dashboard** (`/inicio`)
@@ -245,6 +245,36 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 ---
 
 ## 📝 Historial de Cambios Recientes (Changelog de Evolución)
+
+- **Cuentos largos, musica grave, personajes nuevos, temas y explorador (sesion actual)**:
+  - 10 cuentos nuevos de 12 paginas (`data/storyCatalogExtraA.js` y `ExtraB.js`, ayudantes en `data/storyHelpers.js`); `storyCatalog.js` los une a los 4 originales (14 en total). Para agregar un cuento: nueva entrada con `pg(texto, cielo, suelo, extras, heroe, amigo, camara)`, y su melodia en `TUNES` de `utils/lullaby.js`.
+  - Personajes nuevos en `components/stories/characters.jsx` (zorro, buho, ballena, gato, pinguino, dragon, elefante, oveja, pato, mariposa, luciernaga). `StoryScene.jsx` suma cielos (aurora, tormenta, fondo marino), suelos (jardin, nieve, estanque, submarino, nubes) y extras (lluvia, nieve, aurora, arcoiris, farolillos, globo, fogata, peces, mariposas, hojas, estrella fugaz). Cada escena admite `cam` (in, out, left, right) y los personajes parpadean, respiran y mueven cola, alas u orejas. Las portadas de listados se quedan quietas y se animan al pasar el cursor (`still`).
+  - Lector (`pages/Stories.jsx`): texto palabra por palabra, volteo 3D con sombra, barra de progreso, ilustracion mas ancha en escritorio.
+  - Musica: `utils/lullaby.js` reescrito. 14 melodias propias (A-B-A, tonos entre G3 y C5), timbres piano de fieltro, arpa, kalimba, flauta y chelo, reverb de sala y filtro calido. `parseMelody`, `parseChord`, `buildEvents` y `TUNES` quedan exportados para validar compases.
+  - Temas: 4 nuevos en `styles/themes.css` (durazno, salvia, arena, oceano) con contraste revisado; registrados en `ThemeContext.jsx`, `public/theme-init.js` y `THEME_IDS` de `activityController.js`. `ThemePicker.jsx` muestra una miniatura de cada paleta.
+  - Explorador (`pages/GuestExplore.jsx`): modulos Ejercicios, Cuentos y Libro de recuerdos, plan Crianza, seccion `#cuentos` con portadas animadas y boton para escuchar la melodia. Endpoint publico `GET /api/explorar/cuentos` (solo portadas y resumenes; nunca el texto) y `api.previewStories()` en `client.js`.
+- **Cuentos animados, musica, YouTube y plan Crianza (sesion actual)**:
+  - Nuevo modulo bloqueable `cuentos` (`/cuentos`, `/cuentos/:slug`, `pages/Stories.jsx`): 4 cuentos originales con formato de libro (portada, hojas con giro 3D, navegacion por teclado/gestos). Texto servido por `GET /api/cuentos` y `GET /api/cuentos/:slug` (`data/storyCatalog.js`, `storyController.js`, `storyRoutes.js`, con `requireModuleAccess('cuentos')`). Para agregar un cuento: nueva entrada en `storyCatalog.js` con escenas (`sky`, `ground`, `extras`, `hero`, `friend`).
+  - Ilustraciones SVG animadas (`components/stories/StoryScene.jsx` + `storyArt.css`), personajes originales (conejo, oso, tortuga, estrella); respeta `prefers-reduced-motion`.
+  - Musica: `utils/lullaby.js` (Web Audio, melodias de cuna sintetizadas, arranca solo tras un gesto del usuario; preferencia en `localStorage mibebe_story_music`).
+  - Suscripcion: nuevo plan `crianza` ($20.000, modulos `ejercicios`, `cuentos`, `recuerdo`); `full` los incluye. Ejercicios y Libro de recuerdos dejan de ser gratuitos (backend `requireModuleAccess` y frontend `SubscriptionGuard`). Papa usa el plan de la madre para `ejercicios` y `cuentos`. Planes y modulos centralizados en `src/data/plans.js` (modal, perfil). Perfil muestra "Modulos de tu plan" (Activo/Bloqueado). Admin puede asignar `crianza` (validacion `VALID_PLANS` en `adminController`).
+  - Ejercicios: cada ejercicio trae `externalUrl/externalTitle/externalKind` (mapa `youtubeLinks` en `exerciseCatalog.js`; si no hay video curado, busqueda en YouTube). Se abre en pestana nueva y registra `video_externo_abierto`. Los videos son de terceros: revisar y reemplazar desde el admin si no convienen.
+  - Actividad: eventos `cuento_leido` y `video_externo_abierto`.
+- **Rediseno "Nube suave" (sesion actual)**:
+  - Base global en `styles/index.css`: tipografia Fraunces + Nunito Sans, radios mayores, sombras teñidas con el color primario del tema (`--shadow-cloud`, `--shadow-float`), tokens `peach-container` y `lilac-container`, y utilidades `.hero-card`, `.page-title`, `.section-title`, `.icon-btn`, `.auth-shell`. Contraste de los tokens nuevos verificado (>= 4.5:1) en los 4 temas.
+  - Componentes nuevos: `ModuleIcons.jsx` (iconos de linea por nombre; usarlo en lugar de emojis) y `PageParts.jsx` (`PageHeader`, `Fab`). `States.jsx` traduce los emojis historicos de `EmptyState` a iconos.
+  - `AppLayout` (circulos decorativos y boton Volver global en movil fuera de `/inicio`), `AppNav` (barra flotante tipo pastilla con color por modulo activo; sidebar en escritorio), `Dashboard` (hero con anillo de progreso, tiles pastel).
+  - Pantallas reestructuradas: Dashboard, Album, Controles medicos (hero de proxima cita), Medicamentos, Recordatorios, Sintomas, Diario, Papa/Familia, Perfil, Bienvenida, Login, Registro, Recuperar/Restablecer clave, Onboarding, Vinculo familiar, 404.
+  - Pendiente (solo heredan tokens, tipografia, radios y navegacion; conservan emojis y maquetacion previa): Documents, BabyPage, BabyGestationalControls, EmotionalWellbeingPage, PostnatalCarnetPage, BornBabyCarnet, modales de salud/suscripcion, GuestExplore y el panel admin.
+- **Seguridad, actividad, temas, ejercicios y libro de recuerdos (sesion actual)**:
+  - Backend: `middleware/security.js` (cabeceras, CORS por lista, rate limiters, validacion de `JWT_SECRET`), SQL parametrizado en admin, restablecimiento de clave por correo de un solo uso (la API ya no devuelve el token), sesiones revocadas al cambiar clave (`passwordChangedAt`), `requireOwner` en rutas sensibles, validacion de archivos por firma (`utils/fileSignature.js`), borrado de archivos solo por su duena.
+  - Admin: bitacora `activity_logs` + tiempo de uso `usage_sessions`; endpoints `GET /api/admin/actividad` y `/actividad/resumen`; pestañas `activity` y `exercises` (`components/admin/`). El cliente envia latidos (`hooks/useUsageHeartbeat.js`) y eventos cerrados (`api.sendClientEvent`).
+  - Album: `GET /api/fotos/exportar` entrega ZIP (`utils/zipStream.js`); boton en `Album.jsx` via `downloadAlbumZip()`.
+  - Libro de recuerdos: `GET /api/recuerdo/resumen` (reglas, sin IA) y pagina `/recuerdo` (`MemoryBook.jsx`, imprimible a PDF con `styles/memory-book.css`).
+  - Temas: `styles/themes.css` (`html[data-theme]` rosa, menta, cielo, lavanda), `ThemeContext`, `ThemePicker` (Perfil > Apariencia) y `public/theme-init.js` (aplica el tema antes de pintar). Usar siempre tokens (`bg-primary`, etc.), nunca hex fijos.
+  - Ejercicios: `/ejercicios` (mama y papa), catalogo base de 16 en `data/exerciseCatalog.js`; los videos los sube el admin (MP4/WEBM) o enlaza YouTube.
+  - PWA: iconos nuevos (`icon-*.png`, `icon-maskable-*.png`, `apple-touch-icon.png`, `favicon.ico`), `manifest.json` corregido y `sw.js` con respaldo sin conexion (nunca cachea `/api`, `/uploads` ni `/mibebe-media`).
+  - `nginx.conf`: CSP y cabeceras de seguridad; `nosniff` + `sandbox` en archivos subidos.
 - **Corrección de Bug en Carnet del Bebé Nacido y Protección Integral Anti-Pantallas Blancas (`ErrorBoundary.jsx`, `NotFound.jsx`, `PostnatalCarnetPage.jsx`)**:
   - *Bug Solucionado en Carnet*: Se corrigió la violación de reglas de hooks de React en `PostnatalCarnetPage.jsx` donde `useState(revertingBirth)` se invocaba condicionalmente después de los retornos tempranos de `loading` y `error`. Esto provocaba la excepción `Rendered more hooks than during the previous render`, causando que la pantalla se desmontara y quedara totalmente en blanco al presionar el carnet.
   - *Sanitización en Cálculos Postnatales*: En `BornBabyCarnet.jsx`, se blindó el cálculo de edad y fechas estimadas de vacunación contra fechas inválidas y `RangeError: Invalid time value` en `toISOString()`.

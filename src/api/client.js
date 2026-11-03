@@ -191,11 +191,25 @@ export const api = {
   login: (payload) => request('/auth/login', { method: 'POST', body: payload, auth: false }),
   me: () => request('/auth/me'),
   updateMe: (payload) => request('/auth/me', { method: 'PATCH', body: payload }),
-  changePassword: (payload) => request('/auth/change-password', { method: 'POST', body: payload }),
+  changePassword: async (payload) => {
+    const data = await request('/auth/change-password', { method: 'POST', body: payload });
+    // El servidor invalida las sesiones anteriores y entrega un token nuevo
+    if (data?.token) setToken(data.token);
+    return data;
+  },
   requestPasswordResetEmail: (payload) => request('/auth/forgot-password-email', { method: 'POST', body: payload, auth: false }),
   requestPasswordResetWhatsApp: (payload) => request('/auth/forgot-password-whatsapp', { method: 'POST', body: payload, auth: false }),
   resetPassword: (payload) => request('/auth/reset-password', { method: 'POST', body: payload, auth: false }),
   deleteAccount: () => request('/auth/me', { method: 'DELETE' }),
+
+  // Recuerdo, actividad y ejercicios
+  getMemoryBook: (tz) => request(`/recuerdo/resumen${tz ? `?tz=${encodeURIComponent(tz)}` : ''}`),
+  sendHeartbeat: (payload) => request('/actividad/latido', { method: 'POST', body: payload }),
+  sendClientEvent: (payload) => request('/actividad/evento', { method: 'POST', body: payload }),
+  listStories: () => request('/cuentos'),
+  previewStories: () => request('/explorar/cuentos', { auth: false }),
+  getStory: (slug) => request(`/cuentos/${encodeURIComponent(slug)}`),
+  listExercises: (audience) => request(`/ejercicios${audience ? `?audience=${encodeURIComponent(audience)}` : ''}`),
 
   // Embarazo
   setupPregnancy: (payload) => request('/embarazo/setup', { method: 'POST', body: payload }),
@@ -293,6 +307,66 @@ export const api = {
   },
   createAdminPayment: (payload) => request('/admin/payments', { method: 'POST', body: payload }),
   deleteAdminPayment: (id) => request(`/admin/payments/${id}`, { method: 'DELETE' }),
+
+  // Actividad dentro de la app (auditoria) y videos de ejercicios
+  getAdminActivity: (params = {}) => {
+    const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v !== '' && v != null));
+    const q = new URLSearchParams(clean).toString();
+    return request(`/admin/actividad${q ? `?${q}` : ''}`);
+  },
+  getAdminActivitySummary: (days = 30) => request(`/admin/actividad/resumen?days=${encodeURIComponent(days)}`),
+  listAdminExercises: () => request('/admin/ejercicios'),
+  createAdminExercise: (payload) => request('/admin/ejercicios', { method: 'POST', body: payload }),
+  updateAdminExercise: (id, payload) => request(`/admin/ejercicios/${id}`, { method: 'PUT', body: payload }),
+  deleteAdminExercise: (id) => request(`/admin/ejercicios/${id}`, { method: 'DELETE' }),
 };
+
+async function authorizedFetch(path, options = {}) {
+  const token = getToken();
+  const headers = { ...(options.headers || {}) };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const url = API_BASE ? `${API_BASE}/api${path}` : `/api${path}`;
+  try {
+    return await fetch(url, { ...options, headers });
+  } catch {
+    throw new Error('Error de conexion con el servidor. Revisa tu acceso a internet.');
+  }
+}
+
+async function readError(res, fallback) {
+  try {
+    const data = await res.json();
+    return data?.error || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Descarga el album completo como ZIP (con el token en cabecera, sin exponerlo en la URL).
+ * Devuelve { blob, fileName }.
+ */
+export async function downloadAlbumZip() {
+  const res = await authorizedFetch('/fotos/exportar');
+  if (!res.ok) {
+    const err = new Error(await readError(res, 'No se pudo preparar el ZIP del album.'));
+    err.status = res.status;
+    throw err;
+  }
+  const disposition = res.headers.get('content-disposition') || '';
+  const match = disposition.match(/filename="?([^";]+)"?/i);
+  return { blob: await res.blob(), fileName: match?.[1] || 'album-mi-bebe.zip' };
+}
+
+/** Sube un video de ejercicio (solo administrador). */
+export async function uploadExerciseVideo(id, file) {
+  const form = new FormData();
+  form.append('file', file, file.name || 'video.mp4');
+  const res = await authorizedFetch(`/admin/ejercicios/${id}/video`, { method: 'POST', body: form });
+  let data = null;
+  try { data = await res.json(); } catch { /* sin cuerpo */ }
+  if (!res.ok) throw new Error(data?.error || `No se pudo subir el video (codigo ${res.status}).`);
+  return data;
+}
 
 

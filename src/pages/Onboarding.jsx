@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
+import ModuleIcon from '../components/ModuleIcons';
 
 const STEPS = ['Mamá', 'Bebé', 'Papá', 'Embarazo'];
 
@@ -42,7 +43,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col px-6 py-10">
+    <div className="auth-shell min-h-screen bg-surface flex flex-col px-6 py-10">
       <div className="w-full max-w-sm mx-auto flex-1 flex flex-col">
         {/* Indicador de pasos */}
         <div className="flex items-center gap-2 mb-8">
@@ -52,7 +53,7 @@ export default function Onboarding() {
         </div>
 
         {step === 0 && (
-          <StepBlock title="Cuéntanos un poco sobre mamá" emoji="🤰">
+          <StepBlock title="Cuéntanos un poco sobre mamá" icon="heart">
             <p className="font-body text-sm text-on-surface-variant">
               Ya tenemos tus datos básicos de tu registro. En el siguiente paso conozcamos al pequeño protagonista.
             </p>
@@ -60,7 +61,7 @@ export default function Onboarding() {
         )}
 
         {step === 1 && (
-          <StepBlock title="Ahora conozcamos al pequeño protagonista" emoji="👶">
+          <StepBlock title="Ahora conozcamos al pequeño protagonista" icon="baby">
             <div className="flex flex-col gap-4">
               <div>
                 <label className="field-label">Nombre provisional del bebé (opcional)</label>
@@ -80,14 +81,14 @@ export default function Onboarding() {
         )}
 
         {step === 2 && (
-          <StepBlock title="También queremos conocer a papá" emoji="🧑">
+          <StepBlock title="También queremos conocer a papá" icon="user">
             <label className="field-label">Nombre del papá (opcional)</label>
             <input className="input-field" value={partnerName} onChange={(e) => setPartnerName(e.target.value)} placeholder="Nombre" />
           </StepBlock>
         )}
 
         {step === 3 && (
-          <StepBlock title="Cuéntanos sobre tu embarazo" emoji="📅">
+          <StepBlock title="Cuéntanos sobre tu embarazo" icon="calendar">
             <div className="flex flex-col gap-4">
               <div>
                 <label className="field-label">Fecha de última menstruación (FUM)</label>
@@ -127,10 +128,10 @@ export default function Onboarding() {
   );
 }
 
-function StepBlock({ title, emoji, children }) {
+function StepBlock({ title, icon, children }) {
   return (
     <div className="flex-1">
-      <span className="text-4xl">{emoji}</span>
+      <span className="w-14 h-14 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center"><ModuleIcon name={icon} className="w-7 h-7" /></span>
       <h2 className="font-display text-2xl font-semibold mt-4 mb-6">{title}</h2>
       {children}
     </div>

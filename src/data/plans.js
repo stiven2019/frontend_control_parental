@@ -1,0 +1,120 @@
+// Fuente unica de planes y modulos de suscripcion (modal, perfil, panel).
+// Mantener sincronizado con backend_control_prenatal/src/utils/subscription.js
+
+export const MODULE_NAMES = {
+  gestacion: 'Mi Bebé en Gestación',
+  carnet_bebe: 'Carnet de Salud Infantil (Bebé Nacido)',
+  calendario: 'Calendario de Citas y Embarazo',
+  embarazo_timeline: 'Línea de Tiempo del Embarazo',
+  papa: 'Módulo de Papá / Acompañante',
+  album: 'Álbum de Fotos del Embarazo',
+  diario: 'Diario de Emociones y Notas',
+  control_medico: 'Controles Médicos Prenatales',
+  recordatorios: 'Recordatorios y Alarmas',
+  documentos: 'Documentos y Ecografías Clínicas',
+  test_emocional: 'Test de Bienestar Emocional',
+  cuenta_regresiva: 'Cuenta Regresiva al Parto',
+  cuidados_mama: 'Guía de Cuidados de Mamá',
+  cuidados_bebe: 'Guía de Cuidados del Bebé',
+  ejercicios: 'Ejercicios y Videos',
+  cuentos: 'Cuentos para Soñar',
+  recuerdo: 'Libro de Recuerdos',
+};
+
+// Modulos de pago que se muestran en el perfil (clave, icono, etiqueta corta)
+export const PAID_MODULES = [
+  { key: 'gestacion', icon: 'baby', label: 'Mi Bebé en Gestación' },
+  { key: 'carnet_bebe', icon: 'carnet', label: 'Carnet infantil y vacunas' },
+  { key: 'control_medico', icon: 'steth', label: 'Controles médicos' },
+  { key: 'recordatorios', icon: 'bell', label: 'Recordatorios y alarmas' },
+  { key: 'calendario', icon: 'calendar', label: 'Calendario de citas' },
+  { key: 'test_emocional', icon: 'mind', label: 'Test de bienestar emocional' },
+  { key: 'album', icon: 'camera', label: 'Álbum de fotos' },
+  { key: 'documentos', icon: 'folder', label: 'Documentos y ecografías' },
+  { key: 'ejercicios', icon: 'play', label: 'Ejercicios y videos', isNew: true },
+  { key: 'cuentos', icon: 'storybook', label: 'Cuentos para soñar', isNew: true },
+  { key: 'recuerdo', icon: 'book', label: 'Libro de recuerdos', isNew: true },
+];
+
+export const SUBSCRIPTION_PLANS = [
+  {
+    id: 'full',
+    name: 'Plan VIP Toda la App',
+    subtitle: 'Acceso total e ilimitado',
+    price: 50000,
+    priceFormatted: '50.000',
+    popular: true,
+    badge: 'Más recomendado',
+    tone: 'primary',
+    modules: ['*'],
+    features: [
+      'Todo lo de los demás planes',
+      'Mi Bebé en Gestación, carnet infantil y vacunas PAI',
+      'Cuentos con música y animaciones',
+      'Ejercicios con videos y Libro de recuerdos',
+      'Álbum, documentos, test emocional y módulo de Papá',
+      'Recordatorios y alarmas sin límites',
+    ],
+  },
+  {
+    id: 'crianza',
+    name: 'Plan Crianza y Bienestar',
+    subtitle: 'Cuentos, ejercicios y recuerdos',
+    price: 20000,
+    priceFormatted: '20.000',
+    popular: false,
+    badge: 'Nuevo',
+    tone: 'lilac',
+    modules: ['ejercicios', 'cuentos', 'recuerdo'],
+    features: [
+      'Cuentos infantiles animados como un libro, con música de cuna',
+      'Ejercicios de embarazo y parto con videos de YouTube',
+      'Libro de recuerdos para imprimir',
+      'Papá comparte cuentos y ejercicios con tu plan',
+    ],
+  },
+  {
+    id: 'salud',
+    name: 'Plan Gestación y Bebé Nacido',
+    subtitle: 'Seguimiento prenatal y del recién nacido',
+    price: 30000,
+    priceFormatted: '30.000',
+    popular: false,
+    badge: 'Salud y clínica',
+    tone: 'secondary',
+    modules: ['gestacion', 'carnet_bebe', 'control_medico', 'recordatorios', 'calendario', 'embarazo_timeline', 'test_emocional'],
+    features: [
+      'Mi Bebé en Gestación (monitoreo fetal)',
+      'Carnet infantil del bebé nacido y vacunas PAI',
+      'Controles médicos prenatales y pediátricos',
+      'Recordatorios y alarmas activas',
+      'Calendario de citas y línea de tiempo',
+      'Test de bienestar emocional materno',
+    ],
+  },
+  {
+    id: 'basico',
+    name: 'Plan Esencial Médico',
+    subtitle: 'Gestación, controles y alarmas',
+    price: 15000,
+    priceFormatted: '15.000',
+    popular: false,
+    badge: 'Esencial',
+    tone: 'tertiary',
+    modules: ['gestacion', 'control_medico', 'recordatorios', 'calendario'],
+    features: [
+      'Mi Bebé en Gestación (seguimiento prenatal)',
+      'Controles médicos prenatales',
+      'Recordatorios y alarmas de citas',
+      'Calendario de citas médicas',
+    ],
+  },
+];
+
+export const PLAN_LABELS = {
+  free: 'Plan gratuito',
+  basico: 'Plan Esencial Médico ($15.000 COP)',
+  salud: 'Plan Gestación y Bebé Nacido ($30.000 COP)',
+  crianza: 'Plan Crianza y Bienestar ($20.000 COP)',
+  full: 'Plan VIP Toda la App ($50.000 COP)',
+};

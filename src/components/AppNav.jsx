@@ -19,6 +19,9 @@ const DEFAULT_DESKTOP_NAV_ITEMS = [
   { to: '/carnet-bebe', label: 'Carnet Infantil (Nacido)', icon: CarnetIcon, moduleKey: 'carnet_bebe' },
   { to: '/album', label: 'Álbum de Fotos', icon: AlbumIcon, moduleKey: 'album' },
   { to: '/papa', label: 'Papá y Familia', icon: FamilyIcon, moduleKey: 'papa' },
+  { to: '/ejercicios', label: 'Ejercicios del parto', icon: ExerciseIcon, moduleKey: 'ejercicios' },
+  { to: '/cuentos', label: 'Cuentos para soñar', icon: StoryIcon, moduleKey: 'cuentos' },
+  { to: '/recuerdo', label: 'Libro de recuerdos', icon: BookIcon, moduleKey: 'recuerdo' },
   { to: '/perfil', label: 'Mi Perfil', icon: ProfileIcon },
 ];
 
@@ -44,7 +47,7 @@ const PAPA_MOBILE_ITEMS = [
   { to: '/inicio', label: 'Inicio', icon: HomeIcon },
   { to: '/album', label: 'Álbum', icon: AlbumIcon },
   { to: '/diario', label: 'Diario', icon: JournalIcon },
-  { to: '/guia-desarrollo', label: 'Desarrollo', icon: GestationIcon },
+  { to: '/ejercicios', label: 'Ejercicios', icon: ExerciseIcon, moduleKey: 'ejercicios' },
   { to: '/perfil', label: 'Perfil', icon: ProfileIcon },
 ];
 
@@ -52,10 +55,38 @@ const PAPA_DESKTOP_ITEMS = [
   { to: '/inicio', label: 'Inicio', icon: HomeIcon },
   { to: '/album', label: 'Álbum de Fotos', icon: AlbumIcon },
   { to: '/diario', label: 'Diario de Recuerdos', icon: JournalIcon },
+  { to: '/ejercicios', label: 'Ejercicios para papá', icon: ExerciseIcon, moduleKey: 'ejercicios' },
+  { to: '/cuentos', label: 'Cuentos para soñar', icon: StoryIcon, moduleKey: 'cuentos' },
   { to: '/guia-desarrollo', label: 'Desarrollo Fetal', icon: GestationIcon },
   { to: '/cuenta-regresiva', label: 'Cuenta Regresiva', icon: CalendarIcon },
   { to: '/perfil', label: 'Mi Perfil', icon: ProfileIcon },
 ];
+
+// Color del "pill" activo por posicion (Nube suave)
+const ACTIVE_TINTS = [
+  'bg-primary-container text-on-primary-container',
+  'bg-secondary-container text-on-secondary-container',
+  'bg-tertiary-container text-on-tertiary-container',
+  'bg-peach-container text-on-peach-container',
+  'bg-lilac-container text-on-lilac-container',
+];
+
+function LockGlyph({ className = 'w-3 h-3' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="5" y="11" width="14" height="9" rx="2.5" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
+function BrandHeart({ className = 'w-6 h-6' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 2.6 4.5 6.1 4.5c2 0 3.4 1.1 4.2 2.4.3.5 1.1.5 1.4 0 .8-1.3 2.2-2.4 4.2-2.4 3.5 0 5.2 3.7 3.7 7.2C19.5 16.4 12 21 12 21Z" />
+    </svg>
+  );
+}
 
 export default function AppNav() {
   const { user, isFamilyLink, isFamilyMember, isPartnerLink } = useAuth();
@@ -82,34 +113,35 @@ export default function AppNav() {
 
   return (
     <>
-      {/* Móvil: barra inferior flotante con glassmorphism */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-3 pb-3 pt-1">
-        <div className="mx-auto max-w-md flex items-center justify-between bg-white/80 backdrop-blur-xl rounded-full shadow-cloud px-2 py-1.5 border border-white/60">
-          {mobileNavItems.map((item) => {
+      {/* Movil: barra inferior flotante tipo pastilla (Nube suave) */}
+      <nav aria-label="Principal" className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-1 pointer-events-none">
+        <div className="pointer-events-auto mx-auto max-w-md flex items-center justify-between bg-white rounded-full shadow-float px-2 h-[68px]">
+          {mobileNavItems.map((item, idx) => {
             const Icon = item.icon;
             const isLocked = item.moduleKey && !hasModuleAccess(user, item.moduleKey);
+            const tint = ACTIVE_TINTS[idx % ACTIVE_TINTS.length];
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
                 onClick={(e) => handleNavClick(e, item)}
                 className={({ isActive }) =>
-                  `relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-full transition-colors ${
-                    isActive ? 'text-primary' : 'text-outline'
+                  `relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] px-2.5 py-2 rounded-3xl transition-colors ${
+                    isActive ? tint : 'text-on-surface-variant'
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
                     <div className="relative">
-                      <Icon filled={isActive} className="w-5 h-5" />
+                      <Icon filled={isActive} className="w-[22px] h-[22px]" />
                       {isLocked && (
-                        <span className="absolute -top-1 -right-1.5 text-[10px]">
-                          🔒
+                        <span className="absolute -top-1 -right-2 text-primary bg-white rounded-full p-px">
+                          <LockGlyph className="w-2.5 h-2.5" />
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] font-semibold">{item.label}</span>
+                    <span className="text-[10.5px] font-bold leading-none">{item.label}</span>
                   </>
                 )}
               </NavLink>
@@ -119,13 +151,15 @@ export default function AppNav() {
       </nav>
 
       {/* Desktop / tablet: sidebar lateral */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:h-screen md:sticky md:top-0 border-r border-outline-variant/40 px-6 py-8 bg-surface-low">
-        <div className="flex items-center gap-2 mb-8 px-2">
-          <span className="text-2xl">👶</span>
+      <aside className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:h-screen md:sticky md:top-0 px-5 py-8 bg-surface-low overflow-y-auto">
+        <div className="flex items-center gap-2.5 mb-8 px-2">
+          <span className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center shadow-cloud-sm">
+            <BrandHeart className="w-5 h-5" />
+          </span>
           <span className="font-display text-xl font-semibold text-primary">Mi Bebé</span>
         </div>
-        <nav className="flex flex-col gap-1.5">
-          {desktopNavItems.map((item) => {
+        <nav aria-label="Principal" className="flex flex-col gap-1.5">
+          {desktopNavItems.map((item, idx) => {
             const Icon = item.icon;
             const isLocked = item.moduleKey && !hasModuleAccess(user, item.moduleKey);
             return (
@@ -134,8 +168,8 @@ export default function AppNav() {
                 to={item.to}
                 onClick={(e) => handleNavClick(e, item)}
                 className={({ isActive }) =>
-                  `flex items-center justify-between px-4 py-2.5 rounded-full font-body font-medium text-sm transition-colors ${
-                    isActive ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-container'
+                  `flex items-center justify-between px-4 py-3 rounded-full font-body font-bold text-sm transition-colors ${
+                    isActive ? ACTIVE_TINTS[idx % ACTIVE_TINTS.length] : 'text-on-surface-variant hover:bg-surface-container'
                   }`
                 }
               >
@@ -146,8 +180,8 @@ export default function AppNav() {
                       <span>{item.label}</span>
                     </div>
                     {isLocked && (
-                      <span className="text-xs" title="Requiere suscripción">
-                        🔒
+                      <span className="text-on-surface-variant" title="Requiere suscripción">
+                        <LockGlyph className="w-3.5 h-3.5" />
                       </span>
                     )}
                   </>
@@ -234,6 +268,32 @@ function ProfileIcon({ filled, className }) {
     <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="3.5" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
       <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+    </svg>
+  );
+}
+
+function ExerciseIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+      <path d="M10 8.5v7l5.5-3.5L10 8.5Z" />
+    </svg>
+  );
+}
+
+function BookIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 2.6 4.5 6.1 4.5c2 0 3.4 1.1 4.2 2.4.3.5 1.1.5 1.4 0 .8-1.3 2.2-2.4 4.2-2.4 3.5 0 5.2 3.7 3.7 7.2C19.5 16.4 12 21 12 21Z" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+    </svg>
+  );
+}
+
+function StoryIcon({ filled, className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={filled ? 2.4 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5Z" fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
+      <path d="M12 6.5V19.5" />
     </svg>
   );
 }

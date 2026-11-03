@@ -1,4 +1,4 @@
-export default function ProgressRing({ percent = 0, size = 200, stroke = 14, children }) {
+export default function ProgressRing({ percent = 0, size = 200, stroke = 14, track = 'var(--color-primary-container)', children }) {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (Math.min(100, Math.max(0, percent)) / 100) * circumference;
@@ -6,12 +6,12 @@ export default function ProgressRing({ percent = 0, size = 200, stroke = 14, chi
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} stroke="#fad2e1" strokeWidth={stroke} fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={radius} stroke={track} strokeWidth={stroke} fill="none" />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#745662"
+          stroke="var(--color-primary)"
           strokeWidth={stroke}
           fill="none"
           strokeLinecap="round"

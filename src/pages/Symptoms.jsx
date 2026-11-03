@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState, Banner } from '../components/States';
 import { api } from '../api/client';
+import ModuleIcon from '../components/ModuleIcons';
+import { PageHeader, Fab } from '../components/PageParts';
 
 const SYMPTOMS = [
-  { field: 'nausea', label: 'Náuseas', emoji: '🤢' },
-  { field: 'headache', label: 'Dolor de cabeza', emoji: '🤕' },
-  { field: 'fatigue', label: 'Cansancio', emoji: '😴' },
-  { field: 'backPain', label: 'Dolor de espalda', emoji: '🦴' },
-  { field: 'dizziness', label: 'Mareos', emoji: '💫' },
-  { field: 'swelling', label: 'Hinchazón', emoji: '🦶' },
-  { field: 'moodChanges', label: 'Cambios de humor', emoji: '🎭' },
+  { field: 'nausea', label: 'Náuseas' },
+  { field: 'headache', label: 'Dolor de cabeza' },
+  { field: 'fatigue', label: 'Cansancio' },
+  { field: 'backPain', label: 'Dolor de espalda' },
+  { field: 'dizziness', label: 'Mareos' },
+  { field: 'swelling', label: 'Hinchazón' },
+  { field: 'moodChanges', label: 'Cambios de humor' },
 ];
 
 const LEVELS = [
@@ -68,12 +70,7 @@ export default function Symptoms() {
 
   return (
     <AppLayout>
-      <header className="mb-4 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold">¿Cómo me siento hoy?</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center text-xl shrink-0">
-          {showForm ? '×' : '+'}
-        </button>
-      </header>
+      <PageHeader title="¿Cómo me siento hoy?" subtitle="Registra lo que sientes, a tu ritmo." />
 
       <Banner tone="info">
         Esta herramienta sirve únicamente para llevar un registro y no sustituye una valoración médica.
@@ -85,21 +82,23 @@ export default function Symptoms() {
         </div>
       )}
 
+      <Fab open={showForm} onClick={() => setShowForm((v) => !v)} label="Registrar síntomas" />
+
       {showForm && (
         <form onSubmit={handleSubmit} className="card my-6 flex flex-col gap-5">
           <div><label className="field-label">Fecha</label><input type="date" required className="input-field" value={form.date} onChange={set('date')} /></div>
 
           {SYMPTOMS.map((s) => (
             <div key={s.field}>
-              <label className="field-label">{s.emoji} {s.label}</label>
+              <label className="field-label">{s.label}</label>
               <div className="grid grid-cols-4 gap-2">
                 {LEVELS.map((lvl) => (
                   <button
                     type="button"
                     key={lvl.value}
                     onClick={() => setLevel(s.field, lvl.value)}
-                    className={`py-2 rounded-md text-xs font-semibold font-body transition-colors ${
-                      form[s.field] === lvl.value ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'
+                    className={`py-2.5 rounded-2xl text-xs font-bold font-body transition-colors ${
+                      form[s.field] === lvl.value ? 'bg-secondary-container text-on-secondary-container ring-2 ring-secondary' : 'bg-surface text-on-surface-variant'
                     }`}
                   >
                     {lvl.label}
@@ -137,24 +136,24 @@ export default function Symptoms() {
 
       {items.length === 0 && !showForm && (
         <div className="mt-6">
-          <EmptyState icon="🌡️" title="Sin registros aún" description="Lleva un registro diario de cómo te sientes durante el embarazo." />
+          <EmptyState icon="pulse" title="Sin registros aún" description="Lleva un registro diario de cómo te sientes durante el embarazo." />
         </div>
       )}
 
       <div className="flex flex-col gap-3 mt-6">
         {items.map((log) => (
-          <div key={log.id} className="card !p-4">
+          <div key={log.id} className="card !p-4 sm:!p-5">
             <p className="font-body text-sm font-semibold mb-2">
               {new Date(`${log.date}T00:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}
             </p>
             <div className="flex flex-wrap gap-2">
               {SYMPTOMS.filter((s) => log[s.field] > 0).map((s) => (
-                <span key={s.field} className="pill-chip bg-surface-container text-on-surface-variant">
-                  {s.emoji} {s.label} · {LEVELS[log[s.field]].label}
+                <span key={s.field} className="pill-chip bg-primary-container text-on-primary-container">
+                  {s.label} · {LEVELS[log[s.field]].label}
                 </span>
               ))}
               {SYMPTOMS.every((s) => log[s.field] === 0) && (
-                <span className="pill-chip bg-secondary-container text-on-secondary-container">😊 Sin síntomas notables</span>
+                <span className="pill-chip bg-secondary-container text-on-secondary-container"><ModuleIcon name="check" className="w-3.5 h-3.5" strokeWidth={2.4} />Sin síntomas notables</span>
               )}
             </div>
             {log.notes && <p className="font-body text-xs text-on-surface-variant mt-2">{log.notes}</p>}

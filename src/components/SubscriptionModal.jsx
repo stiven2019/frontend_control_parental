@@ -1,79 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import ModuleIcon from './ModuleIcons';
+import { SUBSCRIPTION_PLANS, MODULE_NAMES } from '../data/plans';
 
-export const SUBSCRIPTION_PLANS = [
-  {
-    id: 'full',
-    name: 'Plan VIP Toda la App',
-    subtitle: 'Acceso Total e Ilimitado',
-    price: 50000,
-    priceFormatted: '50.000',
-    popular: true,
-    badge: 'Más Recomendado ⭐',
-    modules: ['*'],
-    features: [
-      'Mi Bebé en Gestación (Desarrollo fetal semana a semana, pataditas y FCF)',
-      'Carnet de Salud Infantil (Bebé Nacido: Curvas OMS y 20 Vacunas PAI)',
-      'Cuidados del Bebé Nacido y Guías Pediátricas',
-      'Recordatorios y Alarmas sin límites',
-      'Controles Médicos Prenatales y Pediátricos',
-      'Calendario de Citas y Línea de Tiempo del Embarazo',
-      'Álbum de Fotos, Ecografías y Documentos Clínicos',
-      'Test Emocional, Diario de Notas y Módulo de Papá',
-    ],
-  },
-  {
-    id: 'salud',
-    name: 'Plan Gestación y Bebé Nacido',
-    subtitle: 'Seguimiento prenatal y del recién nacido',
-    price: 30000,
-    priceFormatted: '30.000',
-    popular: false,
-    badge: 'Salud y Clínica 👶',
-    modules: ['gestacion', 'carnet_bebe', 'control_medico', 'recordatorios', 'calendario', 'embarazo_timeline', 'test_emocional'],
-    features: [
-      'Mi Bebé en Gestación (Monitoreo fetal en vientre)',
-      'Carnet Infantil del Bebé Nacido y Vacunas PAI',
-      'Controles médicos prenatales y pediátricos',
-      'Recordatorios y Alarmas activas',
-      'Calendario de Citas y Línea de Tiempo',
-      'Test de bienestar emocional materno',
-    ],
-  },
-  {
-    id: 'basico',
-    name: 'Plan Esencial Médico',
-    subtitle: 'Gestación, Controles y Alarmas',
-    price: 15000,
-    priceFormatted: '15.000',
-    popular: false,
-    badge: 'Esencial 🩺',
-    modules: ['gestacion', 'control_medico', 'recordatorios', 'calendario'],
-    features: [
-      'Mi Bebé en Gestación (Seguimiento prenatal)',
-      'Controles médicos prenatales',
-      'Recordatorios y alarmas de citas',
-      'Calendario de citas médicas',
-    ],
-  },
-];
-
-export const MODULE_NAMES = {
-  gestacion: 'Mi Bebé en Gestación',
-  carnet_bebe: 'Carnet de Salud Infantil (Bebé Nacido)',
-  calendario: 'Calendario de Citas y Embarazo',
-  embarazo_timeline: 'Línea de Tiempo del Embarazo',
-  papa: 'Módulo de Papá / Acompañante',
-  album: 'Álbum de Fotos del Embarazo',
-  diario: 'Diario de Emociones y Notas',
-  control_medico: 'Controles Médicos Prenatales',
-  recordatorios: 'Recordatorios y Alarmas',
-  documentos: 'Documentos y Ecografías Clínicas',
-  test_emocional: 'Test de Bienestar Emocional',
-  cuenta_regresiva: 'Cuenta Regresiva al Parto',
-  cuidados_mama: 'Guía de Cuidados de Mamá',
-  cuidados_bebe: 'Guía de Cuidados del Bebé',
-};
+export { SUBSCRIPTION_PLANS, MODULE_NAMES };
 
 export default function SubscriptionModal({ isOpen, onClose, requestedModule }) {
   const { user } = useAuth();
@@ -94,7 +24,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
   };
 
   const whatsappMessage = encodeURIComponent(
-    'Hola! Deseo activar mi suscripción a la app Mi Bebé ❤️\n\n' +
+    'Hola! Deseo activar mi suscripción a la app Mi Bebé.\n\n' +
     `• Plan: ${selectedPlan.name} ($${selectedPlan.priceFormatted} COP/mes)\n` +
     `• Nombre: ${user?.firstName || ''} ${user?.lastName || ''}\n` +
     `• Correo registrado: ${user?.email || 'No indicado'}\n\n` +
@@ -111,14 +41,14 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl max-h-[92vh] flex flex-col bg-surface rounded-2xl shadow-2xl border border-primary/10 overflow-hidden"
+        className="relative w-full max-w-3xl max-h-[92vh] flex flex-col bg-surface rounded-2xl shadow-2xl border border-primary/10 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Encabezado */}
         <div className="px-6 py-5 bg-surface-lowest border-b border-surface-container flex items-start justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <span className="w-12 h-12 rounded-full bg-primary-container/80 flex items-center justify-center text-2xl shrink-0">
-              💎
+            <span className="w-12 h-12 rounded-full bg-primary-container/80 text-primary flex items-center justify-center shrink-0">
+              <ModuleIcon name="gem" className="w-6 h-6" />
             </span>
             <div>
               <h2 className="font-display text-xl sm:text-2xl font-bold text-on-surface">
@@ -141,7 +71,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
             aria-label="Cerrar modal"
             className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors text-lg"
           >
-            ✕
+            <ModuleIcon name="close" className="w-4 h-4" />
           </button>
         </div>
 
@@ -150,7 +80,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
           {/* Tarjetas de Planes */}
           <div>
             <p className="field-label mb-3">Elige tu plan preferido:</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {SUBSCRIPTION_PLANS.map((plan) => {
                 const isSelected = plan.id === selectedPlanId;
 
@@ -188,7 +118,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
                       <ul className="space-y-1.5 text-xs text-on-surface-variant border-t border-surface-container pt-3 mb-4">
                         {plan.features.map((feat, i) => (
                           <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-secondary font-bold">✓</span>
+                            <span className="text-secondary shrink-0 mt-0.5"><ModuleIcon name="check" className="w-3.5 h-3.5" strokeWidth={2.6} /></span>
                             <span>{feat}</span>
                           </li>
                         ))}
@@ -203,7 +133,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
                           : 'bg-surface-container text-on-surface-variant hover:bg-surface-high'
                       }`}
                     >
-                      {isSelected ? '✓ Seleccionado' : 'Seleccionar Plan'}
+                      {isSelected ? 'Seleccionado' : 'Seleccionar plan'}
                     </button>
                   </div>
                 );
@@ -211,9 +141,9 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
             </div>
 
             <div className="mt-3.5 p-3 bg-secondary-container/25 border border-secondary/30 rounded-xl flex items-center gap-2.5 text-xs text-on-surface">
-              <span className="text-lg shrink-0">🎁</span>
+              <span className="shrink-0 text-secondary"><ModuleIcon name="heart" className="w-5 h-5" /></span>
               <span>
-                <strong>Acceso Gratuito:</strong> Los módulos de <strong>Medicamentos 💊</strong>, <strong>Síntomas 📋</strong> y <strong>Guía de Desarrollo 🌱</strong> son 100% libres para todas las usuarias sin costo alguno.
+                <strong>Acceso gratuito:</strong> <strong>Medicamentos</strong>, <strong>Síntomas</strong>, <strong>Guía de desarrollo</strong> y el acceso de <strong>Papá</strong> son libres para todas las usuarias. Ejercicios, Cuentos y Libro de recuerdos requieren suscripción.
               </span>
             </div>
           </div>
@@ -221,7 +151,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
           {/* Información de Pago */}
           <div className="card !bg-surface-low border border-primary/15 !p-4 rounded-xl space-y-3">
             <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-              <span>💳</span>
+              <ModuleIcon name="info" className="w-4 h-4" />
               <span>Medios de Pago por Transferencia Bancaria (Colombia)</span>
             </div>
 
@@ -246,11 +176,10 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
                   className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-surface-container hover:bg-surface-high text-on-surface rounded-md text-xs font-semibold transition-colors w-full"
                 >
                   {copiedField === 'number' ? (
-                    <span className="text-secondary font-bold">✓ ¡Número copiado!</span>
+                    <span className="text-secondary font-bold">Número copiado</span>
                   ) : (
                     <>
-                      <span>📋</span>
-                      <span>Copiar Número</span>
+                                            <span>Copiar Número</span>
                     </>
                   )}
                 </button>
@@ -272,11 +201,10 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
                   className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-surface-container hover:bg-surface-high text-on-surface rounded-md text-xs font-semibold transition-colors w-full"
                 >
                   {copiedField === 'key' ? (
-                    <span className="text-secondary font-bold">✓ ¡Llave copiada!</span>
+                    <span className="text-secondary font-bold">Llave copiada</span>
                   ) : (
                     <>
-                      <span>📋</span>
-                      <span>Copiar Llave</span>
+                                            <span>Copiar Llave</span>
                     </>
                   )}
                 </button>
@@ -287,7 +215,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
             <div className="pt-2 space-y-2">
               <div className="p-3 bg-secondary-container/30 border border-secondary/20 rounded-lg text-xs space-y-1 text-on-surface">
                 <p className="font-semibold text-secondary flex items-center gap-1.5">
-                  <span>📱</span> Pasos para activar tu cuenta de inmediato:
+                  Pasos para activar tu cuenta de inmediato:
                 </p>
                 <ol className="list-decimal list-inside space-y-0.5 text-on-surface-variant text-[11.5px] pl-1">
                   <li>Realiza la transferencia de <strong>${selectedPlan.priceFormatted} COP</strong> por Daviplata o Nequi.</li>
@@ -299,7 +227,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
 
               {/* Aviso de Alerta Preventiva 1 Semana Antes */}
               <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
-                <span className="text-base shrink-0">📧</span>
+                <span className="shrink-0"><ModuleIcon name="bell" className="w-4 h-4" /></span>
                 <div>
                   <strong className="block text-amber-950 font-bold">Alerta por Correo 1 Semana Antes:</strong>
                   <span className="text-[11.5px] text-amber-900 leading-tight block mt-0.5">
@@ -328,8 +256,7 @@ export default function SubscriptionModal({ isOpen, onClose, requestedModule }) 
             id="btn-report-payment-whatsapp"
             className="btn-primary !py-3 !px-6 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 !w-full sm:!w-auto bg-[#25D366] hover:bg-[#1EBE5D] text-white shadow-md order-1 sm:order-2"
           >
-            <span>💬</span>
-            <span>Reportar Pago por WhatsApp</span>
+                        <span>Reportar Pago por WhatsApp</span>
           </a>
         </div>
       </div>
