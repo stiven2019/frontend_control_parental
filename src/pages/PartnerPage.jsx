@@ -5,6 +5,7 @@ import { LoadingState } from '../components/States';
 import FamilyQrModal from '../components/FamilyQrModal';
 import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import ModuleIcon from '../components/ModuleIcons';
 
 export default function PartnerPage() {
   const { user, isFamilyLink, isPartnerLink } = useAuth();
@@ -144,10 +145,7 @@ export default function PartnerPage() {
     <AppLayout>
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl md:text-3xl font-semibold flex items-center gap-2">
-            <span>🧑‍🍼</span>
-            <span>Papá y Lazos Familiares</span>
-          </h1>
+          <h1 className="page-title">Papá y lazos familiares</h1>
           <p className="font-body text-sm text-on-surface-variant mt-1">
             Involucra a papá y a tu red de apoyo mediante códigos QR con permisos controlados.
           </p>
@@ -159,7 +157,7 @@ export default function PartnerPage() {
             onClick={() => handleOpenQrModal(partnerLinkActive ? 'familia' : 'papa')}
             className="btn-primary !py-2.5 !px-4 text-xs font-semibold flex items-center gap-2 self-start sm:self-auto shadow-cloud"
           >
-            <span>📱</span>
+            <ModuleIcon name="user" className="w-4 h-4" />
             <span>{partnerLinkActive ? 'Vincular Familiar por QR' : 'Vincular por QR'}</span>
           </button>
         )}
@@ -168,7 +166,7 @@ export default function PartnerPage() {
       {/* Alerta de feedback */}
       {feedback && (
         <div className="mb-6 p-4 rounded-2xl bg-secondary-container/80 text-on-secondary-container text-xs font-semibold flex items-center gap-2 animate-fade-in shadow-sm">
-          <span>✓</span>
+          <ModuleIcon name="check" className="w-4 h-4" />
           <span>{feedback}</span>
         </div>
       )}
@@ -197,9 +195,9 @@ export default function PartnerPage() {
                 }}
               />
             ) : (
-              <span className="text-4xl">🧑</span>
+              <span><ModuleIcon name="user" className="w-10 h-10" /></span>
             )}
-            <span className="hidden text-4xl absolute inset-0 flex items-center justify-center bg-tertiary-container">🧑</span>
+            <span className="hidden absolute inset-0 flex items-center justify-center bg-tertiary-container"><ModuleIcon name="user" className="w-10 h-10" /></span>
             {!isFamilyLink && (
               <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
                 Cambiar foto
@@ -233,7 +231,7 @@ export default function PartnerPage() {
                 {partner?.name || 'Papá'}
               </h2>
               <span className="text-xs text-on-surface-variant font-medium mt-0.5">
-                {partnerLinkActive ? '🟢 Vinculado en la App' : '⚪ Sin dispositivo vinculado'}
+                {partnerLinkActive ? 'Vinculado en la App' : 'Sin dispositivo vinculado'}
               </span>
 
               {!isFamilyLink && (
@@ -249,12 +247,12 @@ export default function PartnerPage() {
                       onClick={() => handleOpenQrModal('papa')}
                       className="px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container text-xs font-semibold shadow-sm hover:opacity-90 transition-opacity flex items-center gap-1"
                     >
-                      <span>📲</span>
+                      <ModuleIcon name="user" className="w-4 h-4" />
                       <span>Generar QR</span>
                     </button>
                   ) : (
                     <span className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 flex items-center gap-1">
-                      <span>✓</span>
+                      <ModuleIcon name="check" className="w-4 h-4" />
                       <span>Papá único vinculado</span>
                     </span>
                   )}
@@ -280,13 +278,13 @@ export default function PartnerPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
               <div className="p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/20 flex flex-col gap-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">🧑</span>
+                  <span><ModuleIcon name="user" className="w-5 h-5" /></span>
                   <span className="font-display text-xs font-bold text-on-surface">Papá / Pareja</span>
                 </div>
                 <p className="font-body text-[11px] text-on-surface-variant leading-relaxed">
-                  ✅ Ver y subir fotos al Álbum<br />
-                  ✅ Redactar y leer el Diario íntimo<br />
-                  ✅ Seguimiento de crecimiento del bebé
+                  Ver y subir fotos al Álbum<br />
+                  Redactar y leer el Diario íntimo<br />
+                  Seguimiento de crecimiento del bebé
                 </p>
                 {!isFamilyLink && !partnerLinkActive && (
                   <button
@@ -298,20 +296,20 @@ export default function PartnerPage() {
                 )}
                 {!isFamilyLink && partnerLinkActive && (
                   <span className="mt-2 text-[11px] font-bold text-emerald-700 block">
-                    ✓ Papá único ya vinculado
+                    Papá único ya vinculado
                   </span>
                 )}
               </div>
 
               <div className="p-3.5 rounded-2xl bg-surface-container/50 border border-outline-variant/20 flex flex-col gap-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">👨‍👩‍👧</span>
+                  <span><ModuleIcon name="family" className="w-5 h-5" /></span>
                   <span className="font-display text-xs font-bold text-on-surface">Familiares (Abuelos/Tíos)</span>
                 </div>
                 <p className="font-body text-[11px] text-on-surface-variant leading-relaxed">
-                  👁️ <strong>Solo lectura</strong> de fotos del Álbum<br />
-                  👁️ Guía del bebé semana a semana<br />
-                  👁️ Cuenta regresiva al parto
+                  <strong>Solo lectura</strong> de fotos del Álbum<br />
+                  Guía del bebé semana a semana<br />
+                  Cuenta regresiva al parto
                 </p>
                 {!isFamilyLink && (
                   <button
@@ -327,7 +325,7 @@ export default function PartnerPage() {
 
           <div className="mt-4 pt-3 border-t border-outline-variant/20 flex items-center justify-between">
             <span className="text-[11px] text-on-surface-variant">
-              🔒 Tus controles médicos, medicamentos y test emocional son <strong>privados</strong>.
+              Tus controles médicos, medicamentos y test emocional son <strong>privados</strong>.
             </span>
             <div className="flex gap-2">
               <Link to="/album" className="text-xs font-semibold text-primary hover:underline">
@@ -344,7 +342,7 @@ export default function PartnerPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-display text-lg font-bold text-on-surface flex items-center gap-2">
-                <span>🔗</span>
+                <ModuleIcon name="info" className="w-4 h-4" />
                 <span>Lazos y Dispositivos Vinculados ({validLinks.length}/10)</span>
               </h3>
               <p className="font-body text-xs text-on-surface-variant mt-0.5">
@@ -367,7 +365,7 @@ export default function PartnerPage() {
 
           {isLimitReached && (
             <div className="mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-2">
-              <span>⚠️</span>
+              <ModuleIcon name="alert" className="w-4 h-4" />
               <span>
                 Has alcanzado el límite máximo de 10 enlaces por cuenta ({validLinks.length}/10). Para conectar a otro acompañante, desvincula miembros anteriores o no utilizados.
               </span>
@@ -380,7 +378,7 @@ export default function PartnerPage() {
             </div>
           ) : activeLinks.length === 0 ? (
             <div className="p-8 rounded-2xl bg-surface-container/30 border border-dashed border-outline-variant/40 flex flex-col items-center text-center">
-              <span className="text-3xl mb-2">👨‍👩‍👧‍👦</span>
+              <span className="mb-2"><ModuleIcon name="family" className="w-10 h-10" /></span>
               <p className="font-display text-sm font-semibold text-on-surface">
                 Aún no has vinculado a ningún familiar
               </p>
@@ -413,7 +411,7 @@ export default function PartnerPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-10 h-10 rounded-2xl bg-surface-container flex items-center justify-center text-xl shrink-0 shadow-cloud-sm">
-                      {link.role === 'papa' ? '🧑' : '👨‍👩‍👧'}
+                      <ModuleIcon name={link.role === 'papa' ? 'user' : 'family'} className="w-5 h-5" />
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
@@ -485,7 +483,7 @@ export default function PartnerPage() {
                         className="px-3 py-1.5 rounded-full border border-primary/40 text-primary hover:bg-primary-container/30 text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs"
                         title="Refrescar código y reiniciar 15 minutos"
                       >
-                        <span>🔄</span>
+                        <ModuleIcon name="hourglass" className="w-4 h-4" />
                         <span>{refreshingId === link.id ? 'Refrescando...' : 'Refrescar (15 min)'}</span>
                       </button>
                     )}
@@ -498,7 +496,7 @@ export default function PartnerPage() {
                       className="px-3.5 py-1.5 rounded-full border border-error/30 text-error hover:bg-error/10 text-xs font-semibold transition-colors flex items-center gap-1.5"
                       title="Revocar acceso inmediatamente"
                     >
-                      <span>🗑️</span>
+                      <ModuleIcon name="close" className="w-4 h-4" />
                       <span>{revokingId === link.id ? 'Desvinculando...' : 'Desvincular'}</span>
                     </button>
                   </div>

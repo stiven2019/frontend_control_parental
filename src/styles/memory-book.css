@@ -1,0 +1,22 @@
+/* Libro de recuerdos: ajustes de impresion (Guardar como PDF) */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  html, body { background: #ffffff !important; height: auto !important; }
+  #root { height: auto !important; }
+  .no-print { display: none !important; }
+  .memory-book {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: var(--color-surface) !important;
+  }
+  .memory-section { break-inside: avoid-page; page-break-inside: avoid; }
+  .memory-card, .memory-moment, .memory-tl-item { break-inside: avoid; page-break-inside: avoid; box-shadow: none !important; }
+  .memory-cover { break-after: page; page-break-after: always; min-height: 250mm !important; }
+}
+
+.memory-cover {
+  background:
+    radial-gradient(circle at 12% 18%, var(--color-secondary-container) 0 14%, transparent 15%),
+    radial-gradient(circle at 88% 80%, var(--color-tertiary-container) 0 18%, transparent 19%),
+    linear-gradient(160deg, var(--color-primary-container), var(--color-surface-low));
+}

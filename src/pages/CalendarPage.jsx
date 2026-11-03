@@ -119,7 +119,7 @@ export default function CalendarPage() {
             Eventos del {new Date(`${selectedDay}T00:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}
           </h3>
           {selectedEvents.length === 0 ? (
-            <EmptyState icon="🗓️" title="Sin eventos este día" description="No tienes eventos programados." />
+            <EmptyState icon="calendar" title="Sin eventos este día" description="No tienes eventos programados." />
           ) : (
             <div className="flex flex-col gap-3">
               {selectedEvents.map((ev) => (

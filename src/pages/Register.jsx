@@ -53,8 +53,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col justify-center px-6 py-10">
-      <div className="w-full max-w-sm mx-auto">
+    <div className="auth-shell min-h-screen bg-surface flex flex-col justify-center px-6 py-10">
+      <div className="w-full max-w-sm mx-auto bg-white rounded-lg shadow-cloud p-6 sm:p-8">
         <h1 className="font-display text-3xl font-semibold text-primary mb-2">Comencemos juntas</h1>
         <p className="font-body text-sm text-on-surface-variant mb-8">
           Crea tu cuenta para guardar cada momento de tu embarazo.
@@ -110,10 +110,10 @@ export default function Register() {
           </div>
 
           {/* Bloque Destacado de Términos y Condiciones */}
-          <div className={`p-4 rounded-xl border transition-all ${
+          <div className={`p-4 rounded-3xl border-2 transition-all ${
             form.consentAccepted
-              ? 'bg-secondary-container/25 border-secondary/40'
-              : 'bg-surface-container/70 border-surface-container'
+              ? 'bg-secondary-container/50 border-secondary/40'
+              : 'bg-surface-container/70 border-transparent'
           }`}>
             <label className="flex items-start gap-3 cursor-pointer">
               <input
@@ -147,20 +147,20 @@ export default function Register() {
                   onClick={() => setShowTermsModal(true)}
                   className="text-primary hover:underline font-semibold flex items-center gap-1 bg-white/80 px-2 py-1 rounded border border-primary/20"
                 >
-                  <span>🔍</span> Abrir en ventana emergente
+                  Abrir en ventana emergente
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowInlineTerms(!showInlineTerms)}
                   className="text-on-surface-variant hover:text-primary font-medium underline flex items-center gap-1"
                 >
-                  <span>{showInlineTerms ? '▲ Ocultar lectura' : '▼ Leer aquí mismo (7 Artículos)'}</span>
+                  <span>{showInlineTerms ? 'Ocultar lectura' : 'Leer aquí mismo (7 artículos)'}</span>
                 </button>
               </div>
 
               {form.consentAccepted && (
                 <span className="pill-chip !py-0.5 !px-2 bg-secondary-container text-on-secondary-container font-semibold">
-                  ✓ Aceptado
+                  Aceptado
                 </span>
               )}
             </div>
@@ -170,7 +170,6 @@ export default function Register() {
               <div className="mt-3.5 pt-3 border-t border-outline-variant/30 animate-fadeIn">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-display font-semibold text-xs text-on-surface flex items-center gap-1.5">
-                    <span>📜</span>
                     <span>Documento Completo de Términos (Colombia)</span>
                   </span>
                   <span className="text-[10px] text-on-surface-variant bg-white px-2 py-0.5 rounded border border-outline-variant/20">
@@ -205,14 +204,14 @@ export default function Register() {
                   ))}
 
                   <div className="p-2.5 rounded-lg bg-surface-container/50 border border-outline-variant/20 text-[11px] text-on-surface-variant">
-                    <p className="font-semibold text-on-surface">🏛️ Autoridad de Vigilancia:</p>
+                    <p className="font-semibold text-on-surface">Autoridad de Vigilancia:</p>
                     <p>Superintendencia de Industria y Comercio (SIC) — Delegatura de Protección de Datos. www.sic.gov.co</p>
                   </div>
                 </div>
 
                 <div className="mt-2.5 flex items-center justify-between gap-2">
                   <p className="text-[11px] text-on-surface-variant">
-                    {form.consentAccepted ? '✓ Has aceptado los términos' : 'Marca la casilla para confirmar tu aceptación'}
+                    {form.consentAccepted ? 'Has aceptado los términos' : 'Marca la casilla para confirmar tu aceptación'}
                   </p>
                   {!form.consentAccepted && (
                     <button
@@ -232,9 +231,9 @@ export default function Register() {
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-error-container/30 border border-error/20 flex items-start gap-2">
-              <span className="text-error text-sm shrink-0 mt-0.5">⚠️</span>
-              <p className="text-xs text-error font-body leading-relaxed">{error}</p>
+            <div className="p-3.5 rounded-2xl bg-error-container flex items-start gap-2">
+              
+              <p className="text-xs text-on-error-container font-body font-semibold leading-relaxed">{error}</p>
             </div>
           )}
 
@@ -251,7 +250,7 @@ export default function Register() {
         </p>
 
         <p className="text-center font-body text-xs text-on-surface-variant mt-3">
-          <Link to="/terminos-y-condiciones" className="text-outline hover:text-primary hover:underline">
+          <Link to="/terminos-y-condiciones" className="text-on-surface-variant hover:text-primary hover:underline">
             Consultar Términos y Condiciones completos
           </Link>
         </p>

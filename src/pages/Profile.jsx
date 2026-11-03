@@ -6,6 +6,10 @@ import { useAuth } from '../context/AuthContext';
 import { useAlarm } from '../context/AlarmContext';
 import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 import SubscriptionModal from '../components/SubscriptionModal';
+import ThemePicker from '../components/ThemePicker';
+import ModuleIcon from '../components/ModuleIcons';
+import { PAID_MODULES, PLAN_LABELS } from '../data/plans';
+import { hasModuleAccess } from '../components/SubscriptionGuard';
 
 
 export default function Profile() {
@@ -49,22 +53,22 @@ export default function Profile() {
         </header>
 
         <section className="card flex flex-col items-center text-center mb-6 p-6">
-          <div className="w-24 h-24 rounded-full bg-secondary-container flex items-center justify-center text-4xl mb-4 border-4 border-white shadow-cloud">
-            {isPartnerLink ? '🧑' : '👨‍👩‍👧'}
+          <div className="w-24 h-24 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center mb-4 border-4 border-white shadow-cloud">
+            <ModuleIcon name={isPartnerLink ? 'user' : 'family'} className="w-10 h-10" />
           </div>
           <h2 className="font-display text-xl font-bold text-on-surface">
             {user.firstName}
           </h2>
           <span className="inline-flex mt-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary-container text-on-primary-container">
-            {isPartnerLink ? '🧑 Papá / Pareja' : '👁️ Familiar (Solo Lectura)'}
+            {isPartnerLink ? 'Papá / Pareja' : 'Familiar (Solo Lectura)'}
           </span>
 
           <div className="mt-5 p-4 rounded-2xl bg-surface-container/60 w-full text-left text-xs font-body text-on-surface-variant flex flex-col gap-2 border border-outline-variant/20">
             <p>
-              🌸 <strong>Estado:</strong> Conectado a la app mediante código QR.
+              <strong>Estado:</strong> Conectado a la app mediante código QR.
             </p>
             <p>
-              🛡️ <strong>Permisos:</strong>{' '}
+              <strong>Permisos:</strong>{' '}
               {isPartnerLink
                 ? 'Acceso colaborativo para ver y subir fotos al Álbum, redactar en el Diario y ver el Desarrollo.'
                 : 'Acceso de solo lectura para disfrutar de fotos del Álbum, cuenta regresiva y desarrollo del bebé.'}
@@ -84,27 +88,26 @@ export default function Profile() {
             Salir de la cuenta vinculada
           </button>
         </section>
+
+        <div className="mb-6"><ThemePicker /></div>
       </AppLayout>
     );
   }
 
   return (
     <AppLayout>
-      <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">Mi perfil</h1>
-          <p className="font-body text-xs text-on-surface-variant mt-0.5">Gestión de tu cuenta y preferencias.</p>
-        </div>
+      <header className="mb-4 flex items-start justify-between gap-3">
+        <h1 className="page-title">Mi perfil</h1>
         <Link
           to="/papa"
-          className="btn-secondary !py-2 !px-3 text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto !w-auto"
+          className="btn-secondary !py-2.5 !px-4 text-xs font-bold flex items-center gap-1.5 !w-auto shrink-0"
         >
-          <span>🧑‍🍼</span>
-          <span>Lazos y QR Familiar</span>
+          <ModuleIcon name="family" className="w-4 h-4" />
+          <span>Papá y familia</span>
         </Link>
       </header>
 
-      <section className="card flex flex-col items-center text-center mb-6">
+      <section className="hero-card flex flex-col items-center text-center mb-6">
         <label className="relative w-24 h-24 rounded-full overflow-hidden bg-primary-container flex items-center justify-center mb-4 cursor-pointer border-4 border-white shadow-cloud">
           {user.avatarUrl ? (
             <img
@@ -125,21 +128,21 @@ export default function Profile() {
               }}
             />
           ) : (
-            <span className="text-3xl">🤰</span>
+            <span><ModuleIcon name="heart" className="w-10 h-10" /></span>
           )}
-          <span className="hidden text-3xl absolute inset-0 flex items-center justify-center bg-primary-container">🤰</span>
+          <span className="hidden absolute inset-0 flex items-center justify-center bg-primary-container"><ModuleIcon name="heart" className="w-10 h-10" /></span>
           <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handleAvatar} />
         </label>
         <h2 className="font-display text-xl font-semibold">{user.firstName} {user.lastName}</h2>
-        <p className="font-body text-sm text-on-surface-variant">{user.email}</p>
+        <p className="font-body text-sm">{user.email}</p>
 
         {dashboard && (
           <div className="flex gap-4 mt-5 w-full">
-            <div className="flex-1 bg-primary-container/50 rounded-md py-3">
+            <div className="flex-1 bg-white/75 rounded-3xl py-3">
               <p className="text-xs text-on-primary-container">Semana actual</p>
               <p className="font-semibold text-on-primary-container">{dashboard.status.week}</p>
             </div>
-            <div className="flex-1 bg-secondary-container/50 rounded-md py-3">
+            <div className="flex-1 bg-white/75 rounded-3xl py-3">
               <p className="text-xs text-on-secondary-container">Papá</p>
               <p className="font-semibold text-on-secondary-container">{dashboard.partner?.name || '—'}</p>
             </div>
@@ -149,14 +152,16 @@ export default function Profile() {
 
       <div className="flex gap-2 mb-4 flex-wrap">
         <button onClick={() => setSection('perfil')} className={`pill-chip text-xs font-semibold ${section === 'perfil' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Editar información</button>
-        <button onClick={() => setSection('suscripcion')} className={`pill-chip text-xs font-semibold ${section === 'suscripcion' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>💎 Mi Suscripción</button>
-        <button onClick={() => setSection('alarmas')} className={`pill-chip text-xs font-semibold ${section === 'alarmas' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>🔔 Alarmas y Sonido</button>
+        <button onClick={() => setSection('suscripcion')} className={`pill-chip text-xs font-semibold ${section === 'suscripcion' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Mi Suscripción</button>
+        <button onClick={() => setSection('alarmas')} className={`pill-chip text-xs font-semibold ${section === 'alarmas' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Alarmas y Sonido</button>
+        <button onClick={() => setSection('apariencia')} className={`pill-chip text-xs font-semibold ${section === 'apariencia' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Apariencia</button>
         <button onClick={() => setSection('privacidad')} className={`pill-chip text-xs font-semibold ${section === 'privacidad' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Privacidad y seguridad</button>
       </div>
 
       {section === 'perfil' && <EditProfileForm user={user} refreshUser={refreshUser} />}
       {section === 'suscripcion' && <SubscriptionSection user={user} onOpenModal={() => setSubModalOpen(true)} />}
       {section === 'alarmas' && <AlarmSettingsSection />}
+      {section === 'apariencia' && <ThemePicker />}
       {section === 'privacidad' && <PrivacySection logout={logout} navigate={navigate} />}
 
       <button onClick={() => { logout(); navigate('/'); }} className="btn-ghost mt-6 text-error">
@@ -199,7 +204,7 @@ function EditProfileForm({ user, refreshUser }) {
         <div><label className="field-label">Apellidos</label><input className="input-field" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
       </div>
       <div><label className="field-label">Teléfono</label><input className="input-field" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
-      <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Guardando...' : saved ? '✓ Guardado' : 'Guardar cambios'}</button>
+      <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Guardando...' : saved ? 'Guardado' : 'Guardar cambios'}</button>
     </form>
   );
 }
@@ -295,7 +300,7 @@ function AlarmSettingsSection() {
       <div className="card bg-primary-container/30 border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="font-display text-lg font-semibold text-on-surface flex items-center gap-2">
-            <span>🔊</span> Alarmas y Recordatorios Activos
+            <ModuleIcon name="bell" className="w-4 h-4" /> Alarmas y Recordatorios Activos
           </h3>
           <p className="font-body text-sm text-on-surface-variant mt-1">
             Tus recordatorios, tomas de medicamentos y controles médicos sonarán con audio en la app y te enviarán alertas al sistema operativo incluso si el navegador o la app están cerrados.
@@ -306,7 +311,7 @@ function AlarmSettingsSection() {
             onClick={testAlarm}
             className="btn-outline shrink-0 !w-auto !py-2.5 !px-4 text-xs font-semibold flex items-center gap-1.5"
           >
-            <span>🔔</span> Probar Alarma Ahora
+            <ModuleIcon name="bell" className="w-4 h-4" /> Probar Alarma Ahora
           </button>
           <button
             onClick={() => testBackgroundPush(4)}
@@ -314,9 +319,9 @@ function AlarmSettingsSection() {
             className="btn-primary shrink-0 !w-auto !py-2.5 !px-4 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
           >
             {testCountdown ? (
-              <span>⏳ ¡Cierra o minimiza! ({testCountdown}s)</span>
+              <span>¡Cierra o minimiza! ({testCountdown}s)</span>
             ) : (
-              <span>🚀 Probar fuera de la app</span>
+              <span>Probar fuera de la app</span>
             )}
           </button>
         </div>
@@ -372,7 +377,7 @@ function AlarmSettingsSection() {
                   className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-xs hover:bg-primary hover:text-white transition-colors"
                   title="Escuchar tono"
                 >
-                  🔊
+                  <ModuleIcon name="bell" className="w-4 h-4" />
                 </button>
               </div>
             ))}
@@ -429,7 +434,7 @@ function AlarmSettingsSection() {
             </button>
           ) : (
             <span className="pill-chip bg-secondary-container text-on-secondary-container text-xs shrink-0 flex items-center gap-1 self-start sm:self-auto">
-              <span>✓</span> Alertas activas
+              <ModuleIcon name="check" className="w-4 h-4" /> Alertas activas
             </span>
           )}
         </div>
@@ -437,7 +442,7 @@ function AlarmSettingsSection() {
         {/* Guía especial para iPhone / iPad (iOS Safari) */}
         {isIOS && !isStandalone && (
           <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
-            <span className="text-xl shrink-0">📱</span>
+            <span className="shrink-0"><ModuleIcon name="user" className="w-5 h-5" /></span>
             <div className="text-xs text-on-surface">
               <p className="font-semibold text-amber-700 dark:text-amber-300">
                 Activación en iPhone y iPad (Apple iOS):
@@ -457,12 +462,7 @@ function SubscriptionSection({ user, onOpenModal }) {
   const [testingAlert, setTestingAlert] = useState(false);
   const [testResult, setTestResult] = useState('');
 
-  const planNames = {
-    full: 'Plan VIP Toda la App ($50.000 COP)',
-    salud: 'Plan Gestación y Bebé Nacido ($30.000 COP)',
-    basico: 'Plan Esencial Médico ($15.000 COP)',
-    free: 'Plan Gratuito Permanente',
-  };
+  const planNames = { ...PLAN_LABELS, free: 'Plan Gratuito Permanente' };
 
   const planName = planNames[user?.plan] || `Plan ${user?.plan || 'Gratuito'}`;
   const isVip = Boolean(user?.isVip);
@@ -503,7 +503,7 @@ function SubscriptionSection({ user, onOpenModal }) {
           onClick={onOpenModal}
           className="btn-primary !py-2.5 !px-5 text-xs font-semibold self-start sm:self-auto shadow-cloud"
         >
-          <span>💎</span>
+          <ModuleIcon name="gem" className="w-4 h-4" />
           <span>Ver Planes y Renovar</span>
         </button>
       </div>
@@ -511,7 +511,7 @@ function SubscriptionSection({ user, onOpenModal }) {
       {/* Alerta de prueba enviada */}
       {testResult && (
         <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-fade-in">
-          <span>✓</span>
+          <ModuleIcon name="check" className="w-4 h-4" />
           <span>{testResult}</span>
         </div>
       )}
@@ -531,22 +531,53 @@ function SubscriptionSection({ user, onOpenModal }) {
           <div>
             {isVip ? (
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                💎 Acceso VIP Ilimitado
+                Acceso VIP Ilimitado
               </span>
             ) : isExpiringSoon ? (
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
-                ⚠️ Vence en {daysLeft} días (Alerta al correo)
+                Vence en {daysLeft} días (Alerta al correo)
               </span>
             ) : user?.plan && user?.plan !== 'free' ? (
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                🟢 Suscripción Activa
+                Suscripción Activa
               </span>
             ) : (
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-800">
-                ⚪ Plan Gratuito
+                Plan Gratuito
               </span>
             )}
           </div>
+        </div>
+
+        {/* Modulos incluidos en el plan */}
+        <div className="pt-2">
+          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">
+            Modulos de tu plan
+          </span>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {PAID_MODULES.map((m) => {
+              const active = hasModuleAccess(user, m.key);
+              return (
+                <li
+                  key={m.key}
+                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-body ${
+                    active ? 'bg-white border-outline-variant/20 text-on-surface' : 'bg-surface-container/40 border-transparent text-on-surface-variant'
+                  }`}
+                >
+                  <span className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${active ? 'bg-primary-container text-primary' : 'bg-surface-container text-on-surface-variant'}`}>
+                    <ModuleIcon name={active ? m.icon : 'lock'} className="w-4 h-4" />
+                  </span>
+                  <span className="flex-1 font-semibold">{m.label}</span>
+                  {m.isNew && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase bg-lilac-container text-on-surface">Nuevo</span>
+                  )}
+                  <span className={`text-[10px] font-bold ${active ? 'text-secondary' : 'text-on-surface-variant'}`}>
+                    {active ? 'Activo' : 'Bloqueado'}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
         {/* Detalles de fecha de vencimiento y alerta */}
@@ -574,7 +605,7 @@ function SubscriptionSection({ user, onOpenModal }) {
               Alerta Preventiva al Correo:
             </span>
             <span className="text-xs font-medium text-on-surface mt-0.5 block">
-              📧 Se envía a <strong>{user?.email}</strong> exactamente <strong>7 días antes</strong> de vencer.
+              Se envía a <strong>{user?.email}</strong> exactamente <strong>7 días antes</strong> de vencer.
             </span>
           </div>
         </div>
@@ -583,7 +614,7 @@ function SubscriptionSection({ user, onOpenModal }) {
       {/* Explicación de políticas y botón de prueba */}
       <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/60 text-xs font-body text-amber-950 space-y-2">
         <div className="flex items-center gap-2 font-bold text-sm">
-          <span>🔔</span>
+          <ModuleIcon name="bell" className="w-4 h-4" />
           <span>Aviso automático a tu correo electrónico</span>
         </div>
         <p className="leading-relaxed text-[11.5px] text-amber-900">
@@ -597,7 +628,7 @@ function SubscriptionSection({ user, onOpenModal }) {
             onClick={handleTestAlert}
             className="px-3.5 py-1.5 rounded-full bg-white border border-amber-300 text-amber-900 text-xs font-bold hover:bg-amber-100 transition-colors shadow-2xs flex items-center gap-1.5"
           >
-            <span>✉️</span>
+            <ModuleIcon name="info" className="w-4 h-4" />
             <span>{testingAlert ? 'Enviando...' : 'Enviar correo de prueba a mi email'}</span>
           </button>
         </div>

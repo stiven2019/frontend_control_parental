@@ -165,7 +165,7 @@ export default function AdminRegister() {
             <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
               <Link
                 to="/admin/login"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-primary to-[#a47287] hover:opacity-95 text-white font-semibold text-xs tracking-wide shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-95 text-white font-semibold text-xs tracking-wide shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 <span>🔑</span>
                 <span>Ir al Inicio de Sesión de Admin</span>
@@ -318,7 +318,7 @@ export default function AdminRegister() {
                 <button
                   type="submit"
                   disabled={loading || success}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-[#a47287] hover:opacity-95 text-white font-semibold text-sm shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-95 text-white font-semibold text-sm shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>

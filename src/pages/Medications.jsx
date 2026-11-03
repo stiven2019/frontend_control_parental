@@ -3,6 +3,8 @@ import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState, Banner } from '../components/States';
 import { api } from '../api/client';
 import { useAlarm } from '../context/AlarmContext';
+import ModuleIcon from '../components/ModuleIcons';
+import { PageHeader, Fab } from '../components/PageParts';
 
 const EMPTY_FORM = { name: '', dose: '', frequency: '', time: '', startDate: '', endDate: '', medicalIndications: '', prescribedBy: '' };
 
@@ -65,12 +67,19 @@ export default function Medications() {
 
   return (
     <AppLayout>
-      <header className="mb-4 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold">Medicamentos y vitaminas</h1>
-        <button onClick={() => setShowForm((s) => !s)} className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center text-xl shrink-0">
-          {showForm ? '×' : '+'}
-        </button>
-      </header>
+      <PageHeader title="Medicamentos y vitaminas" subtitle="Tus tomas del día, siempre a la mano." />
+
+      <section className="hero-card mb-5 flex items-center gap-4 !from-lilac-container !to-primary-container">
+        <span className="w-14 h-14 rounded-2xl bg-white/80 text-primary flex items-center justify-center shrink-0">
+          <ModuleIcon name="pill" className="w-7 h-7" />
+        </span>
+        <div>
+          <p className="font-body text-xs font-bold uppercase tracking-wide">Registrados</p>
+          <p className="font-display text-2xl font-semibold leading-tight">
+            {items.length} {items.length === 1 ? 'medicamento' : 'medicamentos'}
+          </p>
+        </div>
+      </section>
 
       <Banner tone="warning">
         Los medicamentos y dosis deben ser registrados según las indicaciones de tu profesional de salud. Esta app no recomienda ni modifica medicamentos.
@@ -96,30 +105,35 @@ export default function Medications() {
         </form>
       )}
 
+      <Fab open={showForm} onClick={() => setShowForm((v) => !v)} label="Agregar medicamento" />
+
       {items.length === 0 && !showForm && (
         <div className="mt-6">
-          <EmptyState icon="💊" title="Sin medicamentos registrados" description="Agrega tus vitaminas o medicamentos indicados por tu médico." />
+          <EmptyState icon="pill" title="Sin medicamentos registrados" description="Agrega tus vitaminas o medicamentos indicados por tu médico." />
         </div>
       )}
 
       <div className="flex flex-col gap-3 mt-6">
         {items.map((m) => (
           <div key={m.id} className="card !p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-body font-semibold">{m.name}</p>
+            <div className="flex items-start justify-between gap-3">
+              <span className="w-11 h-11 rounded-2xl bg-peach-container text-on-peach-container flex items-center justify-center shrink-0">
+                <ModuleIcon name="pill" className="w-5 h-5" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-body font-bold">{m.name}</p>
                 <p className="font-body text-sm text-on-surface-variant">{m.dose} {m.time ? `· ${m.time.slice(0, 5)}` : ''}</p>
                 {m.prescribedBy && <p className="font-body text-xs text-outline mt-1">Formulado por {m.prescribedBy}</p>}
               </div>
-              <button onClick={() => remove(m.id)} className="text-outline text-xs shrink-0">Eliminar</button>
+              <button onClick={() => remove(m.id)} className="text-on-surface-variant text-xs font-semibold shrink-0 px-2 py-1 rounded-full hover:bg-surface-container">Eliminar</button>
             </div>
             <button
               onClick={() => markTaken(m.id)}
-              className={`mt-4 w-full py-2.5 rounded-full font-body text-sm font-semibold transition-colors ${
+              className={`mt-4 w-full py-3 rounded-full font-body text-sm font-bold transition-colors inline-flex items-center justify-center gap-2 ${
                 justTaken === m.id ? 'bg-secondary text-on-secondary' : 'bg-secondary-container text-on-secondary-container'
               }`}
             >
-              {justTaken === m.id ? '✓ Registrado' : 'Marcar como tomado'}
+              {justTaken === m.id ? (<><ModuleIcon name="check" className="w-4 h-4" strokeWidth={2.4} />Registrado</>) : 'Marcar como tomado'}
             </button>
           </div>
         ))}

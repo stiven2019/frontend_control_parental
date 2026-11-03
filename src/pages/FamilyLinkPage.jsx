@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { LoadingState } from '../components/States';
+import ModuleIcon from '../components/ModuleIcons';
 
 export default function FamilyLinkPage() {
   const [searchParams] = useSearchParams();
@@ -112,12 +113,14 @@ export default function FamilyLinkPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-low flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-surface rounded-3xl shadow-cloud border border-outline-variant/30 p-6 sm:p-8 animate-fade-in">
+    <div className="relative min-h-screen bg-surface flex flex-col justify-center items-center p-4 overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-20 w-72 h-72 rounded-full bg-primary-container opacity-60" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -left-24 w-72 h-72 rounded-full bg-lilac-container opacity-50" />
+      <div className="relative w-full max-w-md bg-white rounded-lg shadow-cloud p-6 sm:p-8 animate-fade-in">
         {/* Encabezado */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-16 h-16 rounded-3xl bg-primary-container/40 flex items-center justify-center text-3xl shadow-cloud-sm mb-3">
-            {isExpired ? '⏳' : inviteInfo?.role === 'papa' ? '🧑' : '👨‍👩‍👧'}
+          <div className="w-16 h-16 rounded-3xl bg-primary-container text-on-primary-container flex items-center justify-center shadow-cloud-sm mb-3">
+            <ModuleIcon name={isExpired ? 'hourglass' : inviteInfo?.role === 'papa' ? 'user' : 'family'} className="w-8 h-8" />
           </div>
           <h1 className="font-display text-2xl font-bold text-on-surface">
             Vínculo Familiar Mi Bebé
@@ -133,7 +136,7 @@ export default function FamilyLinkPage() {
           /* Estado Vencido (no se conectó en 15 min) */
           <div className="flex flex-col items-center text-center py-2">
             <div className="p-3 px-4 rounded-full bg-rose-100 text-rose-800 text-xs font-bold mb-3 flex items-center gap-1.5">
-              <span>⚠️</span>
+              <ModuleIcon name="alert" className="w-4 h-4" />
               <span>Enlace Vencido (Límite de 15 minutos)</span>
             </div>
             <h2 className="font-display text-lg font-bold text-on-surface mb-2">
@@ -143,8 +146,8 @@ export default function FamilyLinkPage() {
               Los enlaces para papá o familiares tienen una validez de <strong>15 minutos</strong> desde su creación para conectarse. Al no haberse conectado a tiempo, el enlace se invalidó automáticamente por seguridad.
             </p>
 
-            <div className="w-full p-3.5 rounded-2xl bg-surface-container/60 text-xs font-body text-on-surface-variant text-left mb-5 border border-outline-variant/30 flex gap-2.5 items-start">
-              <span className="text-base shrink-0">💡</span>
+            <div className="w-full p-3.5 rounded-3xl bg-surface-container/60 text-xs font-body text-on-surface-variant text-left mb-5 flex gap-2.5 items-start">
+              <ModuleIcon name="info" className="w-5 h-5 shrink-0 text-primary" />
               <p>
                 Pídele a mamá que abra la sección <strong>Papá y Lazos Familiares</strong> en su aplicación y pulse <strong>"Refrescar (15 min)"</strong> para renovar el código, o te genere un nuevo enlace.
               </p>
@@ -166,20 +169,20 @@ export default function FamilyLinkPage() {
         ) : inviteInfo ? (
           /* Pantalla de confirmación de invitación */
           <form onSubmit={handleRedeem} className="flex flex-col gap-4">
-            <div className="p-4 rounded-2xl bg-secondary-container/30 border border-secondary/20 flex flex-col items-center text-center">
-              <span className="text-xs uppercase font-bold text-secondary tracking-wider">
+            <div className="p-4 rounded-3xl bg-secondary-container flex flex-col items-center text-center">
+              <span className="text-xs uppercase font-bold text-on-secondary-container tracking-wider">
                 Invitación Confirmada
               </span>
               <h2 className="font-display text-lg font-bold text-on-surface mt-1">
-                Embarazo de {inviteInfo.motherName} 🌸
+                Embarazo de {inviteInfo.motherName}
               </h2>
               <p className="font-body text-xs text-on-surface-variant mt-0.5">
                 Esperando a: <strong>{inviteInfo.babyName}</strong>
               </p>
 
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white shadow-sm border border-outline-variant/30">
-                  <span>{inviteInfo.role === 'papa' ? '🧑' : '👁️'}</span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white shadow-sm">
+                  <ModuleIcon name={inviteInfo.role === 'papa' ? 'user' : 'family'} className="w-3.5 h-3.5" />
                   <span>
                     {inviteInfo.role === 'papa'
                       ? 'Rol: Papá (Colaborativo)'
@@ -188,8 +191,8 @@ export default function FamilyLinkPage() {
                 </div>
 
                 {remainingSecs > 0 && (
-                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 border border-amber-200 text-amber-900 shadow-sm animate-pulse">
-                    <span>⏱️</span>
+                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-900 shadow-sm animate-pulse">
+                    <ModuleIcon name="hourglass" className="w-3.5 h-3.5" />
                     <span>Vence en: {formatTimer(remainingSecs)}</span>
                   </div>
                 )}
@@ -197,8 +200,8 @@ export default function FamilyLinkPage() {
             </div>
 
             {/* Descripción de permisos */}
-            <div className="p-3.5 rounded-2xl bg-surface-container/60 text-xs font-body text-on-surface-variant flex gap-2.5 items-start">
-              <span className="text-base shrink-0">✨</span>
+            <div className="p-3.5 rounded-3xl bg-surface-container/60 text-xs font-body text-on-surface-variant flex gap-2.5 items-start">
+              <ModuleIcon name="heart" className="w-5 h-5 shrink-0 text-primary" />
               <p>
                 {inviteInfo.role === 'papa'
                   ? 'Como papá tendrás acceso a guardar y ver fotos en el Álbum, redactar recuerdos en el Diario íntimo y seguir el Desarrollo semanal del bebé.'
@@ -225,7 +228,7 @@ export default function FamilyLinkPage() {
             </div>
 
             {redeemError && (
-              <div className="p-3 rounded-xl bg-error-container/40 text-error text-xs font-semibold text-center">
+              <div className="p-3 rounded-2xl bg-error-container text-on-error-container text-xs font-semibold text-center">
                 {redeemError}
               </div>
             )}
@@ -236,7 +239,6 @@ export default function FamilyLinkPage() {
               className="btn-primary w-full !py-3 flex items-center justify-center gap-2 shadow-cloud font-semibold text-sm"
             >
               <span>{redeeming ? 'Conectando...' : '¡Aceptar y Conectar!'}</span>
-              <span>💖</span>
             </button>
 
             <button
@@ -272,7 +274,7 @@ export default function FamilyLinkPage() {
             </div>
 
             {infoError && (
-              <div className="p-3 rounded-xl bg-error-container/40 text-error text-xs font-semibold text-center">
+              <div className="p-3 rounded-2xl bg-error-container text-on-error-container text-xs font-semibold text-center">
                 {infoError}
               </div>
             )}
@@ -283,7 +285,6 @@ export default function FamilyLinkPage() {
               className="btn-primary w-full !py-3 flex items-center justify-center gap-2 shadow-cloud text-sm font-semibold"
             >
               <span>Verificar Código</span>
-              <span>🔍</span>
             </button>
 
             <div className="text-center pt-3 border-t border-outline-variant/30">

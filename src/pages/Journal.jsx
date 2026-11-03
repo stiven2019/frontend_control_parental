@@ -4,6 +4,8 @@ import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
 import { api, uploadFile, getFileUrl, getDirectMinioUrl } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import ModuleIcon from '../components/ModuleIcons';
+import { PageHeader, Fab } from '../components/PageParts';
 
 const getLocalDateStr = () => {
   const now = new Date();
@@ -125,11 +127,11 @@ export default function Journal() {
       if (editingId) {
         // Actualizar entrada existente
         await api.updateJournal(editingId, payload);
-        setFeedback('¡Entrada del diario actualizada exitosamente! 💖');
+        setFeedback('¡Entrada del diario actualizada exitosamente!');
       } else {
         // Crear nueva entrada
         await api.createJournal(payload);
-        setFeedback('¡Nueva experiencia guardada en tu diario! 📖');
+        setFeedback('¡Nueva experiencia guardada en tu diario!');
       }
 
       setShowForm(false);
@@ -161,14 +163,14 @@ export default function Journal() {
   if (isFamilyMember) {
     return (
       <AppLayout>
-        <div className="card text-center p-8 max-w-md mx-auto my-12 shadow-cloud border border-outline-variant/30 flex flex-col items-center">
-          <span className="text-4xl mb-3">🔒</span>
+        <div className="card text-center p-8 max-w-md mx-auto my-12 shadow-cloud flex flex-col items-center">
+          <span className="w-16 h-16 rounded-full bg-lilac-container text-on-lilac-container flex items-center justify-center mb-3"><ModuleIcon name="lock" className="w-8 h-8" /></span>
           <h2 className="font-display text-xl font-bold text-on-surface">Diario Íntimo Privado</h2>
           <p className="font-body text-xs text-on-surface-variant mt-2 mb-5 leading-relaxed">
             El diario es un espacio reservado exclusivamente para las vivencias íntimas de mamá y papá. Puedes acompañar a la familia explorando las fotografías compartidas en el álbum y el desarrollo del bebé.
           </p>
           <Link to="/album" className="btn-primary !py-2.5 !px-5 text-xs font-semibold shadow-cloud">
-            Ver Álbum de Fotos →
+            Ver álbum de fotos
           </Link>
         </div>
       </AppLayout>
@@ -189,32 +191,16 @@ export default function Journal() {
 
   return (
     <AppLayout>
-      <header className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-on-surface flex items-center gap-2">
-            <span>📖</span>
-            <span>Mi Diario de Embarazo</span>
-          </h1>
-          <p className="font-body text-xs text-on-surface-variant mt-0.5">
-            Guarda tus emociones, vivencias y anécdotas semana a semana.
-          </p>
-        </div>
-
-        <button
-          onClick={showForm ? handleCancelForm : handleOpenCreate}
-          className={`w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0 transition-transform active:scale-95 shadow-cloud-sm ${
-            showForm ? 'bg-surface-container text-on-surface' : 'bg-primary text-on-primary'
-          }`}
-          title={showForm ? 'Cerrar formulario' : 'Escribir nueva entrada'}
-        >
-          {showForm ? '×' : '+'}
-        </button>
-      </header>
+      <PageHeader
+        title="Mi diario de embarazo"
+        subtitle="Tus emociones, vivencias y anécdotas semana a semana."
+      />
+      <Fab open={showForm} onClick={showForm ? handleCancelForm : handleOpenCreate} label="Escribir nueva entrada" />
 
       {/* Banner de Bienestar Emocional */}
-      <div className="card mb-6 !p-4 bg-primary-container/20 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="card mb-6 !p-4 !bg-primary-container/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="text-2xl shrink-0">🌸</span>
+          <span className="w-11 h-11 rounded-2xl bg-white/80 text-primary flex items-center justify-center shrink-0"><ModuleIcon name="mind" className="w-6 h-6" /></span>
           <div>
             <p className="font-body text-xs font-semibold text-on-surface">
               ¿Quieres registrar cómo te sientes hoy emocionalmente?
@@ -228,13 +214,13 @@ export default function Journal() {
           to="/bienestar-emocional"
           className="btn-secondary !w-auto !py-1.5 !px-4 text-xs font-semibold shrink-0 text-center shadow-cloud-sm"
         >
-          Test Emocional 🌸
+          Test emocional
         </Link>
       </div>
 
       {feedback && (
-        <div className="p-3.5 mb-5 rounded-xl bg-secondary-container/80 text-on-secondary-container text-xs font-semibold flex items-center gap-2 animate-fadeIn border border-secondary/20">
-          <span>✓</span>
+        <div className="p-3.5 mb-5 rounded-3xl bg-secondary-container text-on-secondary-container text-xs font-bold flex items-center gap-2 animate-fadeIn" role="status">
+          <ModuleIcon name="check" className="w-4 h-4" strokeWidth={2.4} />
           <span>{feedback}</span>
         </div>
       )}
@@ -244,12 +230,12 @@ export default function Journal() {
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className="card mb-6 flex flex-col gap-4 border-2 border-primary/20 animate-scaleUp shadow-cloud"
+          className="card mb-6 flex flex-col gap-4 animate-scaleUp"
         >
           <div className="flex items-center justify-between border-b border-surface-container pb-3">
             <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-base">
-                {editingId ? '✏️' : '📝'}
+              <span className="w-9 h-9 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center">
+                <ModuleIcon name="book" className="w-5 h-5" />
               </span>
               <div>
                 <h3 className="font-display text-base font-bold text-on-surface">
@@ -277,7 +263,7 @@ export default function Journal() {
                   onClick={() => setForm((f) => ({ ...f, date: getLocalDateStr() }))}
                   className="text-[11px] text-primary hover:underline font-semibold"
                 >
-                  📅 Hoy
+                  Hoy
                 </button>
               </div>
               <input
@@ -299,7 +285,7 @@ export default function Journal() {
                     onClick={() => setForm((f) => ({ ...f, weekNumber: dashboard.status.week }))}
                     className="text-[11px] text-primary hover:underline font-semibold"
                   >
-                    ✨ Semana actual ({dashboard.status.week})
+                    Semana actual ({dashboard.status.week})
                   </button>
                 )}
               </div>
@@ -323,7 +309,7 @@ export default function Journal() {
             <input
               required
               className="input-field font-medium"
-              placeholder="Ej. Hoy sentimos sus primeras pataditas ❤️"
+              placeholder="Ej. Hoy sentimos sus primeras pataditas"
               value={form.title}
               onChange={set('title')}
             />
@@ -356,8 +342,9 @@ export default function Journal() {
                   onClick={() => setPhotoPreview('')}
                   className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80"
                   title="Quitar foto"
+                  aria-label="Quitar foto"
                 >
-                  ✕
+                  <ModuleIcon name="close" className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -382,7 +369,6 @@ export default function Journal() {
               disabled={saving}
               className="btn-primary flex-1 !py-3 text-sm font-semibold flex items-center justify-center gap-2"
             >
-              <span>💾</span>
               <span>{saving ? 'Guardando...' : editingId ? 'Guardar Cambios' : 'Guardar en mi Diario'}</span>
             </button>
             <button
@@ -421,7 +407,7 @@ export default function Journal() {
       {/* Estado Vacío */}
       {items.length === 0 && !showForm && (
         <EmptyState
-          icon="📔"
+          icon="book"
           title="Tu diario está en blanco"
           description="Escribe los recuerdos, emociones y vivencias de tu embarazo, semana a semana."
           action={
@@ -487,7 +473,6 @@ export default function Journal() {
                   className="pill-chip bg-surface-container hover:bg-surface-high text-primary font-semibold text-xs transition-colors flex items-center gap-1"
                   title="Editar esta entrada"
                 >
-                  <span>✏️</span>
                   <span>Editar</span>
                 </button>
                 <button
@@ -496,8 +481,7 @@ export default function Journal() {
                   className="pill-chip bg-surface-container hover:bg-error-container hover:text-error text-outline text-xs transition-colors flex items-center gap-1"
                   title="Eliminar recuerdo"
                 >
-                  <span>🗑️</span>
-                  <span className="hidden sm:inline">Eliminar</span>
+                  <span>Eliminar</span>
                 </button>
               </div>
             </div>

@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { LoadingState } from '../components/States';
+import AdminActivityTab from '../components/admin/AdminActivityTab';
+import AdminExercisesTab from '../components/admin/AdminExercisesTab';
 
 export default function AdminPanel() {
   const { user, logout, refreshUser } = useAuth();
@@ -689,6 +691,34 @@ export default function AdminPanel() {
             </div>
           </div>
 
+          {/* Grupo: Actividad y Contenido */}
+          <div>
+            <div className="px-3 text-[10px] uppercase font-bold tracking-wider text-outline mb-1.5">
+              Actividad & Contenido
+            </div>
+            <div className="space-y-1">
+              {[
+                ['activity', 'Actividad en la app'],
+                ['exercises', 'Videos de ejercicios'],
+              ].map(([tabKey, tabLabel]) => (
+                <button
+                  key={tabKey}
+                  onClick={() => {
+                    setActiveTab(tabKey);
+                    setMobileSidebarOpen(false);
+                  }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                    activeTab === tabKey
+                      ? 'bg-primary text-white shadow-cloud-sm font-bold'
+                      : 'text-on-surface hover:bg-surface-container'
+                  }`}
+                >
+                  <span>{tabLabel}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Grupo 4: Cuenta & Seguridad */}
           <div>
             <div className="px-3 text-[10px] uppercase font-bold tracking-wider text-outline mb-1.5">
@@ -768,6 +798,8 @@ export default function AdminPanel() {
                   {activeTab === 'users' && 'Administración de Cuentas y Carnet'}
                   {activeTab === 'payments' && 'Archivo de Comprobantes de Pago'}
                   {activeTab === 'emails' && 'Centro de Mensajería y Alertas'}
+                  {activeTab === 'activity' && 'Actividad dentro de la App'}
+                  {activeTab === 'exercises' && 'Videos de Ejercicios para el Parto'}
                   {activeTab === 'account' && 'Configuración de Cuenta & Seguridad'}
                 </h1>
                 <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider hidden sm:inline">
@@ -816,7 +848,7 @@ export default function AdminPanel() {
           {activeTab === 'metrics' && (
             <div className="space-y-8 animate-fadeIn">
               {/* Banner de Bienvenida */}
-              <div className="bg-gradient-to-r from-primary to-[#966f80] rounded-3xl p-6 md:p-8 text-white shadow-cloud flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="bg-gradient-to-r from-primary to-primary/80 rounded-3xl p-6 md:p-8 text-white shadow-cloud flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
                   <span className="text-xs uppercase font-bold tracking-widest text-white/80 bg-white/10 px-3 py-1 rounded-full">
                     Resumen Operativo en Vivo
@@ -2262,13 +2294,16 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {activeTab === 'activity' && <AdminActivityTab />}
+          {activeTab === 'exercises' && <AdminExercisesTab />}
+
           {/* ============================================================== */}
           {/* TAB 7: CONFIGURACIÓN DE CUENTA DE ADMINISTRADOR */}
           {/* ============================================================== */}
           {activeTab === 'account' && (
             <div className="space-y-8 animate-fadeIn max-w-5xl">
               {/* Encabezado del Apartado */}
-              <div className="bg-gradient-to-r from-primary to-[#8c6776] rounded-3xl p-6 md:p-8 text-white shadow-cloud flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="bg-gradient-to-r from-primary to-primary/80 rounded-3xl p-6 md:p-8 text-white shadow-cloud flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs uppercase font-bold tracking-widest text-white/80 bg-white/10 px-3 py-1 rounded-full">
@@ -2665,6 +2700,7 @@ export default function AdminPanel() {
                     <option value="full">Plan Libre (Total)</option>
                     <option value="salud">Plan Salud</option>
                     <option value="basico">Plan Básico</option>
+                    <option value="crianza">Plan Crianza y Bienestar</option>
                     <option value="vip">Acceso VIP</option>
                   </select>
                 </div>
@@ -3094,6 +3130,17 @@ export default function AdminPanel() {
                     <div className="text-[11px] text-outline">Control médico, test emocional y recordatorios</div>
                   </div>
                   <span className="text-xs font-bold text-secondary">$30.000 COP</span>
+                </button>
+
+                <button
+                  onClick={() => handleUpdateSubscription('crianza', 30, false)}
+                  className="p-3 rounded-2xl bg-surface-container hover:bg-lilac-container text-left transition-colors flex items-center justify-between"
+                >
+                  <div>
+                    <div className="text-xs font-bold text-on-surface">Plan Crianza y Bienestar (30 días)</div>
+                    <div className="text-[11px] text-outline">Cuentos, ejercicios con video y libro de recuerdos</div>
+                  </div>
+                  <span className="text-xs font-bold text-primary">$20.000 COP</span>
                 </button>
 
                 <button

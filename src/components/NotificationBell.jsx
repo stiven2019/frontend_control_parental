@@ -45,13 +45,13 @@ export default function NotificationBell() {
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         aria-label="Alarmas y notificaciones"
-        className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+        className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-all ${
           isOpen
             ? 'bg-primary text-on-primary shadow-cloud'
-            : 'bg-surface-container hover:bg-surface-high text-on-surface-variant'
+            : 'bg-white shadow-cloud-sm text-primary hover:bg-surface-container'
         }`}
       >
-        <span className="text-lg">🔔</span>
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15L6 17Z" /><path d="M10 21h4" /></svg>
         {badgeCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-primary text-on-primary text-[11px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-pulse">
             {badgeCount}

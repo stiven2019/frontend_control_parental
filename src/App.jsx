@@ -38,12 +38,19 @@ import EmotionalWellbeingPage from "./pages/EmotionalWellbeingPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import FamilyLinkPage from "./pages/FamilyLinkPage";
+import Exercises from "./pages/Exercises";
+import Stories from './pages/Stories';
+import MemoryBook from "./pages/MemoryBook";
+import { ThemeProvider } from "./context/ThemeContext";
+import UsageTracker from "./components/UsageTracker";
 
 export default function App() {
   return (
+    <ThemeProvider>
     <BrowserRouter>
       <AuthProvider>
         <AlarmProvider>
+          <UsageTracker />
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Welcome />} />
@@ -359,6 +366,46 @@ export default function App() {
               }
             />
             <Route
+              path="/ejercicios"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="ejercicios" moduleName="Ejercicios para el parto">
+                    <Exercises />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recuerdo"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="recuerdo" moduleName="Libro de recuerdos">
+                    <MemoryBook />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cuentos"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="cuentos" moduleName="Cuentos infantiles">
+                    <Stories />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cuentos/:slug"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionGuard moduleKey="cuentos" moduleName="Cuentos infantiles">
+                    <Stories />
+                  </SubscriptionGuard>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/perfil"
               element={
                 <ProtectedRoute>
@@ -373,5 +420,6 @@ export default function App() {
       </AlarmProvider>
     </AuthProvider>
   </BrowserRouter>
+    </ThemeProvider>
   );
 }

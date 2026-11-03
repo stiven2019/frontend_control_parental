@@ -1,6 +1,10 @@
 import { Link, Routes, Route } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MomCare, BabyCare } from "./Content";
+import StoryScene from "../components/stories/StoryScene";
+import ModuleIcon from "../components/ModuleIcons";
+import { api } from "../api/client";
+import { LullabyPlayer } from "../utils/lullaby";
 
 const MODULES_INFO = [
   {
@@ -224,6 +228,57 @@ const MODULES_INFO = [
       "Lactancia y recién nacido",
     ],
   },
+  {
+    id: "ejercicios",
+    category: "bienestar",
+    iconName: "play",
+    title: "Ejercicios y Videos para Embarazo y Parto",
+    badge: "Nuevo",
+    badgeColor: "bg-lilac-container text-on-lilac-container",
+    planRequired: "Plan Crianza o VIP",
+    description:
+      "Rutinas de respiración, movilidad y preparación para el parto, explicadas paso a paso, con enlace a videos de referencia en YouTube. Papá tiene su propia sección de ejercicios para acompañarte.",
+    highlights: [
+      "Respiración y relajación",
+      "Preparación al parto",
+      "Sección para Papá",
+      "Videos de referencia",
+    ],
+  },
+  {
+    id: "cuentos",
+    category: "familia",
+    iconName: "storybook",
+    title: "Cuentos para Soñar con Música",
+    badge: "Nuevo",
+    badgeColor: "bg-lilac-container text-on-lilac-container",
+    planRequired: "Plan Crianza o VIP",
+    description:
+      "Biblioteca de cuentos originales que se leen como un libro: páginas que se voltean, dibujos animados y una melodía instrumental de tono bajo para cada historia. Ideales para leer al bebé desde la gestación.",
+    highlights: [
+      "14 cuentos",
+      "Música instrumental propia",
+      "Dibujos animados",
+      "Lectura en voz alta",
+    ],
+  },
+  {
+    id: "recuerdo",
+    category: "familia",
+    iconName: "book",
+    title: "Libro de Recuerdos del Embarazo",
+    badge: "Nuevo",
+    badgeColor: "bg-lilac-container text-on-lilac-container",
+    planRequired: "Plan Crianza o VIP",
+    description:
+      "Reúne automáticamente tus fotos, hitos, controles y notas en un libro listo para imprimir o guardar en PDF, sin escribir nada de nuevo.",
+    highlights: [
+      "Se arma solo",
+      "Imprimible en PDF",
+      "Fotos y hitos",
+      "Para toda la vida",
+    ],
+  },
 ];
 
 const CATEGORY_TABS = [
@@ -243,7 +298,7 @@ const EXPLORE_PLANS = [
     period: "mes",
     popular: true,
     description:
-      "Acceso completo a los 14 módulos clínicos, pediátricos, familiares y de almacenamiento.",
+      "Acceso completo a los 17 módulos clínicos, pediátricos, familiares, de bienestar y cuentos.",
     features: [
       "Mi Bebé en Gestación (Semana a semana, pataditas y FCF)",
       "Carnet de Salud Infantil (Curvas OMS y 20 Vacunas PAI)",
@@ -252,8 +307,27 @@ const EXPLORE_PLANS = [
       "Controles Médicos Prenatales y Pediátricos con diagnósticos",
       "Expediente de Documentos y Ecografías (Visor de PDF/fotos)",
       "Álbum de Fotos del Embarazo y del Bebé",
+      "Cuentos animados con música, ejercicios con video y Libro de Recuerdos",
       "Test Emocional Perinatal (Escala EPDS) y Diario Íntimo",
       "Módulo de Papá (1 solo papá) y Lazos Familiares (QR 15 min)",
+      "Alerta preventiva por correo 1 semana antes de vencer",
+    ],
+  },
+  {
+    id: "crianza",
+    name: "Plan Crianza y Bienestar",
+    badge: "Nuevo",
+    priceFormatted: "20.000",
+    period: "mes",
+    popular: false,
+    description:
+      "Para disfrutar el embarazo y los primeros meses: cuentos con música, ejercicios con video y tu libro de recuerdos.",
+    features: [
+      "Cuentos para Soñar: 14 cuentos animados con música instrumental",
+      "Ejercicios de embarazo y parto con videos de referencia",
+      "Libro de Recuerdos listo para imprimir",
+      "Papá comparte cuentos y ejercicios con tu plan",
+      "Acceso permanente a módulos gratuitos",
       "Alerta preventiva por correo 1 semana antes de vencer",
     ],
   },
@@ -297,6 +371,122 @@ const EXPLORE_PLANS = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Vitrina publica de cuentos: portadas y melodias, sin mostrar el texto de las paginas.
+// ---------------------------------------------------------------------------
+function StoriesShowcase() {
+  const [items, setItems] = useState(null);
+  const [selected, setSelected] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const player = useRef(null);
+
+  useEffect(() => {
+    let alive = true;
+    api.previewStories()
+      .then((res) => { if (alive) setItems(res?.items || []); })
+      .catch(() => { if (alive) setItems([]); });
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    player.current = new LullabyPlayer();
+    player.current.setVolume(0.5);
+    return () => { player.current?.dispose(); player.current = null; };
+  }, []);
+
+  if (!items || items.length === 0) return null;
+  const story = items[Math.min(selected, items.length - 1)];
+
+  const choose = async (i) => {
+    setSelected(i);
+    if (playing) await player.current?.start(items[i].music);
+  };
+
+  const toggle = async () => {
+    if (playing) {
+      player.current?.stop();
+      setPlaying(false);
+    } else {
+      const ok = await player.current?.start(story.music);
+      setPlaying(Boolean(ok));
+    }
+  };
+
+  return (
+    <section id="cuentos" className="mb-14 scroll-mt-24">
+      <div className="card !p-0 overflow-hidden rounded-3xl border-2 border-primary/20 shadow-cloud">
+        <div className="grid lg:grid-cols-5">
+          <div className="lg:col-span-3 relative aspect-[4/3] lg:aspect-auto lg:min-h-[420px] overflow-hidden bg-surface-container">
+            <StoryScene key={story.slug} scene={story.coverScene} uid={`ex-${story.slug}`} label={`Portada de ${story.title}`} />
+            <div className="absolute left-3 bottom-3 right-3 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={toggle}
+                aria-pressed={playing}
+                className="h-11 px-4 rounded-full bg-white/90 backdrop-blur text-primary text-xs font-bold inline-flex items-center gap-2 shadow-cloud-sm active:scale-95"
+              >
+                <ModuleIcon name={playing ? "close" : "play"} className="w-4 h-4" />
+                {playing ? "Detener melodía" : "Escuchar la melodía"}
+              </button>
+              <span className="px-3 py-1.5 rounded-full bg-white/80 text-[11px] font-bold text-on-surface-variant">
+                {story.minutes} min · {story.pageCount} páginas
+              </span>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2 p-6 sm:p-8 flex flex-col gap-4 justify-center bg-gradient-to-br from-lilac-container/40 to-primary-container/30">
+            <span className="pill-chip bg-lilac-container text-on-lilac-container font-bold text-xs uppercase tracking-wider self-start inline-flex items-center gap-1.5">
+              <ModuleIcon name="storybook" className="w-4 h-4" /> Nuevo en Mi Bebé
+            </span>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-on-surface leading-tight">
+              Cuentos para soñar, con música y dibujos que se mueven
+            </h2>
+            <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+              {items.length} cuentos originales que se leen como un libro de verdad: las páginas se voltean, los personajes
+              parpadean y respiran, y cada historia tiene su propia melodía instrumental de tono bajo para acompañar la lectura.
+            </p>
+            <div className="rounded-2xl bg-white/80 p-4">
+              <p className="font-display text-lg font-semibold text-on-surface">{story.title}</p>
+              <p className="font-body text-xs text-on-surface-variant mt-1">{story.summary}</p>
+              <p className="font-body text-[11px] font-bold text-primary mt-2">Edad sugerida: {story.ageRange}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/crear-cuenta" className="btn-primary !w-auto !px-6 !py-2.5 text-sm">Crear cuenta gratis</Link>
+              <a href="#planes" className="btn-secondary !w-auto !px-6 !py-2.5 text-sm">Ver planes (desde $20.000)</a>
+            </div>
+            <p className="font-body text-[11px] text-on-surface-variant">
+              Incluido en el Plan Crianza y Bienestar y en el Plan VIP. Papá lo disfruta con el plan de mamá.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-6 bg-white border-t border-outline-variant/30">
+          <p className="font-body text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Biblioteca</p>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none" role="listbox" aria-label="Cuentos disponibles">
+            {items.map((it, i) => (
+              <button
+                key={it.slug}
+                type="button"
+                role="option"
+                aria-selected={i === selected}
+                onClick={() => choose(i)}
+                className={`group shrink-0 w-40 rounded-2xl overflow-hidden border-2 text-left transition-all active:scale-95 ${
+                  i === selected ? "border-primary shadow-cloud-sm" : "border-outline-variant/40 hover:border-primary/50"
+                }`}
+              >
+                <div className="aspect-[4/3] overflow-hidden">
+                  <StoryScene scene={it.coverScene} uid={`ex-t-${it.slug}`} label={`Portada de ${it.title}`} still />
+                </div>
+                <p className="font-body text-[11px] font-semibold text-on-surface leading-snug p-2 line-clamp-2">{it.title}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function GuestExplore() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-surface via-surface-container/20 to-surface">
@@ -317,6 +507,9 @@ export default function GuestExplore() {
           <nav className="hidden md:flex items-center gap-5 text-xs font-semibold text-on-surface-variant">
             <a href="#modulos" className="hover:text-primary transition-colors">
               Módulos
+            </a>
+            <a href="#cuentos" className="hover:text-primary transition-colors">
+              Cuentos
             </a>
             <a
               href="#planes"
@@ -394,7 +587,7 @@ function GuestHome() {
           {/* Highlights en Píldoras */}
           <div className="pt-6 border-t border-outline-variant/30 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-semibold text-on-surface-variant">
             <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border border-outline-variant/20 shadow-2xs">
-              <span>🩺</span> 14 Módulos Integrados
+              <span>🩺</span> 17 Módulos Integrados
             </span>
             <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border border-outline-variant/20 shadow-2xs">
               <span>📊</span> Curvas OMS y 20 Vacunas PAI
@@ -411,6 +604,9 @@ function GuestHome() {
             <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full border border-outline-variant/20 shadow-2xs">
               <span>📁</span> Visor de PDFs y Ecografías
             </span>
+            <a href="#cuentos" className="flex items-center gap-1.5 bg-lilac-container text-on-lilac-container px-3 py-1.5 rounded-full border border-outline-variant/20 shadow-2xs font-bold">
+              <ModuleIcon name="storybook" className="w-4 h-4" /> Nuevo: cuentos animados con música
+            </a>
           </div>
         </div>
       </section>
@@ -519,6 +715,8 @@ function GuestHome() {
       </section>
 
       {/* SECCIÓN DESTACADA: Planes y Suscripción Mi Bebé */}
+      <StoriesShowcase />
+
       <section id="planes" className="mb-14 scroll-mt-24">
         <div className="card !bg-gradient-to-br from-white via-primary-container/15 to-secondary-container/15 !p-6 sm:!p-10 rounded-3xl border-2 border-primary/25 shadow-cloud">
           <div className="text-center max-w-2xl mx-auto mb-8">
@@ -535,8 +733,8 @@ function GuestHome() {
             </p>
           </div>
 
-          {/* Grilla de los 3 Planes */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* Grilla de los 4 Planes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
             {EXPLORE_PLANS.map((plan) => (
               <div
                 key={plan.id}
@@ -770,8 +968,8 @@ function GuestHome() {
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-3xl p-2 rounded-xl bg-surface-container/60 group-hover:scale-110 transition-transform">
-                    {item.icon}
+                  <span className="text-3xl p-2 rounded-xl bg-surface-container/60 group-hover:scale-110 transition-transform text-primary">
+                    {item.iconName ? <ModuleIcon name={item.iconName} className="w-8 h-8" /> : item.icon}
                   </span>
                   <div className="flex flex-col items-end gap-1">
                     <span

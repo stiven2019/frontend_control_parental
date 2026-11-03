@@ -1,5 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ModuleIcon from '../components/ModuleIcons';
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ export default function NotFound() {
       {/* Header */}
       <header className="max-w-4xl w-full mx-auto flex items-center justify-between pb-6 border-b border-outline-variant/30">
         <Link to={user ? "/inicio" : "/"} className="flex items-center gap-2.5">
-          <span className="text-3xl">🌸</span>
+          <span className="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center"><ModuleIcon name="heart" className="w-5 h-5" /></span>
           <div>
             <span className="font-display font-bold text-lg text-primary tracking-tight">Mi Bebé</span>
             <span className="text-[10px] ml-2 font-mono uppercase bg-primary-container text-primary font-semibold px-2 py-0.5 rounded-full">
@@ -35,8 +36,8 @@ export default function NotFound() {
           <div className="absolute -top-20 -right-20 w-44 h-44 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-20 -left-20 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-4xl mb-5 shadow-cloud-sm border border-amber-500/20">
-            🧭
+          <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-5 shadow-cloud-sm">
+            <ModuleIcon name="calendar" className="w-10 h-10" />
           </div>
 
           <div className="inline-block bg-amber-500/10 text-amber-700 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-semibold mb-3">
@@ -57,7 +58,7 @@ export default function NotFound() {
               to={user ? "/inicio" : "/"}
               className="p-3.5 rounded-2xl bg-surface-container/30 hover:bg-surface-container/60 border border-outline-variant/30 transition-all flex items-center gap-3 group active:scale-95"
             >
-              <span className="text-2xl p-2 rounded-xl bg-white shadow-sm shrink-0">🏠</span>
+              <span className="p-2.5 rounded-2xl bg-primary-container text-on-primary-container shrink-0"><ModuleIcon name="heart" className="w-5 h-5" /></span>
               <div>
                 <span className="text-xs font-bold text-on-surface block group-hover:text-primary transition-colors">
                   {user ? 'Panel Principal (Inicio)' : 'Página de Inicio'}
@@ -72,7 +73,7 @@ export default function NotFound() {
               to="/mi-bebe"
               className="p-3.5 rounded-2xl bg-surface-container/30 hover:bg-surface-container/60 border border-outline-variant/30 transition-all flex items-center gap-3 group active:scale-95"
             >
-              <span className="text-2xl p-2 rounded-xl bg-white shadow-sm shrink-0">🤰</span>
+              <span className="p-2.5 rounded-2xl bg-secondary-container text-on-secondary-container shrink-0"><ModuleIcon name="baby" className="w-5 h-5" /></span>
               <div>
                 <span className="text-xs font-bold text-on-surface block group-hover:text-primary transition-colors">
                   Mi Bebé en Gestación
@@ -87,7 +88,7 @@ export default function NotFound() {
               to="/carnet-bebe"
               className="p-3.5 rounded-2xl bg-surface-container/30 hover:bg-surface-container/60 border border-outline-variant/30 transition-all flex items-center gap-3 group active:scale-95"
             >
-              <span className="text-2xl p-2 rounded-xl bg-white shadow-sm shrink-0">🚼</span>
+              <span className="p-2.5 rounded-2xl bg-tertiary-container text-on-tertiary-container shrink-0"><ModuleIcon name="carnet" className="w-5 h-5" /></span>
               <div>
                 <span className="text-xs font-bold text-on-surface block group-hover:text-primary transition-colors">
                   Carnet del Bebé Nacido
@@ -102,7 +103,7 @@ export default function NotFound() {
               to="/medicamentos"
               className="p-3.5 rounded-2xl bg-surface-container/30 hover:bg-surface-container/60 border border-outline-variant/30 transition-all flex items-center gap-3 group active:scale-95"
             >
-              <span className="text-2xl p-2 rounded-xl bg-white shadow-sm shrink-0">💊</span>
+              <span className="p-2.5 rounded-2xl bg-peach-container text-on-peach-container shrink-0"><ModuleIcon name="pill" className="w-5 h-5" /></span>
               <div>
                 <span className="text-xs font-bold text-on-surface block group-hover:text-primary transition-colors">
                   Medicamentos & Alarmas

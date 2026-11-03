@@ -1,0 +1,222 @@
+/* Temas de color pastel. Cada tema sobrescribe los tokens de @theme (index.css).
+   El tema activo se marca con <html data-theme="...">; rosa es el tema por defecto. */
+
+html[data-theme="rosa"] {
+  --color-surface: #fff8f8;
+  --color-surface-dim: #e0d8d9;
+  --color-surface-bright: #fff8f8;
+  --color-surface-low: #faf2f2;
+  --color-surface-container: #f4eced;
+  --color-surface-high: #eee6e7;
+  --color-surface-highest: #e8e1e1;
+  --color-on-surface: #1e1b1c;
+  --color-on-surface-variant: #4e4448;
+  --color-outline: #807478;
+  --color-outline-variant: #d2c3c7;
+  --color-primary: #745662;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #fad2e1;
+  --color-on-primary-container: #6a4a57;
+  --color-inverse-primary: #e3bccb;
+  --color-secondary: #4f635b;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d1e7dd;
+  --color-on-secondary-container: #46594f;
+  --color-tertiary: #516070;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #cfdef2;
+  --color-on-tertiary-container: #485666;
+}
+
+html[data-theme="menta"] {
+  --color-surface: #f3fbf7;
+  --color-surface-dim: #d3ded8;
+  --color-surface-bright: #f3fbf7;
+  --color-surface-low: #eaf5f0;
+  --color-surface-container: #e1efe8;
+  --color-surface-high: #d8e8df;
+  --color-surface-highest: #cfe0d6;
+  --color-on-surface: #18221e;
+  --color-on-surface-variant: #3f4f48;
+  --color-outline: #6a7a73;
+  --color-outline-variant: #bdd1c7;
+  --color-primary: #3d6b5b;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #c9ebdc;
+  --color-on-primary-container: #2c5244;
+  --color-inverse-primary: #a6d4c1;
+  --color-secondary: #7a5742;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fde1cf;
+  --color-on-secondary-container: #5f402e;
+  --color-tertiary: #4f5f86;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #d9e2f9;
+  --color-on-tertiary-container: #3f4d70;
+}
+
+html[data-theme="cielo"] {
+  --color-surface: #f5f9fe;
+  --color-surface-dim: #d6dde5;
+  --color-surface-bright: #f5f9fe;
+  --color-surface-low: #ecf3fa;
+  --color-surface-container: #e3edf6;
+  --color-surface-high: #dae6f1;
+  --color-surface-highest: #d1dfec;
+  --color-on-surface: #161e27;
+  --color-on-surface-variant: #3f4b58;
+  --color-outline: #6a7684;
+  --color-outline-variant: #c0cfde;
+  --color-primary: #46688f;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #d2e4f8;
+  --color-on-primary-container: #314f72;
+  --color-inverse-primary: #a9c8ea;
+  --color-secondary: #6a5890;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e5dcf7;
+  --color-on-secondary-container: #51417a;
+  --color-tertiary: #58704f;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #dcecd3;
+  --color-on-tertiary-container: #44593c;
+}
+
+html[data-theme="lavanda"] {
+  --color-surface: #faf7ff;
+  --color-surface-dim: #ddd8e5;
+  --color-surface-bright: #faf7ff;
+  --color-surface-low: #f3effb;
+  --color-surface-container: #ebe6f6;
+  --color-surface-high: #e3ddf0;
+  --color-surface-highest: #dbd4ea;
+  --color-on-surface: #1d1a24;
+  --color-on-surface-variant: #4a4555;
+  --color-outline: #767083;
+  --color-outline-variant: #cfc7de;
+  --color-primary: #6a5790;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #e5dcf8;
+  --color-on-primary-container: #503f78;
+  --color-inverse-primary: #c9b9ea;
+  --color-secondary: #4f7367;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d4ece1;
+  --color-on-secondary-container: #3d5d52;
+  --color-tertiary: #85546a;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #f7dbe6;
+  --color-on-tertiary-container: #6b3f54;
+}
+
+html[data-theme="durazno"] {
+  --color-surface: #fef8f4;
+  --color-surface-dim: #e0dad7;
+  --color-surface-bright: #fef8f4;
+  --color-surface-low: #faf1ec;
+  --color-surface-container: #f6ebe4;
+  --color-surface-high: #f2e4dc;
+  --color-surface-highest: #edddd4;
+  --color-on-surface: #1f1814;
+  --color-on-surface-variant: #4d433d;
+  --color-outline: #7c706a;
+  --color-outline-variant: #d8c9c0;
+  --color-primary: #864a27;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #f9dac8;
+  --color-on-primary-container: #6a381b;
+  --color-inverse-primary: #e7b89d;
+  --color-secondary: #42676c;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d8ebee;
+  --color-on-secondary-container: #2d4e53;
+  --color-tertiary: #5e446a;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #e7d9ed;
+  --color-on-tertiary-container: #472e52;
+}
+
+html[data-theme="salvia"] {
+  --color-surface: #f8fcf6;
+  --color-surface-dim: #dae0d7;
+  --color-surface-bright: #f8fcf6;
+  --color-surface-low: #f2f8ee;
+  --color-surface-container: #ecf3e7;
+  --color-surface-high: #e5eee0;
+  --color-surface-highest: #dee8d8;
+  --color-on-surface: #181f14;
+  --color-on-surface-variant: #434d3d;
+  --color-outline: #707c6a;
+  --color-outline-variant: #c9d8c0;
+  --color-primary: #50713d;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #dcf2ce;
+  --color-on-primary-container: #3c5a2b;
+  --color-inverse-primary: #bbdda7;
+  --color-secondary: #6c4269;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #eed8ed;
+  --color-on-secondary-container: #532d51;
+  --color-tertiary: #39744b;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #d5f0de;
+  --color-on-tertiary-container: #265936;
+}
+
+html[data-theme="arena"] {
+  --color-surface: #fdfaf5;
+  --color-surface-dim: #e0dcd7;
+  --color-surface-bright: #fdfaf5;
+  --color-surface-low: #f9f4ed;
+  --color-surface-container: #f4efe6;
+  --color-surface-high: #f0e9de;
+  --color-surface-highest: #eae2d7;
+  --color-on-surface: #1f1b14;
+  --color-on-surface-variant: #4d473d;
+  --color-outline: #7c756a;
+  --color-outline-variant: #d8cec0;
+  --color-primary: #6c593d;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #f4e4cd;
+  --color-on-primary-container: #58472c;
+  --color-inverse-primary: #e0c8a3;
+  --color-secondary: #44666a;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d9ebed;
+  --color-on-secondary-container: #2e4e52;
+  --color-tertiary: #4b446a;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #ddd9ed;
+  --color-on-tertiary-container: #342e52;
+}
+
+html[data-theme="oceano"] {
+  --color-surface: #f4fcfd;
+  --color-surface-dim: #d7dee0;
+  --color-surface-bright: #f4fcfd;
+  --color-surface-low: #ecf7fa;
+  --color-surface-container: #e4f3f6;
+  --color-surface-high: #dceef2;
+  --color-surface-highest: #d4e8ed;
+  --color-on-surface: #141d1f;
+  --color-on-surface-variant: #3d4a4d;
+  --color-outline: #6a787c;
+  --color-outline-variant: #c0d3d8;
+  --color-primary: #1f687a;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #c8eff9;
+  --color-on-primary-container: #175c6d;
+  --color-inverse-primary: #9dd8e7;
+  --color-secondary: #365778;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d5e3f1;
+  --color-on-secondary-container: #24405c;
+  --color-tertiary: #506c42;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #dfeed8;
+  --color-on-tertiary-container: #39532d;
+}
+
+/* Elementos que usaban colores fijos */
+html[data-theme] ::-webkit-scrollbar-thumb { background: var(--color-outline-variant); }
+html[data-theme] body { color: var(--color-on-surface); }

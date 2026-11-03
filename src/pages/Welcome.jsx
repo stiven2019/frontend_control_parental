@@ -1,22 +1,26 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ModuleIcon from '../components/ModuleIcons';
 
 export default function Welcome() {
   const navigate = useNavigate();
   const { continueAsGuest } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-container/40 via-surface to-surface flex flex-col items-center justify-between px-6 py-10">
+    <div className="auth-shell min-h-screen bg-surface flex flex-col items-center justify-between px-6 py-10">
       <div />
       <div className="w-full max-w-sm flex flex-col items-center text-center">
-        <div className="w-64 h-80 rounded-lg bg-white shadow-cloud p-3 mb-8 rotate-[-1.5deg]">
-          <div className="w-full h-full rounded-md bg-gradient-to-b from-secondary-container/60 to-primary-container/60 flex items-center justify-center overflow-hidden">
-            <span className="text-7xl">🤰</span>
+        <div className="relative w-56 h-56 mb-8">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary-container to-lilac-container shadow-cloud" />
+          <div className="absolute inset-6 rounded-full bg-white/70 flex items-center justify-center text-primary">
+            <ModuleIcon name="heart" className="w-20 h-20" strokeWidth={1.6} />
           </div>
+          <span className="absolute -top-1 right-4 w-10 h-10 rounded-full bg-peach-container" aria-hidden="true" />
+          <span className="absolute bottom-3 -left-2 w-7 h-7 rounded-full bg-secondary-container" aria-hidden="true" />
         </div>
 
         <h1 className="font-display text-4xl font-semibold text-primary mb-3">
-          Mi Bebé <span className="align-middle">❤️</span>
+          Mi Bebé
         </h1>
         <p className="font-body text-base text-on-surface-variant mb-10 max-w-xs">
           Cada semana es una nueva historia de amor.
@@ -46,7 +50,7 @@ export default function Welcome() {
           </button>
         </div>
       </div>
-      <div className="text-center font-body text-xs text-outline max-w-xs space-y-1">
+      <div className="text-center font-body text-xs text-on-surface-variant max-w-xs space-y-1">
         <p>Para guardar y consultar tu información personal, deberás crear una cuenta.</p>
         <p>
           <a href="/terminos-y-condiciones" className="text-primary hover:underline font-medium">
