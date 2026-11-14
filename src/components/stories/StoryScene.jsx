@@ -455,7 +455,73 @@ function Ground({ type }) {
   );
 }
 
-function Character({ spec }) {
+/** Filtros de luz: dan volumen (brillo suave arriba-izquierda y sombreado abajo-derecha). */
+function Lighting({ id }) {
+  return (
+    <defs>
+      <filter id={`toon-${id}`} x="-15%" y="-15%" width="130%" height="130%" colorInterpolationFilters="sRGB">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="3.4" result="bump" />
+        <feDiffuseLighting in="bump" surfaceScale="5" diffuseConstant="1.15" lightingColor="#ffffff" result="diff">
+          <fePointLight x="-50" y="-90" z="110" />
+        </feDiffuseLighting>
+        <feComposite in="SourceGraphic" in2="diff" operator="arithmetic" k1="0.62" k2="0.52" k3="0" k4="0" result="shaded" />
+        <feSpecularLighting in="bump" surfaceScale="5" specularConstant="0.55" specularExponent="26" lightingColor="#fff6fb" result="spec">
+          <fePointLight x="-50" y="-90" z="110" />
+        </feSpecularLighting>
+        <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn" />
+        <feComposite in="specIn" in2="shaded" operator="arithmetic" k1="0" k2="0.5" k3="1" k4="0" />
+      </filter>
+      <filter id={`soft-${id}`} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="2.6" result="bump" />
+        <feDiffuseLighting in="bump" surfaceScale="3" diffuseConstant="1.08" lightingColor="#ffffff" result="diff">
+          <fePointLight x="120" y="-60" z="150" />
+        </feDiffuseLighting>
+        <feComposite in="SourceGraphic" in2="diff" operator="arithmetic" k1="0.3" k2="0.78" k3="0" k4="0" />
+      </filter>
+      <radialGradient id={`vig-${id}`} cx="50%" cy="55%" r="75%">
+        <stop offset="60%" stopColor="#2a1630" stopOpacity="0" />
+        <stop offset="100%" stopColor="#2a1630" stopOpacity="0.14" />
+      </radialGradient>
+      <linearGradient id={`depth-${id}`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#fff" stopOpacity="0.1" />
+        <stop offset="55%" stopColor="#fff" stopOpacity="0" />
+        <stop offset="100%" stopColor="#1d1030" stopOpacity="0.08" />
+      </linearGradient>
+    </defs>
+  );
+}
+
+const MOTES = [[40, 120, 0], [120, 90, 1.4], [190, 150, 0.7], [260, 100, 2.1], [330, 140, 1], [90, 190, 2.6], [300, 190, 0.3], [220, 60, 1.8]];
+const GRASS_X = [8, 40, 74, 112, 150, 188, 226, 262, 298, 334, 368, 396];
+
+/** Primer plano animado: pasto que se mece y motas de luz flotando. */
+function Foreground({ ground, sky }) {
+  const grassy = ['meadow', 'forest', 'hills', 'garden', 'pond', undefined].includes(ground);
+  const night = sky === 'night' || sky === 'aurora' || sky === 'deep';
+  const moteColor = night ? '#ffeaa8' : '#fffbe6';
+  return (
+    <g pointerEvents="none">
+      {grassy && (
+        <g>
+          {GRASS_X.map((x, i) => (
+            <g key={x} transform={`translate(${x} 302)`}>
+              <g className="ss-grass" style={{ animationDelay: `${-(i % 5) * 0.55}s` }}>
+                <path d="M-5 0q1-18-3-30q8 10 8 30Z" fill="#4fa464" />
+                <path d="M0 0q2-24 1-38q8 14 5 38Z" fill="#62b877" />
+                <path d="M5 0q-1-14 5-22q0 12-1 22Z" fill="#4a9a5e" />
+              </g>
+            </g>
+          ))}
+        </g>
+      )}
+      {MOTES.map(([x, y, d], i) => (
+        <circle key={i} className="ss-mote" cx={x} cy={y} r={i % 3 === 0 ? 2.2 : 1.5} fill={moteColor} style={{ animationDelay: `${-d * 2}s`, animationDuration: `${7 + (i % 4) * 1.6}s` }} />
+      ))}
+    </g>
+  );
+}
+
+function Character({ spec, uid = 'a' }) {
   if (!spec) return null;
   const Comp = CHARACTERS[spec.type];
   if (!Comp) return null;
@@ -466,7 +532,9 @@ function Character({ spec }) {
     <g transform={`translate(${x} ${y}) scale(${spec.flip ? -scale : scale} ${scale})`}>
       <g className={`ss-act-${spec.action || 'bob'}`}>
         <g className="ss-breathe">
-          <Comp action={spec.action} />
+          <g filter={`url(#toon-${uid})`}>
+            <Comp action={spec.action} />
+          </g>
         </g>
       </g>
     </g>
@@ -480,6 +548,7 @@ export default function StoryScene({ scene, label, uid = 'a', still = false }) {
   const night = s.sky === 'night' || s.sky === 'aurora';
   return (
     <svg className={`ss-svg${still ? ' ss-still' : ''}`} viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label={label || 'Ilustración del cuento'}>
+      <Lighting id={uid} />
       <g className={`ss-cam ss-cam-${s.cam || 'in'}`}>
         <Sky sky={s.sky} id={uid} />
         {(extras.has('stars') || s.sky === 'aurora') && <Stars />}
@@ -500,7 +569,7 @@ export default function StoryScene({ scene, label, uid = 'a', still = false }) {
         {extras.has('balloon') && <Balloon />}
         {extras.has('lanterns') && <Lanterns />}
         {extras.has('rays') && <Rays />}
-        <Ground type={s.ground} />
+        <g filter={`url(#soft-${uid})`}><Ground type={s.ground} /></g>
         {extras.has('trees') && s.ground !== 'forest' && (
           <g>
             <Tree x={46} y={236} s={0.8} snow={s.ground === 'snow'} />
@@ -510,8 +579,9 @@ export default function StoryScene({ scene, label, uid = 'a', still = false }) {
         {extras.has('flowers') && <Flowers />}
         {extras.has('boat') && <Boat />}
         {extras.has('campfire') && <Campfire />}
-        <Character spec={s.friend} />
-        <Character spec={s.hero} />
+        <Character spec={s.friend} uid={uid} />
+        <Character spec={s.hero} uid={uid} />
+        <Foreground ground={s.ground} sky={s.sky} />
         {extras.has('fish') && <Fish />}
         {extras.has('bubbles') && <Bubbles />}
         {extras.has('fireflies') && <Fireflies />}
@@ -521,6 +591,8 @@ export default function StoryScene({ scene, label, uid = 'a', still = false }) {
         {extras.has('fog') && <Fog />}
         {extras.has('snow') && <Snow />}
         {extras.has('rain') && <Rain />}
+        <rect x="-40" y="-30" width="480" height="360" fill={`url(#depth-${uid})`} pointerEvents="none" />
+        <rect x="-40" y="-30" width="480" height="360" fill={`url(#vig-${uid})`} pointerEvents="none" />
         {night && <rect x="-40" y="-30" width="480" height="360" fill="#0a1030" opacity="0.08" />}
       </g>
     </svg>

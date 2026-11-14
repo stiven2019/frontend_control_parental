@@ -106,6 +106,125 @@ export const TUNES = {
 
 export const TUNE_KEYS = Object.keys(TUNES);
 
+// ---------------------------------------------------------------------------
+// Generador determinista de melodias: cada cuento nuevo (clave = su slug) obtiene su propia
+// melodia original, siempre en registro grave (G3 a C5), con movimiento por grados conjuntos,
+// compases completos y cadencia en la tonica. La misma clave produce siempre la misma musica.
+// ---------------------------------------------------------------------------
+const PC_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+const SCALES = { major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10] };
+const PROG_A = {
+  major: [[0, 5, 3, 4, 0, 5, 3, 4], [0, 3, 0, 4, 0, 3, 4, 0], [0, 4, 5, 3, 0, 4, 3, 0], [0, 2, 3, 4, 0, 5, 4, 0]],
+  minor: [[0, 5, 2, 6, 0, 5, 3, 4], [0, 3, 0, 6, 0, 5, 6, 0], [0, 6, 5, 6, 0, 3, 6, 0]],
+};
+const PROG_B = {
+  major: [[3, 0, 1, 5, 3, 0, 4, 0], [5, 3, 0, 4, 5, 3, 4, 0], [1, 4, 0, 5, 1, 4, 0, 0]],
+  minor: [[2, 6, 0, 5, 2, 6, 0, 0], [5, 2, 6, 0, 5, 3, 6, 0], [3, 0, 5, 6, 3, 0, 6, 0]],
+};
+const PATTERNS = {
+  3: [[2, 1], [1, 1, 1], [1, 2], [3], [1, 1, 1]],
+  4: [[2, 1, 1], [1, 1, 2], [2, 2], [1, 1, 1, 1], [4], [3, 1]],
+};
+const LEADS = [
+  ['felt', 0.9], ['harp', 0.95], ['kalimba', 0.95], ['flute', 0.85], ['cello', 0.88],
+];
+const ACCS = ['pad', 'sway', 'arp'];
+const LOW = 55; // G3
+const HIGH = 72; // C5
+
+function hashSeed(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i += 1) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const noteName = (m) => `${PC_NAMES[m % 12]}${Math.floor(m / 12) - 1}`;
+
+/** Genera una melodia {bpm,bpb,lead,acc,gain,chordsA,melA,chordsB,melB} a partir de una clave. */
+export function generateTune(key) {
+  const rand = rng(hashSeed(String(key)));
+  const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+  const mode = rand() < 0.62 ? 'major' : 'minor';
+  const tonic = pick([0, 2, 3, 5, 7, 9, 10]);
+  const scale = SCALES[mode].map((i) => (tonic + i) % 12);
+  const bpb = rand() < 0.5 ? 3 : 4;
+  const [lead, gain] = pick(LEADS);
+  const acc = pick(ACCS);
+  const bpm = 46 + Math.floor(rand() * 22);
+
+  const scaleNotes = [];
+  for (let m = LOW; m <= HIGH; m += 1) if (scale.includes(m % 12)) scaleNotes.push(m);
+
+  const chordInfo = (deg) => {
+    const root = scale[deg];
+    const third = scale[(deg + 2) % 7];
+    const fifth = scale[(deg + 4) % 7];
+    const minor = (third - root + 12) % 12 === 3;
+    return { name: `${PC_NAMES[root]}${minor ? 'm' : ''}`, tones: [root, third, fifth], root };
+  };
+
+  const buildSection = (prog, endOn) => {
+    const chords = prog.map(chordInfo);
+    let prev = pick(scaleNotes.filter((m) => m >= 57 && m <= 64));
+    const toks = [];
+    prog.forEach((_, bar) => {
+      const chord = chords[bar];
+      const last = bar === prog.length - 1;
+      const pattern = last ? [bpb] : pick(PATTERNS[bpb]);
+      pattern.forEach((beats, i) => {
+        let cands = scaleNotes;
+        if (last) cands = scaleNotes.filter((m) => m % 12 === (endOn === 'tonic' ? tonic : pick([chord.tones[1], chord.tones[2]])));
+        else if (i === 0) cands = scaleNotes.filter((m) => chord.tones.includes(m % 12));
+        if (!cands.length) cands = scaleNotes;
+        const weights = cands.map((m) => {
+          const step = Math.abs(scaleNotes.indexOf(m) - scaleNotes.indexOf(prev));
+          const w = [0.35, 3, 2, 0.9, 0.35][step] ?? 0.05;
+          const tone = chord.tones.includes(m % 12) ? 1.6 : 1;
+          const center = Math.exp(-Math.abs(m - 62) / 7);
+          return w * tone * center;
+        });
+        let r = rand() * weights.reduce((a, b) => a + b, 0);
+        let chosen = cands[0];
+        for (let k = 0; k < cands.length; k += 1) {
+          r -= weights[k];
+          if (r <= 0) { chosen = cands[k]; break; }
+        }
+        prev = chosen;
+        toks.push(`${noteName(chosen)}${beats === 1 ? '' : `/${beats}`}`);
+      });
+      toks.push('|');
+    });
+    return { chords: chords.map((c) => c.name).join(' '), mel: toks.join(' ') };
+  };
+
+  const A = buildSection(pick(PROG_A[mode]), 'tonic');
+  const B = buildSection(pick(PROG_B[mode]), 'chord');
+  return { bpm, bpb, lead, acc, gain, chordsA: A.chords, melA: A.mel, chordsB: B.chords, melB: B.mel };
+}
+
+const generatedCache = new Map();
+/** Devuelve una melodia fija (TUNES) o la generada para esa clave. */
+export function tuneFor(key) {
+  if (TUNES[key]) return TUNES[key];
+  if (!key) return TUNES.luna;
+  if (!generatedCache.has(key)) generatedCache.set(key, generateTune(key));
+  return generatedCache.get(key);
+}
+
 /** Expande una melodia en eventos { t (pulsos), kind, ... } para un ciclo completo A-B-A. */
 export function buildEvents(tune) {
   const A = parseMelody(tune.melA);
@@ -336,7 +455,7 @@ export class LullabyPlayer {
 
   async start(key) {
     if (!this._ensure()) return false;
-    const tune = TUNES[key] || TUNES.luna;
+    const tune = tuneFor(key);
     if (this.playing && this.tune === tune) return true;
     this._clear();
     if (this.ctx.state === 'suspended') await this.ctx.resume();

@@ -20,7 +20,7 @@ const T = {
 
 const OWNER_QUICK_ACTIONS = [
   { to: '/ejercicios', label: 'Ejercicios del parto', icon: 'play', bg: T.blue, moduleKey: 'ejercicios' },
-  { to: '/cuentos', label: 'Cuentos para soñar', icon: 'storybook', bg: T.lilac, moduleKey: 'cuentos' },
+  { to: '/cuentos', label: 'Cuentos para soñar', icon: 'storybook', bg: T.lilac },
   { to: '/recuerdo', label: 'Libro de recuerdos', icon: 'heart', bg: T.pink, moduleKey: 'recuerdo' },
   { to: '/papa', label: 'Papá y Familia', icon: 'family', bg: T.lilac, moduleKey: 'papa' },
   { to: '/album', label: 'Álbum de Fotos', icon: 'camera', bg: T.mint, moduleKey: 'album' },
@@ -44,7 +44,7 @@ const FAMILIA_QUICK_ACTIONS = [
 
 const PAPA_QUICK_ACTIONS = [
   { to: '/ejercicios', label: 'Ejercicios para papá', icon: 'play', bg: T.blue, moduleKey: 'ejercicios' },
-  { to: '/cuentos', label: 'Cuentos para soñar', icon: 'storybook', bg: T.lilac, moduleKey: 'cuentos' },
+  { to: '/cuentos', label: 'Cuentos para soñar', icon: 'storybook', bg: T.lilac },
   { to: '/album', label: 'Álbum (Fotos)', icon: 'camera', bg: T.mint },
   { to: '/diario', label: 'Diario de Recuerdos', icon: 'book', bg: T.pink },
   { to: '/guia-desarrollo', label: 'Desarrollo Fetal', icon: 'sprout', bg: T.peach },

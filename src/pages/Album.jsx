@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
 import { api, uploadFile, getFileUrl, getDirectMinioUrl, downloadAlbumZip } from '../api/client';
@@ -14,6 +14,17 @@ const CATEGORIES = [
   { value: 'familia', label: 'Familia' },
   { value: 'momento_especial', label: 'Momento especial' },
 ];
+
+// Colores suaves por categoria (etiqueta sobre la foto y fondo de respaldo)
+const CATEGORY_TINT = {
+  ecografia: { bg: 'from-tertiary-container to-secondary-container', label: 'text-on-tertiary-container' },
+  mama: { bg: 'from-primary-container to-lilac-container', label: 'text-on-primary-container' },
+  barriga: { bg: 'from-primary-container to-lilac-container', label: 'text-on-primary-container' },
+  papa: { bg: 'from-peach-container to-primary-container', label: 'text-on-peach-container' },
+  familia: { bg: 'from-lilac-container to-tertiary-container', label: 'text-on-lilac-container' },
+  momento_especial: { bg: 'from-secondary-container to-peach-container', label: 'text-on-secondary-container' },
+};
+const categoryLabel = (value) => CATEGORIES.find((c) => c.value === value)?.label || '';
 
 const getLocalDateStr = () => {
   const now = new Date();
@@ -34,6 +45,7 @@ export default function Album() {
   const [selected, setSelected] = useState(null);
   const [modalImgError, setModalImgError] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
+  const [filter, setFilter] = useState('todas');
 
   const load = async () => {
     try {
@@ -109,6 +121,25 @@ export default function Album() {
     load(); 
   };
 
+  const presentCategories = useMemo(
+    () => CATEGORIES.filter((c) => (items || []).some((p) => p.category === c.value)),
+    [items],
+  );
+
+  // Fotos filtradas y agrupadas por semana (las mas recientes primero)
+  const groups = useMemo(() => {
+    const list = (items || []).filter((p) => filter === 'todas' || p.category === filter);
+    const map = new Map();
+    list.forEach((p) => {
+      const key = p.weekNumber ? String(p.weekNumber) : 'sin';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(p);
+    });
+    return [...map.entries()]
+      .sort((a, b) => (a[0] === 'sin' ? 1 : b[0] === 'sin' ? -1 : Number(b[0]) - Number(a[0])))
+      .map(([key, photos]) => ({ key, title: key === 'sin' ? 'Otros momentos' : `Semana ${key}`, photos }));
+  }, [items, filter]);
+
   if (!items) return <AppLayout><LoadingState /></AppLayout>;
 
   return (
@@ -121,7 +152,7 @@ export default function Album() {
             type="button"
             onClick={handleDownloadZip}
             disabled={zipBusy}
-            className="h-11 px-4 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold disabled:opacity-60 shrink-0"
+            className="h-11 px-4 rounded-full bg-secondary-container text-on-secondary-container text-[13px] font-bold disabled:opacity-60 shrink-0"
             title="Descargar todas las fotos del album en un archivo ZIP"
           >
             {zipBusy ? 'Preparando...' : 'Descargar ZIP'}
@@ -187,48 +218,90 @@ export default function Album() {
         <EmptyState icon="camera" title="Tu álbum está vacío" description="Guarda ecografías y fotografías especiales de tu embarazo aquí." />
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {items.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => {
-              setModalImgError(false);
-              setSelected(p);
-            }}
-            className="aspect-square rounded-3xl overflow-hidden bg-surface-container relative group cursor-pointer shadow-cloud-sm"
-          >
-            <img
-              src={getFileUrl(p.imageUrl)}
-              alt={p.description || ''}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              onError={(e) => {
-                const target = e.currentTarget;
-                if (!target.dataset.triedDirect && p.imageUrl) {
-                  target.dataset.triedDirect = 'true';
-                  target.src = getDirectMinioUrl(p.imageUrl);
-                  return;
-                }
-                target.style.display = 'none';
-                if (target.nextElementSibling) {
-                  target.nextElementSibling.classList.remove('hidden');
-                  target.nextElementSibling.classList.add('flex');
-                }
-              }}
-            />
-            <div className="hidden absolute inset-0 bg-surface-container flex-col items-center justify-center p-2 text-center text-on-surface-variant">
-              <ModuleIcon name="camera" className="w-7 h-7 mb-1" />
-              <span className="text-[11px] font-medium truncate w-full">{p.description || 'Fotografía'}</span>
-            </div>
-            {p.weekNumber && (
-              <span className="absolute bottom-2 left-2 pill-chip bg-white/90 text-on-surface text-[10px] shadow-sm">Semana {p.weekNumber}</span>
-            )}
-          </button>
-        ))}
+      {items.length > 0 && presentCategories.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-1 mb-4 -mx-1 px-1" role="group" aria-label="Filtrar por categoría">
+          {[{ value: 'todas', label: 'Todas' }, ...presentCategories].map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              aria-pressed={filter === c.value}
+              onClick={() => setFilter(c.value)}
+              className={`px-4 py-2.5 rounded-[20px] text-[13px] font-bold font-body whitespace-nowrap transition-colors active:scale-95 ${
+                filter === c.value ? 'bg-primary text-on-primary shadow-cloud-sm' : 'bg-white text-on-surface-variant shadow-cloud-sm'
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-5">
+        {groups.map((g) => {
+          const mosaic = g.photos.length >= 3;
+          return (
+            <section key={g.key} aria-label={g.title}>
+              <h2 className="font-body text-xs font-bold uppercase tracking-[0.06em] text-on-surface-variant mb-2.5">{g.title}</h2>
+              <div className={`grid gap-2.5 ${mosaic ? 'grid-cols-2 md:grid-cols-4 auto-rows-[120px] md:auto-rows-[150px]' : 'grid-cols-2 md:grid-cols-3'}`}>
+                {g.photos.map((p, idx) => {
+                  const tint = CATEGORY_TINT[p.category] || CATEGORY_TINT.momento_especial;
+                  const big = mosaic && idx === 0;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setModalImgError(false);
+                        setSelected(p);
+                      }}
+                      aria-label={`Abrir foto ${p.description || categoryLabel(p.category) || ''}`.trim()}
+                      className={`relative group cursor-pointer overflow-hidden shadow-cloud-sm bg-gradient-to-br ${tint.bg} ${
+                        big ? 'row-span-2 col-span-1 md:col-span-2 rounded-[26px]' : mosaic ? 'rounded-[22px]' : 'aspect-square rounded-[26px]'
+                      }`}
+                    >
+                      <img
+                        src={getFileUrl(p.imageUrl)}
+                        alt={p.description || ''}
+                        loading="lazy"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (!target.dataset.triedDirect && p.imageUrl) {
+                            target.dataset.triedDirect = 'true';
+                            target.src = getDirectMinioUrl(p.imageUrl);
+                            return;
+                          }
+                          target.style.display = 'none';
+                          if (target.nextElementSibling) {
+                            target.nextElementSibling.classList.remove('hidden');
+                            target.nextElementSibling.classList.add('flex');
+                          }
+                        }}
+                      />
+                      <div className="hidden absolute inset-0 flex-col items-center justify-center p-2 text-center text-on-surface-variant">
+                        <ModuleIcon name="camera" className="w-7 h-7 mb-1" />
+                        <span className="text-[11px] font-medium truncate w-full">{p.description || 'Fotografía'}</span>
+                      </div>
+                      {(big || !mosaic) && categoryLabel(p.category) && (
+                        <span className={`absolute bottom-2.5 left-2.5 px-3 py-1.5 rounded-[14px] bg-white/95 text-xs font-bold shadow-sm ${tint.label}`}>
+                          {categoryLabel(p.category)}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+        {items.length > 0 && groups.length === 0 && (
+          <p className="font-body text-sm text-on-surface-variant">No hay fotos en esta categoría todavía.</p>
+        )}
       </div>
 
       {selected && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in" onClick={() => setSelected(null)}>
-          <div className="bg-white rounded-lg max-w-sm w-full overflow-hidden shadow-2xl" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-[28px] max-w-sm w-full max-h-[92vh] overflow-y-auto shadow-2xl" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
             {modalImgError ? (
               <div className="w-full aspect-square bg-surface-container/60 flex flex-col items-center justify-center p-6 text-center text-on-surface-variant">
                 <ModuleIcon name="camera" className="w-10 h-10 mb-2" />
@@ -267,7 +340,10 @@ export default function Album() {
               />
             )}
             <div className="p-5">
-              {selected.weekNumber && <p className="font-body text-xs font-semibold text-primary mb-1">Semana {selected.weekNumber}</p>}
+              <div className="flex gap-2 flex-wrap mb-2">
+                {selected.weekNumber && <span className="pill-chip bg-primary-container text-on-primary-container">Semana {selected.weekNumber}</span>}
+                {categoryLabel(selected.category) && <span className="pill-chip bg-secondary-container text-on-secondary-container">{categoryLabel(selected.category)}</span>}
+              </div>
               {selected.description && <p className="font-display text-lg font-semibold mb-1">{selected.description}</p>}
               {selected.date && (
                 <p className="font-body text-xs text-on-surface-variant mb-2">

@@ -389,9 +389,8 @@ export default function App() {
               path="/cuentos"
               element={
                 <ProtectedRoute>
-                  <SubscriptionGuard moduleKey="cuentos" moduleName="Cuentos infantiles">
-                    <Stories />
-                  </SubscriptionGuard>
+                  {/* La biblioteca es abierta: 3 cuentos son gratis y el resto se bloquea por cuento */}
+                  <Stories />
                 </ProtectedRoute>
               }
             />
@@ -399,9 +398,8 @@ export default function App() {
               path="/cuentos/:slug"
               element={
                 <ProtectedRoute>
-                  <SubscriptionGuard moduleKey="cuentos" moduleName="Cuentos infantiles">
-                    <Stories />
-                  </SubscriptionGuard>
+                  {/* La biblioteca es abierta: 3 cuentos son gratis y el resto se bloquea por cuento */}
+                  <Stories />
                 </ProtectedRoute>
               }
             />

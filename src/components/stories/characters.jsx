@@ -10,12 +10,17 @@ function Eyes({ sleeping, y = -16, dx = 9, r = 3.4 }) {
       </g>
     );
   }
+  const R = r * 1.3;
   return (
-    <g className="ss-eyes" fill="#3b2a33">
-      <circle cx={-dx} cy={y} r={r} />
-      <circle cx={dx} cy={y} r={r} />
-      <circle cx={-dx + 1} cy={y - 1.2} r={r * 0.32} fill="#fff" />
-      <circle cx={dx + 1} cy={y - 1.2} r={r * 0.32} fill="#fff" />
+    <g className="ss-eyes">
+      {[-dx, dx].map((cx) => (
+        <g key={cx}>
+          <ellipse cx={cx} cy={y} rx={R} ry={R * 1.08} fill="#2e1f2a" />
+          <ellipse cx={cx} cy={y + R * 0.35} rx={R * 0.7} ry={R * 0.5} fill="#6b4a63" opacity="0.55" />
+          <circle cx={cx - R * 0.32} cy={y - R * 0.38} r={R * 0.42} fill="#fff" />
+          <circle cx={cx + R * 0.38} cy={y + R * 0.32} r={R * 0.2} fill="#fff" opacity="0.9" />
+        </g>
+      ))}
     </g>
   );
 }

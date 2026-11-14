@@ -116,6 +116,7 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     err.needsSetup = data?.needsSetup;
     err.expired = data?.expired;
     err.limitReached = data?.limitReached;
+    err.code = data?.code;
     throw err;
   }
 

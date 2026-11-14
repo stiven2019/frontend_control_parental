@@ -67,7 +67,7 @@ export const SUBSCRIPTION_PLANS = [
     tone: 'lilac',
     modules: ['ejercicios', 'cuentos', 'recuerdo'],
     features: [
-      'Cuentos infantiles animados como un libro, con música de cuna',
+      'Biblioteca de 64 cuentos animados como un libro, con música de cuna propia (3 son gratis para todos)',
       'Ejercicios de embarazo y parto con videos de YouTube',
       'Libro de recuerdos para imprimir',
       'Papá comparte cuentos y ejercicios con tu plan',
