@@ -11,6 +11,13 @@ import ModuleIcon from '../components/ModuleIcons';
 import { PAID_MODULES, PLAN_LABELS } from '../data/plans';
 import { hasModuleAccess } from '../components/SubscriptionGuard';
 
+function ChevronRight() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-on-surface-variant">
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -94,25 +101,28 @@ export default function Profile() {
     );
   }
 
+  const initial = (user.firstName || '?').trim().charAt(0).toUpperCase();
+  const planShort = (PLAN_LABELS[user.plan] || 'Plan gratuito').replace(/\s*\(.*\)\s*$/, '');
+  const tabs = [
+    { id: 'perfil', label: 'Editar información' },
+    { id: 'suscripcion', label: 'Mi suscripción' },
+    { id: 'alarmas', label: 'Alarmas y sonido' },
+    { id: 'apariencia', label: 'Apariencia' },
+    { id: 'privacidad', label: 'Privacidad y seguridad' },
+  ];
+
   return (
     <AppLayout>
-      <header className="mb-4 flex items-start justify-between gap-3">
-        <h1 className="page-title">Mi perfil</h1>
-        <Link
-          to="/papa"
-          className="btn-secondary !py-2.5 !px-4 text-xs font-bold flex items-center gap-1.5 !w-auto shrink-0"
+      {/* Cabecera con degradado y avatar (diseño Nube suave) */}
+      <section className="relative -mx-5 md:mx-0 -mt-2 mb-5 px-5 pt-6 pb-6 rounded-b-[44px] md:rounded-[36px] bg-gradient-to-br from-primary-container to-lilac-container text-on-primary-container flex flex-col items-center text-center">
+        <label
+          className="relative w-[84px] h-[84px] rounded-full overflow-hidden bg-white flex items-center justify-center cursor-pointer border-4 border-white shadow-cloud focus-within:ring-2 focus-within:ring-primary"
+          title="Cambiar foto de perfil"
         >
-          <ModuleIcon name="family" className="w-4 h-4" />
-          <span>Papá y familia</span>
-        </Link>
-      </header>
-
-      <section className="hero-card flex flex-col items-center text-center mb-6">
-        <label className="relative w-24 h-24 rounded-full overflow-hidden bg-primary-container flex items-center justify-center mb-4 cursor-pointer border-4 border-white shadow-cloud">
           {user.avatarUrl ? (
             <img
               src={getFileUrl(user.avatarUrl)}
-              alt=""
+              alt="Foto de perfil"
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.currentTarget;
@@ -124,38 +134,54 @@ export default function Profile() {
                 target.style.display = 'none';
                 if (target.nextElementSibling) {
                   target.nextElementSibling.classList.remove('hidden');
+                  target.nextElementSibling.classList.add('flex');
                 }
               }}
             />
           ) : (
-            <span><ModuleIcon name="heart" className="w-10 h-10" /></span>
+            <span className="font-display text-[32px] font-semibold text-primary" aria-hidden="true">{initial}</span>
           )}
-          <span className="hidden absolute inset-0 flex items-center justify-center bg-primary-container"><ModuleIcon name="heart" className="w-10 h-10" /></span>
-          <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handleAvatar} />
+          <span className="hidden absolute inset-0 items-center justify-center bg-white font-display text-[32px] font-semibold text-primary" aria-hidden="true">{initial}</span>
+          <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" className="sr-only" aria-label="Cambiar foto de perfil" onChange={handleAvatar} />
         </label>
-        <h2 className="font-display text-xl font-semibold">{user.firstName} {user.lastName}</h2>
-        <p className="font-body text-sm">{user.email}</p>
-
-        {dashboard && (
-          <div className="flex gap-4 mt-5 w-full">
-            <div className="flex-1 bg-white/75 rounded-3xl py-3">
-              <p className="text-xs text-on-primary-container">Semana actual</p>
-              <p className="font-semibold text-on-primary-container">{dashboard.status.week}</p>
-            </div>
-            <div className="flex-1 bg-white/75 rounded-3xl py-3">
-              <p className="text-xs text-on-secondary-container">Papá</p>
-              <p className="font-semibold text-on-secondary-container">{dashboard.partner?.name || '—'}</p>
-            </div>
-          </div>
-        )}
+        <h1 className="font-display text-2xl font-semibold leading-tight mt-2.5 text-on-surface">{user.firstName} {user.lastName}</h1>
+        <p className="font-body text-[13px] mt-1">
+          {dashboard?.status?.week ? `Semana ${dashboard.status.week} · ` : ''}{planShort}
+        </p>
+        <p className="font-body text-xs mt-0.5 opacity-80 break-all">{user.email}</p>
       </section>
 
-      <div className="flex gap-2 mb-4 flex-wrap">
-        <button onClick={() => setSection('perfil')} className={`pill-chip text-xs font-semibold ${section === 'perfil' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Editar información</button>
-        <button onClick={() => setSection('suscripcion')} className={`pill-chip text-xs font-semibold ${section === 'suscripcion' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Mi Suscripción</button>
-        <button onClick={() => setSection('alarmas')} className={`pill-chip text-xs font-semibold ${section === 'alarmas' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Alarmas y Sonido</button>
-        <button onClick={() => setSection('apariencia')} className={`pill-chip text-xs font-semibold ${section === 'apariencia' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Apariencia</button>
-        <button onClick={() => setSection('privacidad')} className={`pill-chip text-xs font-semibold ${section === 'privacidad' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}`}>Privacidad y seguridad</button>
+      <div className="flex flex-col gap-2 mb-5">
+        <Link to="/papa" className="flex items-center gap-3.5 rounded-[22px] bg-white px-4 py-3.5 shadow-cloud-sm text-on-surface active:scale-[0.99] transition-transform">
+          <span className="w-9 h-9 rounded-full bg-primary-container text-primary flex items-center justify-center shrink-0"><ModuleIcon name="family" className="w-5 h-5" /></span>
+          <span className="flex-1 font-body text-[15px] font-bold">Papá y familia</span>
+          <ChevronRight />
+        </Link>
+        <Link to="/recuerdo" className="flex items-center gap-3.5 rounded-[22px] bg-white px-4 py-3.5 shadow-cloud-sm text-on-surface active:scale-[0.99] transition-transform">
+          <span className="w-9 h-9 rounded-full bg-lilac-container text-on-lilac-container flex items-center justify-center shrink-0"><ModuleIcon name="heart" className="w-5 h-5" /></span>
+          <span className="flex-1 font-body text-[15px] font-bold">Libro de recuerdos</span>
+          <ChevronRight />
+        </Link>
+        <button type="button" onClick={() => setSection('privacidad')} className="flex items-center gap-3.5 rounded-[22px] bg-white px-4 py-3.5 shadow-cloud-sm text-on-surface text-left active:scale-[0.99] transition-transform">
+          <span className="w-9 h-9 rounded-full bg-secondary-container text-secondary flex items-center justify-center shrink-0"><ModuleIcon name="lock" className="w-5 h-5" /></span>
+          <span className="flex-1 font-body text-[15px] font-bold">Privacidad y seguridad</span>
+          <ChevronRight />
+        </button>
+      </div>
+
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-1 px-1" role="tablist" aria-label="Secciones del perfil">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={section === t.id}
+            onClick={() => setSection(t.id)}
+            className={`px-4 py-2.5 rounded-[20px] text-[13px] font-bold font-body whitespace-nowrap transition-colors shadow-cloud-sm ${section === t.id ? 'bg-primary text-on-primary' : 'bg-white text-on-surface-variant'}`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {section === 'perfil' && <EditProfileForm user={user} refreshUser={refreshUser} />}

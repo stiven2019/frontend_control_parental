@@ -246,6 +246,13 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 
 ## 📝 Historial de Cambios Recientes (Changelog de Evolución)
 
+- **Ronda 2026-11-14 (diseño, cuentos y seguridad)**:
+  - Pantallas `Symptoms.jsx`, `Album.jsx`, `Profile.jsx` y `MedicalControls.jsx` rehechas con el diseño de referencia (tarjetas redondeadas, chips, cabecera con degradado). Síntomas calcula sus estadísticas en el cliente (barras de 7 días, 3 indicadores, síntomas más repetidos).
+  - Cuentos: 64 en total (14 anteriores + 50 nuevos de 13 a 20 páginas, definidos con el DSL de `backend .../data/storyBuilder.js` en `storiesPack1..5.js`). Ilustraciones con aspecto 3D (filtros SVG de iluminación en `StoryScene.jsx`, ojos brillantes, primer plano animado). Se quitó el sonido de cambio de página.
+  - Melodías: `generateTune(key)` / `tuneFor(key)` en `utils/lullaby.js` generan una melodía instrumental distinta y determinista por cuento.
+  - Gratis vs. pago: solo 3 cuentos son gratis (`FREE_SLUGS` en `storyCatalog.js`, elegidos al azar); el resto exige plan con módulo `cuentos`. `GET /api/cuentos` devuelve `{premium, freeCount, items[...locked]}` sin texto; `GET /api/cuentos/:slug` responde 403 `SUBSCRIPTION_REQUIRED` si está bloqueado. El front ya no envuelve `/cuentos` con `SubscriptionGuard`: muestra candados y el modal de planes.
+  - Seguridad: `updateMe` valida `avatarUrl` (solo http(s) o ruta local). Pruebas de penetración en `backend_control_prenatal/tests/security_pentest.js` (67 comprobaciones: JWT falsificados, IDOR, asignación masiva, inyección, XSS, cabeceras, subidas, límites, filtrado de cuentos de pago).
+
 - **Cuentos largos, musica grave, personajes nuevos, temas y explorador (sesion actual)**:
   - 10 cuentos nuevos de 12 paginas (`data/storyCatalogExtraA.js` y `ExtraB.js`, ayudantes en `data/storyHelpers.js`); `storyCatalog.js` los une a los 4 originales (14 en total). Para agregar un cuento: nueva entrada con `pg(texto, cielo, suelo, extras, heroe, amigo, camara)`, y su melodia en `TUNES` de `utils/lullaby.js`.
   - Personajes nuevos en `components/stories/characters.jsx` (zorro, buho, ballena, gato, pinguino, dragon, elefante, oveja, pato, mariposa, luciernaga). `StoryScene.jsx` suma cielos (aurora, tormenta, fondo marino), suelos (jardin, nieve, estanque, submarino, nubes) y extras (lluvia, nieve, aurora, arcoiris, farolillos, globo, fogata, peces, mariposas, hojas, estrella fugaz). Cada escena admite `cam` (in, out, left, right) y los personajes parpadean, respiran y mueven cola, alas u orejas. Las portadas de listados se quedan quietas y se animan al pasar el cursor (`still`).

@@ -20,7 +20,7 @@ const DEFAULT_DESKTOP_NAV_ITEMS = [
   { to: '/album', label: 'Álbum de Fotos', icon: AlbumIcon, moduleKey: 'album' },
   { to: '/papa', label: 'Papá y Familia', icon: FamilyIcon, moduleKey: 'papa' },
   { to: '/ejercicios', label: 'Ejercicios del parto', icon: ExerciseIcon, moduleKey: 'ejercicios' },
-  { to: '/cuentos', label: 'Cuentos para soñar', icon: StoryIcon, moduleKey: 'cuentos' },
+  { to: '/cuentos', label: 'Cuentos para soñar', icon: StoryIcon },
   { to: '/recuerdo', label: 'Libro de recuerdos', icon: BookIcon, moduleKey: 'recuerdo' },
   { to: '/perfil', label: 'Mi Perfil', icon: ProfileIcon },
 ];
@@ -56,7 +56,7 @@ const PAPA_DESKTOP_ITEMS = [
   { to: '/album', label: 'Álbum de Fotos', icon: AlbumIcon },
   { to: '/diario', label: 'Diario de Recuerdos', icon: JournalIcon },
   { to: '/ejercicios', label: 'Ejercicios para papá', icon: ExerciseIcon, moduleKey: 'ejercicios' },
-  { to: '/cuentos', label: 'Cuentos para soñar', icon: StoryIcon, moduleKey: 'cuentos' },
+  { to: '/cuentos', label: 'Cuentos para soñar', icon: StoryIcon },
   { to: '/guia-desarrollo', label: 'Desarrollo Fetal', icon: GestationIcon },
   { to: '/cuenta-regresiva', label: 'Cuenta Regresiva', icon: CalendarIcon },
   { to: '/perfil', label: 'Mi Perfil', icon: ProfileIcon },

@@ -191,8 +191,8 @@ export default function MedicalControls() {
   return (
     <AppLayout>
       <PageHeader
-        title="Controles médicos"
-        subtitle="Historial clínico de la mamá y desarrollo del bebé."
+        title="Control médico"
+        subtitle="Tus citas y el historial de mamá y bebé."
       />
       <Fab open={showForm} onClick={() => setShowForm((v) => !v)} label="Agregar control" />
 
@@ -201,13 +201,25 @@ export default function MedicalControls() {
         const nextDate = new Date(`${rawNext}T00:00:00`);
         const daysLeft = Math.max(0, Math.round((nextDate.getTime() - new Date(new Date().toDateString()).getTime()) / 86400000));
         return (
-          <section className="rounded-lg p-5 sm:p-6 mb-5 shadow-cloud bg-gradient-to-br from-tertiary-container to-lilac-container text-on-tertiary-container">
-            <p className="font-body text-xs font-bold uppercase tracking-wide">Próxima cita</p>
+          <section className="rounded-[30px] p-5 sm:p-6 mb-5 shadow-cloud bg-gradient-to-br from-tertiary-container to-lilac-container text-on-tertiary-container" aria-label="Próxima cita">
+            <p className="font-body text-xs font-bold uppercase tracking-[0.06em]">Próxima cita</p>
             <p className="font-display text-2xl font-semibold leading-tight mt-1.5 text-on-surface first-letter:uppercase">
               {nextDate.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
-            {nextAppt.doctorName && <p className="font-body text-sm font-semibold mt-1.5">Dr(a). {nextAppt.doctorName}</p>}
+            {(nextAppt.doctorName || nextAppt.place) && (
+              <p className="font-body text-sm font-semibold mt-1.5">
+                {[nextAppt.doctorName ? `Dr(a). ${nextAppt.doctorName}` : null, nextAppt.place].filter(Boolean).join(' · ')}
+              </p>
+            )}
             <div className="flex gap-2 mt-3.5 flex-wrap">
+              {nextAppt.gestationalWeek && nextAppt.date && (() => {
+                const weeksAhead = Math.max(0, Math.round((nextDate.getTime() - new Date(`${String(nextAppt.date).split('T')[0]}T00:00:00`).getTime()) / (7 * 86400000)));
+                return (
+                  <span className="px-3.5 py-2 rounded-full bg-white/85 text-xs font-bold">
+                    Semana {Number(nextAppt.gestationalWeek) + weeksAhead}
+                  </span>
+                );
+              })()}
               <span className="px-3.5 py-2 rounded-full bg-white/85 text-xs font-bold">
                 {daysLeft === 0 ? 'Es hoy' : daysLeft === 1 ? 'Falta 1 día' : `Faltan ${daysLeft} días`}
               </span>
@@ -460,51 +472,31 @@ export default function MedicalControls() {
         </form>
       )}
 
-      {/* BARRA DE FILTROS EMBEBIDA DENTRO DE UN CARD LIMPIO */}
+      {/* FILTROS EN CHIPS */}
       {items.length > 0 && (
-        <div className="card !p-2.5 mb-4 bg-white/80 shadow-cloud-sm border border-outline-variant/30 flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-semibold text-on-surface-variant px-2 hidden sm:inline">
-              Filtro:
-            </span>
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 -mx-1 px-1" role="group" aria-label="Filtrar controles">
+          {[
+            { id: 'todos', label: `Todos (${items.length})` },
+            { id: 'mama', label: 'Salud de mamá' },
+            { id: 'bebe', label: 'Datos del bebé' },
+          ].map((f) => (
             <button
-              onClick={() => setFilter('todos')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                filter === 'todos'
-                  ? 'bg-primary text-white shadow-cloud-sm'
-                  : 'bg-surface-container/50 text-on-surface-variant hover:bg-surface-container'
+              key={f.id}
+              type="button"
+              aria-pressed={filter === f.id}
+              onClick={() => setFilter(f.id)}
+              className={`px-4 py-2.5 rounded-[20px] text-[13px] font-bold font-body whitespace-nowrap transition-colors active:scale-95 shadow-cloud-sm ${
+                filter === f.id ? 'bg-primary text-on-primary' : 'bg-white text-on-surface-variant'
               }`}
             >
-              Todos ({items.length})
+              {f.label}
             </button>
-            <button
-              onClick={() => setFilter('mama')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 ${
-                filter === 'mama'
-                  ? 'bg-primary text-white shadow-cloud-sm'
-                  : 'bg-surface-container/50 text-on-surface-variant hover:bg-surface-container'
-              }`}
-            >
-              <ModuleIcon name="heart" className="w-4 h-4" />
-              <span>Salud de Mamá</span>
-            </button>
-            <button
-              onClick={() => setFilter('bebe')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 ${
-                filter === 'bebe'
-                  ? 'bg-primary text-white shadow-cloud-sm'
-                  : 'bg-surface-container/50 text-on-surface-variant hover:bg-surface-container'
-              }`}
-            >
-              <ModuleIcon name="heart" className="w-4 h-4" />
-              <span>Datos del Bebé</span>
-            </button>
-          </div>
-
-          <span className="text-[11px] text-on-surface-variant px-2 font-medium hidden md:inline">
-            {filteredItems.length} controles listados
-          </span>
+          ))}
         </div>
+      )}
+
+      {items.length > 0 && (
+        <h2 className="font-display text-[19px] font-semibold mb-3">Historial de controles</h2>
       )}
 
       {/* ESTADO VACÍO */}
@@ -550,7 +542,7 @@ export default function MedicalControls() {
           }
 
           return (
-            <div key={c.id} className="card !p-5 hover:shadow-cloud transition-all">
+            <div key={c.id} className="rounded-3xl bg-white px-4 py-4 shadow-cloud-sm hover:shadow-cloud transition-shadow">
               <div className="flex items-start justify-between gap-3 mb-1">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">

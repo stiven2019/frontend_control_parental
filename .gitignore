@@ -92,3 +92,7 @@ dist-ssr/
 AGENTS.md
 AI_HANDOFF.md
 GEMINI.md
+AI_HANDOFF_plan.md
+AI_HANDOFF.md
+
+node_modules

@@ -256,7 +256,7 @@ const MODULES_INFO = [
     description:
       "Biblioteca de cuentos originales que se leen como un libro: páginas que se voltean, dibujos animados y una melodía instrumental de tono bajo para cada historia. Ideales para leer al bebé desde la gestación.",
     highlights: [
-      "14 cuentos",
+      "64 cuentos (3 gratis)",
       "Música instrumental propia",
       "Dibujos animados",
       "Lectura en voz alta",
@@ -323,7 +323,7 @@ const EXPLORE_PLANS = [
     description:
       "Para disfrutar el embarazo y los primeros meses: cuentos con música, ejercicios con video y tu libro de recuerdos.",
     features: [
-      "Cuentos para Soñar: 14 cuentos animados con música instrumental",
+      "Cuentos para Soñar: 64 cuentos animados con música instrumental (3 son gratis para todos)",
       "Ejercicios de embarazo y parto con videos de referencia",
       "Libro de Recuerdos listo para imprimir",
       "Papá comparte cuentos y ejercicios con tu plan",
@@ -383,7 +383,12 @@ function StoriesShowcase() {
   useEffect(() => {
     let alive = true;
     api.previewStories()
-      .then((res) => { if (alive) setItems(res?.items || []); })
+      .then((res) => {
+        if (!alive) return;
+        const list = res?.items || [];
+        // Los gratuitos primero, para que la vitrina muestre lo que cualquiera puede leer
+        setItems([...list.filter((x) => x.free), ...list.filter((x) => !x.free)]);
+      })
       .catch(() => { if (alive) setItems([]); });
     return () => { alive = false; };
   }, []);
@@ -442,7 +447,7 @@ function StoriesShowcase() {
               Cuentos para soñar, con música y dibujos que se mueven
             </h2>
             <p className="font-body text-sm text-on-surface-variant leading-relaxed">
-              {items.length} cuentos originales que se leen como un libro de verdad: las páginas se voltean, los personajes
+              {items.length} cuentos originales (3 gratis y el resto con membresía) que se leen como un libro de verdad: las páginas se voltean, los personajes
               parpadean y respiran, y cada historia tiene su propia melodía instrumental de tono bajo para acompañar la lectura.
             </p>
             <div className="rounded-2xl bg-white/80 p-4">
@@ -463,7 +468,7 @@ function StoriesShowcase() {
         <div className="p-4 sm:p-6 bg-white border-t border-outline-variant/30">
           <p className="font-body text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Biblioteca</p>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none" role="listbox" aria-label="Cuentos disponibles">
-            {items.map((it, i) => (
+            {items.slice(0, 16).map((it, i) => (
               <button
                 key={it.slug}
                 type="button"
@@ -477,7 +482,9 @@ function StoriesShowcase() {
                 <div className="aspect-[4/3] overflow-hidden">
                   <StoryScene scene={it.coverScene} uid={`ex-t-${it.slug}`} label={`Portada de ${it.title}`} still />
                 </div>
-                <p className="font-body text-[11px] font-semibold text-on-surface leading-snug p-2 line-clamp-2">{it.title}</p>
+                <p className="font-body text-[11px] font-semibold text-on-surface leading-snug p-2 line-clamp-2">
+                  {it.free && <span className="mr-1 text-secondary font-bold">Gratis ·</span>}{it.title}
+                </p>
               </button>
             ))}
           </div>

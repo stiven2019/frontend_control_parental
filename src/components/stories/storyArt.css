@@ -66,6 +66,8 @@
 .ss-parallax { animation: ss-parallax 22s ease-in-out infinite; }
 
 /* Acciones del personaje */
+@keyframes ss-grass { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg); } }
+@keyframes ss-mote { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 0.85; } 60% { transform: translate(16px, -22px); opacity: 0.7; } 100% { transform: translate(-8px, -46px); opacity: 0; } }
 @keyframes ss-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes ss-hop { 0%, 100% { transform: translateY(0) scale(1.04, 0.94); } 30% { transform: translateY(-4px) scale(0.96, 1.06); } 50% { transform: translateY(-30px); } 70% { transform: translateY(-4px) scale(0.96, 1.06); } }
 @keyframes ss-walk { 0%, 100% { transform: translate(-10px, 0) rotate(-1.5deg); } 25% { transform: translate(0, -4px) rotate(0deg); } 50% { transform: translate(10px, 0) rotate(1.5deg); } 75% { transform: translate(0, -4px) rotate(0deg); } }
@@ -142,3 +144,7 @@
   .book-flip-next, .book-flip-prev, .book-shade, .book-fade-up { animation: none !important; }
   .book-word { animation: none !important; opacity: 1; }
 }
+
+.ss-grass { transform-box: fill-box; transform-origin: 50% 100%; animation: ss-grass 4s ease-in-out infinite; }
+.ss-mote { animation: ss-mote 8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .ss-grass, .ss-mote { animation: none; } }
