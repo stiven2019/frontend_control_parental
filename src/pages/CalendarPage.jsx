@@ -1,7 +1,40 @@
 import { useEffect, useMemo, useState } from 'react';
+import { localDay } from '../utils/dates';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, ErrorState, EmptyState } from '../components/States';
 import { api } from '../api/client';
+import ModuleIcon from '../components/ModuleIcons';
+
+const STATUS_LABELS = {
+  vencido: 'Evento pasado · sin respuesta',
+  descartado: 'Evento pasado · alarma quitada',
+  completado: 'Completado',
+  pasado: 'Evento pasado',
+};
+
+function EventCard({ ev, showDate }) {
+  const past = ev.status && ev.status !== 'pendiente';
+  return (
+    <div className={`card !p-4 flex items-center gap-4 ${past ? 'opacity-60' : ''}`}>
+      <span className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center ${past ? 'bg-surface-container text-on-surface-variant' : 'bg-primary-container text-on-primary-container'}`}>
+        <ModuleIcon name={ev.icon || 'bell'} className="w-5 h-5" />
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className={`font-body text-sm font-semibold ${ev.status === 'completado' ? 'line-through' : ''}`}>{ev.title}</p>
+        {ev.subtitle && <p className="font-body text-xs text-on-surface-variant">{ev.subtitle}</p>}
+        <p className="font-body text-[11px] text-outline mt-0.5">
+          {CATEGORY_LABELS[ev.type] || 'Evento'}{ev.time ? ` · ${String(ev.time).slice(0, 5)}` : ''}
+          {past && STATUS_LABELS[ev.status] ? ` · ${STATUS_LABELS[ev.status]}` : ''}
+        </p>
+      </div>
+      {showDate && (
+        <span className="font-body text-xs font-semibold text-primary shrink-0">
+          {localDay(ev.date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+        </span>
+      )}
+    </div>
+  );
+}
 
 const CATEGORY_LABELS = {
   vacuna_bebe: 'Vacuna del bebé',
@@ -56,6 +89,9 @@ export default function CalendarPage() {
     return map;
   }, [events]);
 
+  const upcoming = (events || []).filter((e) => e.status === 'pendiente').slice(0, 8);
+  const past = (events || []).filter((e) => e.status && e.status !== 'pendiente').sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 8);
+
   if (loading) return <AppLayout><LoadingState label="Cargando tu calendario..." /></AppLayout>;
   if (error) return <AppLayout><ErrorState message={error} onRetry={load} /></AppLayout>;
 
@@ -105,7 +141,9 @@ export default function CalendarPage() {
               >
                 {d}
                 {dayEvents.length > 0 && (
-                  <span className={`absolute bottom-1 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-primary'}`} />
+                  <span className={`absolute bottom-1 w-1.5 h-1.5 rounded-full ${
+                    isSelected ? 'bg-white' : dayEvents.some((e) => e.status === 'pendiente') ? 'bg-primary' : 'bg-outline/50'
+                  }`} />
                 )}
               </button>
             );
@@ -123,14 +161,7 @@ export default function CalendarPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {selectedEvents.map((ev) => (
-                <div key={ev.id} className="card !p-4 flex items-center gap-4">
-                  <span className="text-xl">{ev.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-body text-sm font-semibold">{ev.title}</p>
-                    {ev.subtitle && <p className="font-body text-xs text-on-surface-variant">{ev.subtitle}</p>}
-                    <p className="font-body text-[11px] text-outline mt-0.5">{CATEGORY_LABELS[ev.type] || 'Evento'}</p>
-                  </div>
-                </div>
+                <EventCard key={ev.id} ev={ev} />
               ))}
             </div>
           )}
@@ -139,22 +170,21 @@ export default function CalendarPage() {
         <section>
           <h3 className="font-display text-lg font-semibold mb-3">Próximos eventos</h3>
           <div className="flex flex-col gap-3">
-            {(events || [])
-              .filter((e) => new Date(e.date) >= new Date(new Date().toDateString()))
-              .slice(0, 8)
-              .map((ev) => (
-                <div key={ev.id} className="card !p-4 flex items-center gap-4">
-                  <span className="text-xl">{ev.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-body text-sm font-semibold">{ev.title}</p>
-                    <p className="font-body text-[11px] text-outline mt-0.5">{CATEGORY_LABELS[ev.type] || 'Evento'}</p>
-                  </div>
-                  <span className="font-body text-xs font-semibold text-primary shrink-0">
-                    {new Date(ev.date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
-                  </span>
-                </div>
-              ))}
+            {upcoming.length === 0 && <p className="font-body text-sm text-on-surface-variant">No tienes eventos próximos.</p>}
+            {upcoming.map((ev) => (
+              <EventCard key={ev.id} ev={ev} showDate />
+            ))}
           </div>
+          {past.length > 0 && (
+            <>
+              <h3 className="font-display text-lg font-semibold mt-6 mb-3 text-on-surface-variant">Eventos pasados</h3>
+              <div className="flex flex-col gap-3">
+                {past.map((ev) => (
+                  <EventCard key={ev.id} ev={ev} showDate />
+                ))}
+              </div>
+            </>
+          )}
         </section>
       )}
     </AppLayout>

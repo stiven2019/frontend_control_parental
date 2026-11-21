@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { todayStr } from '../utils/dates';
 import {
   DEFAULT_VACCINES,
   DEVELOPMENT_MILESTONES,
@@ -23,7 +24,7 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
     open: false,
     title: '',
     category: 'vacuna_bebe',
-    date: new Date().toISOString().split('T')[0],
+    date: todayStr(),
     time: '08:30',
     repeatRule: 'ninguna',
     notify: true,
@@ -32,7 +33,7 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
 
   // Formulario de control pediátrico
   const [controlForm, setControlForm] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: todayStr(),
     ageMonths: 1,
     weightKg: '',
     lengthCm: '',
@@ -47,7 +48,7 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
 
   // Formulario de datos de nacimiento
   const [birthForm, setBirthForm] = useState({
-    birthDate: baby?.birthDate || new Date().toISOString().split('T')[0],
+    birthDate: baby?.birthDate || todayStr(),
     birthTime: baby?.birthTime || '12:00',
     birthWeightG: baby?.birthWeightG || 3200,
     birthLengthCm: baby?.birthLengthCm || 50.0,
@@ -115,7 +116,7 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
   const getEstimatedVaccineDate = (ageGroup) => {
     try {
       const base = new Date(birthDateObj.getTime());
-      if (isNaN(base.getTime())) return new Date().toISOString().split('T')[0];
+      if (isNaN(base.getTime())) return todayStr();
       let daysToAdd = 0;
       if (ageGroup === 'Recién nacido') daysToAdd = 1;
       else if (ageGroup === '2 meses') daysToAdd = 60;
@@ -127,7 +128,7 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
       base.setDate(base.getDate() + daysToAdd);
       return base.toISOString().split('T')[0];
     } catch {
-      return new Date().toISOString().split('T')[0];
+      return todayStr();
     }
   };
 
@@ -156,7 +157,7 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
       open: true,
       title: qr.title,
       category: qr.category,
-      date: new Date().toISOString().split('T')[0],
+      date: todayStr(),
       time: qr.suggestedTime || '09:00',
       repeatRule: qr.category === 'vitamina' ? 'diaria' : 'ninguna',
       notify: true,
@@ -254,7 +255,7 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
 
       setShowControlModal(false);
       setControlForm({
-        date: new Date().toISOString().split('T')[0],
+        date: todayStr(),
         ageMonths: Math.round(ageMonthsExact),
         weightKg: '',
         lengthCm: '',
@@ -297,7 +298,7 @@ export default function BornBabyCarnet({ baby, onUpdateBaby }) {
         return {
           ...v,
           applied: nextState,
-          dateApplied: nextState ? new Date().toISOString().split('T')[0] : null,
+          dateApplied: nextState ? todayStr() : null,
         };
       }
       return v;

@@ -51,6 +51,8 @@ export function parseBloodPressure(bpString) {
   const systolic = parseInt(match[1], 10);
   const diastolic = parseInt(match[2], 10);
   if (isNaN(systolic) || isNaN(diastolic)) return null;
+  // Rango fisiologicamente plausible; fuera de el se ignora en vez de emitir una alarma falsa
+  if (systolic < 60 || systolic > 260 || diastolic < 30 || diastolic > 160 || diastolic >= systolic) return null;
   return { systolic, diastolic, raw: `${systolic}/${diastolic}` };
 }
 
@@ -190,7 +192,7 @@ export function evaluateMaternalHealth(control, pregnancyContext = {}) {
           value: `${au} cm (Semana ${week})`,
           status: 'optimo',
           badge: 'Crecimiento Uterino Conforme',
-          message: `Altura uterina adecuada y armónica con tu edad gestacional (Regla de McDonald: sem ± 2 cm).`,
+          message: `Altura uterina adecuada y armónica con tu edad gestacional (Regla de McDonald: semanas ± 4 cm).`,
         });
       }
     } else {
@@ -238,6 +240,12 @@ export function evaluateMaternalHealth(control, pregnancyContext = {}) {
     badgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
   }
 
+  if (indicators.length === 0) {
+    title = 'Control registrado — Sin mediciones para evaluar';
+    summary = 'No se ingresaron presión arterial, pulso, altura uterina ni peso válidos, por lo que no es posible emitir un dictamen. Completa los datos en tu próximo control.';
+    badgeColor = 'bg-slate-100 text-slate-800 border-slate-300';
+  }
+
   // Tips adicionales
   tips.push('Descansa preferentemente recostada sobre tu lado izquierdo para optimizar la perfusión sanguínea hacia la placenta.');
   tips.push('Continúa tomando tus micronutrientes prenatales diarios (ácido fólico, hierro y calcio según formulación médica).');
@@ -260,7 +268,8 @@ export function evaluateMaternalHealth(control, pregnancyContext = {}) {
  * Analiza medidas biométricas fetales, FCF, peso estimado, percentiles Hadlock y líquido amniótico
  */
 export function evaluateFetalHealth(control, pregnancyContext = {}) {
-  const week = Number(control?.gestationalWeek || pregnancyContext?.week || 28);
+  const rawWeek = Number(control?.gestationalWeek || pregnancyContext?.week || 28);
+  const week = Number.isFinite(rawWeek) ? Math.min(42, Math.max(1, Math.round(rawWeek))) : 28;
   const fcf = control?.fetalHeartRate ? Number(control.fetalHeartRate) : null;
   const weightG = control?.fetalWeightG ? Number(control.fetalWeightG) : null;
   const lengthCm = control?.fetalLengthCm ? Number(control.fetalLengthCm) : null;
@@ -276,12 +285,14 @@ export function evaluateFetalHealth(control, pregnancyContext = {}) {
   const recommendations = [];
 
   // 1. Cálculo de Percentil Fetal (Hadlock / OMS)
-  let percentile = 50;
-  let percentileLabel = 'Percentil 50 (Mediana exacta)';
-  let birthWeightPrediction = 3450; // Gramos proyectados a las 40 semanas
-  const ref = FETAL_WEIGHT_PERCENTILES[week] || FETAL_WEIGHT_PERCENTILES[40];
+  // Sin peso registrado no se inventa percentil ni peso al nacer (quedan en null)
+  let percentile = null;
+  let percentileLabel = null;
+  let birthWeightPrediction = null; // Gramos proyectados a las 40 semanas
+  // La tabla de referencia solo cubre las semanas 12 a 42: antes de la 12 no se compara el peso
+  const ref = FETAL_WEIGHT_PERCENTILES[week] || null;
 
-  if (weightG && ref) {
+  if (weightG && weightG > 0 && ref) {
     if (weightG < ref.p10) {
       // Menor al percentil 10
       const ratio = weightG / ref.p10;
@@ -340,7 +351,9 @@ export function evaluateFetalHealth(control, pregnancyContext = {}) {
       value: `Semana ${week} de gestación`,
       status: 'optimo',
       badge: 'Desarrollo en curso',
-      detail: `Promedio de referencia para la semana ${week}: peso ~${ref?.p50 || 1200} g y longitud ~${ref?.lengthCm || 37} cm.`,
+      detail: ref
+        ? `Promedio de referencia para la semana ${week}: peso ~${ref.p50} g y longitud ~${ref.lengthCm} cm.`
+        : `Semana ${week}: aún no hay tabla de peso de referencia antes de la semana 12.`,
     });
   }
 
@@ -472,7 +485,9 @@ export function evaluateFetalHealth(control, pregnancyContext = {}) {
   score = Math.max(20, Math.min(100, score));
 
   let predictionTitle = '🌟 ¡Tu bebé viene creciendo maravilloso y con excelente salud!';
-  let predictionSummary = `A sus ${week} semanas de gestación, el bebé demuestra un desarrollo armónico. Su ritmo cardíaco es fuerte y reactivo, y su trayectoria ponderal se ubica en el ${percentileLabel}. Se proyecta un peso al nacer cercano a los ${(birthWeightPrediction / 1000).toFixed(2)} kg (semana 40).`;
+  let predictionSummary = percentileLabel && birthWeightPrediction
+    ? `A sus ${week} semanas de gestación, el bebé demuestra un desarrollo armónico. Su trayectoria ponderal se ubica en el ${percentileLabel}. Se proyecta un peso al nacer cercano a los ${(birthWeightPrediction / 1000).toFixed(2)} kg (semana 40).`
+    : `A sus ${week} semanas de gestación no hay peso fetal registrado, por lo que no se calcula percentil ni peso proyectado. Registra el peso estimado de la ecografía para obtener la proyección.`;
   let statusBadge = 'bg-emerald-100 text-emerald-800 border-emerald-300';
 
   if (overallLevel === 'alerta') {

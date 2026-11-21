@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { todayStr } from '../utils/dates';
 import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import BreathingExerciseModal from '../components/BreathingExerciseModal';
@@ -67,7 +68,7 @@ export default function EmotionalWellbeingPage() {
       score: totalScore,
       maxScore: 30,
       range,
-      date: new Date().toISOString().split('T')[0],
+      date: todayStr(),
       displayDate: new Date().toLocaleDateString('es-CO', {
         day: 'numeric',
         month: 'short',

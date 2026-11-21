@@ -5,10 +5,11 @@ export default function FetalHealthModal({ isOpen, onClose, assessment, controlD
 
   const isAlert = assessment.level === 'alerta';
   const isWarning = assessment.level === 'atencion';
-  const percentile = assessment.percentile || 50;
+  const hasPercentile = Number.isFinite(assessment.percentile);
+  const percentile = hasPercentile ? assessment.percentile : 50;
   const birthWeightKg = assessment.birthWeightPredictionG 
     ? (assessment.birthWeightPredictionG / 1000).toFixed(2)
-    : '3.40';
+    : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
@@ -62,10 +63,10 @@ export default function FetalHealthModal({ isOpen, onClose, assessment, controlD
                 Percentil de Peso
               </p>
               <p className="font-display text-xl sm:text-2xl font-bold text-primary">
-                P{percentile}
+                {hasPercentile ? `P${percentile}` : 'Sin dato'}
               </p>
               <p className="text-[11px] text-on-surface-variant mt-0.5 font-medium">
-                {percentile >= 10 && percentile <= 90 ? 'Adecuado (AEG)' : percentile < 10 ? 'Bajo (< P10)' : 'Grande (> P90)'}
+                {!hasPercentile ? 'Registra el peso fetal' : percentile >= 10 && percentile <= 90 ? 'Adecuado (AEG)' : percentile < 10 ? 'Bajo (< P10)' : 'Grande (> P90)'}
               </p>
             </div>
 
@@ -76,7 +77,7 @@ export default function FetalHealthModal({ isOpen, onClose, assessment, controlD
                 Predicción a Término
               </p>
               <p className="font-display text-xl sm:text-2xl font-bold text-secondary">
-                ~{birthWeightKg} kg
+                {birthWeightKg ? `~${birthWeightKg} kg` : 'Sin dato'}
               </p>
               <p className="text-[11px] text-on-surface-variant mt-0.5 font-medium">
                 Semana 40 estimada
@@ -88,18 +89,18 @@ export default function FetalHealthModal({ isOpen, onClose, assessment, controlD
           <div className="p-3.5 rounded-xl bg-white border border-outline-variant/30 shadow-cloud-sm">
             <div className="flex justify-between items-center text-xs font-semibold mb-2">
               <span className="text-on-surface-variant">Escala de Crecimiento Intrauterino:</span>
-              <span className="text-primary font-bold">{assessment.percentileLabel}</span>
+              <span className="text-primary font-bold">{assessment.percentileLabel || 'Sin peso registrado'}</span>
             </div>
             <div className="w-full h-3 bg-surface-container rounded-full overflow-hidden flex relative">
               <div className="w-[10%] bg-amber-400" title="Bajo (< P10)" />
               <div className="w-[80%] bg-emerald-500" title="Óptimo / AEG (P10 - P90)" />
               <div className="w-[10%] bg-blue-400" title="Grande (> P90)" />
               {/* Marcador del percentil */}
-              <div 
+              {hasPercentile && (<div 
                 className="absolute top-0 bottom-0 w-2.5 bg-black rounded-full border-2 border-white shadow-md transform -translate-x-1/2"
                 style={{ left: `${Math.max(4, Math.min(96, percentile))}%` }}
                 title={`Percentil ${percentile}`}
-              />
+              />)}
             </div>
             <div className="flex justify-between text-[10px] text-on-surface-variant font-medium mt-1">
               <span>P10 (Bajo)</span>

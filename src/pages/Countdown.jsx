@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { localDay } from '../utils/dates';
 import AppLayout from '../components/AppLayout';
 import ProgressRing from '../components/ProgressRing';
 import { LoadingState } from '../components/States';
@@ -11,7 +12,7 @@ export default function Countdown() {
 
   if (!data) return <AppLayout><LoadingState /></AppLayout>;
 
-  const fpp = new Date(data.probableDeliveryDate).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+  const fpp = localDay(data.probableDeliveryDate).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
     <AppLayout>

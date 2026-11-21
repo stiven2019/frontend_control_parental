@@ -25,7 +25,10 @@ html[data-theme="rosa"] {
   --color-tertiary: #516070;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #cfdef2;
-  --color-on-tertiary-container: #485666;
+  --color-on-tertiary-container: #485666;  --color-peach-container: #fde1cf;
+  --color-on-peach-container: #5c3a24;
+  --color-lilac-container: #e4daf6;
+  --color-on-lilac-container: #4a3b6e;
 }
 
 html[data-theme="menta"] {
@@ -52,7 +55,10 @@ html[data-theme="menta"] {
   --color-tertiary: #4f5f86;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #d9e2f9;
-  --color-on-tertiary-container: #3f4d70;
+  --color-on-tertiary-container: #3f4d70;  --color-peach-container: #f9e8c8;
+  --color-on-peach-container: #5a4515;
+  --color-lilac-container: #dde8f7;
+  --color-on-lilac-container: #34506e;
 }
 
 html[data-theme="cielo"] {
@@ -79,7 +85,10 @@ html[data-theme="cielo"] {
   --color-tertiary: #58704f;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #dcecd3;
-  --color-on-tertiary-container: #44593c;
+  --color-on-tertiary-container: #44593c;  --color-peach-container: #fbe3d4;
+  --color-on-peach-container: #5e3d2a;
+  --color-lilac-container: #e3dcf7;
+  --color-on-lilac-container: #4a3f78;
 }
 
 html[data-theme="lavanda"] {
@@ -106,7 +115,10 @@ html[data-theme="lavanda"] {
   --color-tertiary: #85546a;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #f7dbe6;
-  --color-on-tertiary-container: #6b3f54;
+  --color-on-tertiary-container: #6b3f54;  --color-peach-container: #fbe0d6;
+  --color-on-peach-container: #6a3d33;
+  --color-lilac-container: #ddd0f5;
+  --color-on-lilac-container: #46357a;
 }
 
 html[data-theme="durazno"] {
@@ -133,7 +145,10 @@ html[data-theme="durazno"] {
   --color-tertiary: #5e446a;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #e7d9ed;
-  --color-on-tertiary-container: #472e52;
+  --color-on-tertiary-container: #472e52;  --color-peach-container: #fbe6b8;
+  --color-on-peach-container: #5e4410;
+  --color-lilac-container: #efdcec;
+  --color-on-lilac-container: #593a55;
 }
 
 html[data-theme="salvia"] {
@@ -160,7 +175,10 @@ html[data-theme="salvia"] {
   --color-tertiary: #39744b;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #d5f0de;
-  --color-on-tertiary-container: #265936;
+  --color-on-tertiary-container: #265936;  --color-peach-container: #f6e3c8;
+  --color-on-peach-container: #5c4220;
+  --color-lilac-container: #e3e4f5;
+  --color-on-lilac-container: #3d4072;
 }
 
 html[data-theme="arena"] {
@@ -187,7 +205,10 @@ html[data-theme="arena"] {
   --color-tertiary: #4b446a;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #ddd9ed;
-  --color-on-tertiary-container: #342e52;
+  --color-on-tertiary-container: #342e52;  --color-peach-container: #f7dfc6;
+  --color-on-peach-container: #5e3d20;
+  --color-lilac-container: #e6dff0;
+  --color-on-lilac-container: #493d63;
 }
 
 html[data-theme="oceano"] {
@@ -214,7 +235,10 @@ html[data-theme="oceano"] {
   --color-tertiary: #506c42;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #dfeed8;
-  --color-on-tertiary-container: #39532d;
+  --color-on-tertiary-container: #39532d;  --color-peach-container: #ffe1cc;
+  --color-on-peach-container: #5d3a22;
+  --color-lilac-container: #d9e6f7;
+  --color-on-lilac-container: #2f4a6d;
 }
 
 /* Elementos que usaban colores fijos */

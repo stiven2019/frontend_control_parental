@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { localDay } from '../utils/dates';
 import { Link, useNavigate } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import ProgressRing from '../components/ProgressRing';
@@ -106,7 +107,7 @@ export default function Dashboard() {
   if (!data) return null;
 
   const { status, weeklyDevelopment, upcomingReminders, nextControl } = data;
-  const fpp = new Date(data.pregnancy.probableDeliveryDate).toLocaleDateString('es-CO', {
+  const fpp = localDay(data.pregnancy.probableDeliveryDate).toLocaleDateString('es-CO', {
     day: 'numeric', month: 'long', year: 'numeric',
   });
 

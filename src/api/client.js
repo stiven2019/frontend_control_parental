@@ -240,6 +240,7 @@ export const api = {
   updateReminder: (id, payload) => request(`/recordatorios/${id}`, { method: 'PUT', body: payload }),
   deleteReminder: (id) => request(`/recordatorios/${id}`, { method: 'DELETE' }),
   completeReminder: (id) => request(`/recordatorios/${id}/completar`, { method: 'POST' }),
+  dismissReminder: (id) => request(`/recordatorios/${id}/descartar`, { method: 'POST' }),
 
   // Documentos
   listDocuments: () => request('/documentos'),
@@ -248,6 +249,7 @@ export const api = {
 
   // Fotos / álbum
   listPhotos: () => request('/fotos'),
+  getAlbumNews: (since) => request(`/fotos/novedades?since=${encodeURIComponent(since)}`),
   createPhoto: (payload) => request('/fotos', { method: 'POST', body: payload }),
   updatePhoto: (id, payload) => request(`/fotos/${id}`, { method: 'PUT', body: payload }),
   deletePhoto: (id) => request(`/fotos/${id}`, { method: 'DELETE' }),
