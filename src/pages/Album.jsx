@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { STORAGE_ALBUM_SEEN_KEY } from '../context/AlarmContext';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
 import { api, uploadFile, getFileUrl, getDirectMinioUrl, downloadAlbumZip } from '../api/client';
@@ -50,7 +51,13 @@ export default function Album() {
   const load = async () => {
     try {
       const res = await api.listPhotos();
-      setItems(res?.items || []);
+      const list = res?.items || [];
+      setItems(list);
+      // Marca los recuerdos como vistos (quita el aviso de "nuevos recuerdos" de la campana)
+      try {
+        const newest = list.reduce((m, p) => (p.createdAt && p.createdAt > m ? p.createdAt : m), '');
+        localStorage.setItem(STORAGE_ALBUM_SEEN_KEY, newest || new Date().toISOString());
+      } catch (_) { /* sin almacenamiento */ }
     } catch (err) {
       console.error('Error cargando fotos del álbum:', err);
       setItems([]);

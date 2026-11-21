@@ -45,11 +45,11 @@ self.addEventListener('push', (event) => {
     try {
       data = event.data.json();
     } catch (e) {
-      data = { title: '🔔 Recordatorio — Mi Bebé', body: event.data.text() };
+      data = { title: 'Recordatorio - Mi Bebé', body: event.data.text() };
     }
   }
 
-  const title = data.title || '🔔 Recordatorio — Mi Bebé';
+  const title = data.title || 'Recordatorio - Mi Bebé';
   const targetUrl = data.url || '/recordatorios';
 
   // Configuración de notificación compatible con todos los navegadores y plataformas móviles
@@ -61,6 +61,7 @@ self.addEventListener('push', (event) => {
     renotify: true, // Vuelve a alertar y vibrar si coincide con una alarma previa
     requireInteraction: true, // Se mantiene visible en el sistema operativo hasta que la usuaria interactúe
     silent: false,
+    timestamp: Date.now(),
     vibrate: [300, 150, 300, 150, 450],
     data: {
       url: targetUrl,

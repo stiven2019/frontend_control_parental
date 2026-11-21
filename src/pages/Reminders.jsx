@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { todayStr } from '../utils/dates';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
 import { api } from '../api/client';
@@ -21,7 +22,7 @@ const CATEGORIES = [
   { value: 'otro', label: 'Otro', icon: 'bell', tint: 'bg-peach-container text-on-peach-container' },
 ];
 
-const getTodayStr = () => new Date().toISOString().slice(0, 10);
+const getTodayStr = () => todayStr();
 
 const getEmptyForm = () => ({
   title: '',
@@ -118,8 +119,10 @@ export default function Reminders() {
     );
   }
 
-  const pending = items.filter((r) => !r.completed);
+  const isClosed = (r) => !r.completed && Boolean(r.closedAt);
+  const pending = items.filter((r) => !r.completed && !isClosed(r));
   const done = items.filter((r) => r.completed);
+  const pastEvents = items.filter(isClosed);
 
   return (
     <AppLayout>
@@ -314,6 +317,37 @@ export default function Reminders() {
                 </div>
               );
             })}
+          </div>
+        </section>
+      )}
+
+      {pastEvents.length > 0 && (
+        <section className="mb-6">
+          <h3 className="font-display text-lg font-semibold mb-3 text-on-surface-variant">
+            Eventos pasados ({pastEvents.length})
+          </h3>
+          <div className="flex flex-col gap-3 opacity-70">
+            {pastEvents.map((r) => (
+              <div key={r.id} className="card !p-4 flex items-center gap-4">
+                <span className="w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center bg-surface-container text-on-surface-variant">
+                  <ModuleIcon name="calendar" className="w-5 h-5" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-body text-sm font-semibold text-on-surface truncate">{r.title}</p>
+                  <p className="font-body text-xs text-on-surface-variant">
+                    {new Date(`${r.date}T00:00:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {r.time ? ` · ${r.time.slice(0, 5)}` : ''}
+                    {r.closedReason === 'descartado' ? ' · alarma quitada' : ' · pasó sin respuesta'}
+                  </p>
+                </div>
+                <button onClick={() => complete(r.id)} className="pill-chip bg-secondary-container text-on-secondary-container hover:opacity-80 shrink-0" title="Marcar como realizado">
+                  Hecho
+                </button>
+                <button onClick={() => remove(r.id)} className="text-outline hover:text-error text-xs px-2 py-1">
+                  Eliminar
+                </button>
+              </div>
+            ))}
           </div>
         </section>
       )}

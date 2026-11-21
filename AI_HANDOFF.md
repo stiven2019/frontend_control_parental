@@ -246,6 +246,16 @@ Para evitar cualquier ambigüedad clínica, la aplicación separa con estrictez 
 
 ## 📝 Historial de Cambios Recientes (Changelog de Evolución)
 
+- **Ronda 2026-11-20 (fechas, dictámenes, alarmas, desarrollo interactivo, familiares)**:
+  - Fechas: `backend .../utils/dates.js` (días calendario en `APP_TZ`, por defecto America/Bogota). La FPP y la semana se calculan sin depender de la zona horaria del servidor (antes sumaban un día en Colombia); `getActivePregnancy` autorrepara FPP guardadas con error. Frontend: `utils/dates.js` (`localDay`, `todayStr`) reemplaza `new Date().toISOString()` para "hoy" (después de las 7 p. m. la app creía que era mañana).
+  - Suscripción: `computeRenewalExpiry` (`utils/subscription.js`): 30 días = 1 mes calendario; solo acumula si se renueva el mismo plan vigente.
+  - Dictámenes (`utils/healthEvaluations.js`): umbrales sin cambios. Sin peso fetal ya no se inventa percentil ni peso al nacer; presiones imposibles se ignoran; sin mediciones maternas no se declara "salud óptima". Servidor: `middleware/validateControl.js` valida rangos y enumeraciones en POST/PUT `/api/controles`.
+  - Recordatorios: columnas `closed_at` y `closed_reason` (`completado|descartado|vencido`). `reminderCron` usa la hora de `APP_TZ`, ventana de 10 min, cierra como `vencido` lo que pasó hace más de 2 h sin respuesta. `POST /api/recordatorios/:id/descartar` ("quitar alarma"). `GET /api/calendario/eventos` devuelve `status` (`pendiente|pasado|vencido|descartado|completado`) y `time`; el calendario y Recordatorios muestran "Eventos pasados".
+  - Móvil: push con `urgency: high` y TTL 2 h, desbloqueo de audio en el primer toque (`primeAudio`), pantalla encendida mientras suena la alarma.
+  - Desarrollo interactivo: `components/FetusViewer.jsx` (ilustración por semana, "Ver crecer", partes tocables) y `utils/fetalGrowth.js` (peso, estatura y FPP orientativa según el último control del bebé) dentro de `/mi-embarazo`.
+  - Temas: `themes.css` define `peach` y `lilac` por tema (antes eran fijos).
+  - Familiares: `push_subscriptions.family_link_id`; `sendPushToUser` ya NO envía a dispositivos de familiares; `sendPushToLinks`. Al subir una foto se avisa por push a los demás vínculos activos (y a la mamá si la sube un familiar). `GET /api/fotos/novedades?since=` alimenta el aviso "Nuevos recuerdos" de la campana.
+  - Pruebas: `backend_control_prenatal/tests/feature_checks.js`, `tests/security_pentest.js`; `frontend_control_prenatal/tests/health_growth.test.mjs`.
 - **Ronda 2026-11-14 (diseño, cuentos y seguridad)**:
   - Pantallas `Symptoms.jsx`, `Album.jsx`, `Profile.jsx` y `MedicalControls.jsx` rehechas con el diseño de referencia (tarjetas redondeadas, chips, cabecera con degradado). Síntomas calcula sus estadísticas en el cliente (barras de 7 días, 3 indicadores, síntomas más repetidos).
   - Cuentos: 64 en total (14 anteriores + 50 nuevos de 13 a 20 páginas, definidos con el DSL de `backend .../data/storyBuilder.js` en `storiesPack1..5.js`). Ilustraciones con aspecto 3D (filtros SVG de iluminación en `StoryScene.jsx`, ojos brillantes, primer plano animado). Se quitó el sonido de cambio de página.

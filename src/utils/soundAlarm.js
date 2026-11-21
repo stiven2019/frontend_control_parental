@@ -19,6 +19,47 @@ function getAudioContext() {
   return audioCtx;
 }
 
+// Pantalla encendida mientras suena la alarma (Android/iOS 16.4+ cuando esta disponible)
+let wakeLockSentinel = null;
+async function acquireWakeLock() {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.wakeLock && !wakeLockSentinel) {
+      wakeLockSentinel = await navigator.wakeLock.request('screen');
+      wakeLockSentinel.addEventListener('release', () => { wakeLockSentinel = null; });
+    }
+  } catch (e) {
+    wakeLockSentinel = null;
+  }
+}
+function releaseWakeLock() {
+  try {
+    if (wakeLockSentinel) wakeLockSentinel.release();
+  } catch (e) {}
+  wakeLockSentinel = null;
+}
+
+// Primer gesto del usuario en un movil: desbloquea Web Audio y el elemento <audio> (iOS/Android lo exigen).
+export function primeAudio() {
+  unlockAudio();
+  try {
+    if (!cachedWavUri) cachedWavUri = generateChimeWav(783.99, 1.2);
+    if (!bgAudioElement) bgAudioElement = new Audio(cachedWavUri);
+    const prevVolume = bgAudioElement.volume;
+    bgAudioElement.muted = true;
+    const p = bgAudioElement.play();
+    const restore = () => {
+      try {
+        bgAudioElement.pause();
+        bgAudioElement.currentTime = 0;
+        bgAudioElement.muted = false;
+        bgAudioElement.volume = prevVolume;
+      } catch (e) {}
+    };
+    if (p && typeof p.then === 'function') p.then(restore).catch(restore);
+    else restore();
+  } catch (e) {}
+}
+
 export function unlockAudio() {
   const ctx = getAudioContext();
   if (ctx && ctx.state === 'suspended') {
@@ -200,6 +241,7 @@ export function startAlarmLoop(toneId = 'chime_suave', volume = 0.8, intervalMs 
   stopAlarmLoop();
   unlockAudio();
   isLooping = true;
+  acquireWakeLock();
 
   // Iniciar elemento HTML5 Audio para mantener el canal de audio del navegador abierto en segundo plano
   try {
@@ -253,6 +295,7 @@ export function playAlarmPulse(toneId = 'chime_suave', volume = 0.8) {
 // Detiene la alarma sonora en bucle
 export function stopAlarmLoop() {
   isLooping = false;
+  releaseWakeLock();
   if (currentLoopTimer) {
     clearTimeout(currentLoopTimer);
     currentLoopTimer = null;

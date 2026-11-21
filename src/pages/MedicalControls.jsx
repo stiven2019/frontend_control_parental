@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { todayStr } from '../utils/dates';
 import { useSearchParams, Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
@@ -11,7 +12,7 @@ import ModuleIcon from '../components/ModuleIcons';
 import { PageHeader, Fab } from '../components/PageParts';
 
 const EMPTY_FORM = {
-  date: new Date().toISOString().split('T')[0],
+  date: todayStr(),
   time: '',
   doctorName: '',
   specialty: 'Obstetricia',

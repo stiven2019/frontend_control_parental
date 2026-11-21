@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { todayStr } from '../utils/dates';
 import { api } from '../api/client';
 import { useAuth } from './AuthContext';
 import {
@@ -8,6 +9,7 @@ import {
   testAlarmSound,
   playAlarmPulse,
   unlockAudio,
+  primeAudio,
 } from '../utils/soundAlarm';
 import {
   subscribeToPushNotifications,
@@ -21,6 +23,7 @@ import {
 
 const STORAGE_PREFS_KEY = 'mibebe_alarm_prefs';
 const STORAGE_ACK_KEY = 'mibebe_alarm_acknowledged';
+export const STORAGE_ALBUM_SEEN_KEY = 'mibebe_album_seen';
 
 const DEFAULT_PREFS = {
   soundEnabled: true,
@@ -247,6 +250,10 @@ export function AlarmProvider({ children }) {
     if (activeAlarm) {
       const ackKey = `ack_${activeAlarm.type}_${activeAlarm.id}_${activeAlarm.date}_${activeAlarm.time || 'allday'}`;
       saveAcknowledged(ackKey, Date.now());
+      // "Quitar alarma": el recordatorio se cierra y queda en el calendario como evento pasado
+      if (activeAlarm.type === 'recordatorio' && activeAlarm.isDueNow && !String(activeAlarm.id).startsWith('test_')) {
+        api.dismissReminder(activeAlarm.id).catch(() => {});
+      }
       setActiveAlarm(null);
     }
   }, [activeAlarm, stopTitleFlashing]);
@@ -300,7 +307,7 @@ export function AlarmProvider({ children }) {
       icon: '⏰',
       title: '¡Prueba de Alarma Sonora!',
       subtitle: 'Así sonarán tus recordatorios aunque estés fuera de la aplicación.',
-      date: new Date().toISOString().split('T')[0],
+      date: todayStr(),
       time: new Date().toTimeString().slice(0, 5),
       isDueNow: true,
       categoryLabel: 'Prueba de Sistema',
@@ -361,10 +368,19 @@ export function AlarmProvider({ children }) {
     if (!user) return;
 
     try {
-      const [remindersRes, medsRes, controlsRes] = await Promise.allSettled([
+      // Fecha de la ultima visita al album (para avisar de recuerdos nuevos subidos por otros)
+      let albumSeen = null;
+      try { albumSeen = localStorage.getItem(STORAGE_ALBUM_SEEN_KEY); } catch (_) { albumSeen = null; }
+      if (!albumSeen) {
+        albumSeen = new Date().toISOString();
+        try { localStorage.setItem(STORAGE_ALBUM_SEEN_KEY, albumSeen); } catch (_) { /* sin almacenamiento */ }
+      }
+
+      const [remindersRes, medsRes, controlsRes, albumRes] = await Promise.allSettled([
         api.listReminders(),
         api.listMedications(),
         api.listControls(),
+        api.getAlbumNews(albumSeen),
       ]);
 
       const reminders = remindersRes.status === 'fulfilled' ? remindersRes.value.items || [] : [];
@@ -380,9 +396,24 @@ export function AlarmProvider({ children }) {
       const upcoming = [];
       let alarmToTrigger = null;
 
+      const albumNews = albumRes.status === 'fulfilled' ? albumRes.value : null;
+      if (albumNews && albumNews.count > 0) {
+        upcoming.push({
+          id: 'album_news',
+          type: 'album',
+          icon: '+',
+          title: 'Nuevos recuerdos en el álbum',
+          subtitle: `${albumNews.count} ${albumNews.count === 1 ? 'foto nueva' : 'fotos nuevas'} desde tu última visita`,
+          date: todayStr,
+          time: null,
+          categoryLabel: 'Álbum',
+          isToday: true,
+        });
+      }
+
       // Evaluar Recordatorios
       reminders.forEach((r) => {
-        if (r.completed) return;
+        if (r.completed || r.closedAt) return;
 
         const isToday = r.date === todayStr;
         let eventTotalMins = null;
@@ -637,13 +668,22 @@ export function AlarmProvider({ children }) {
       }
     };
 
+    // Moviles: el audio solo se desbloquea tras un gesto tactil; se prepara en el primer toque
+    let primed = false;
     const onUserInteraction = () => {
-      unlockAudio();
+      if (!primed) {
+        primed = true;
+        primeAudio();
+      } else {
+        unlockAudio();
+      }
     };
 
     document.addEventListener('visibilitychange', onVisibilityChange);
-    window.addEventListener('click', onUserInteraction, { once: true });
-    window.addEventListener('keydown', onUserInteraction, { once: true });
+    window.addEventListener('pointerdown', onUserInteraction, { passive: true });
+    window.addEventListener('touchstart', onUserInteraction, { passive: true });
+    window.addEventListener('click', onUserInteraction);
+    window.addEventListener('keydown', onUserInteraction);
 
     return () => {
       clearInterval(mainInterval);
@@ -654,6 +694,8 @@ export function AlarmProvider({ children }) {
       }
       workerRef.current = null;
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pointerdown', onUserInteraction);
+      window.removeEventListener('touchstart', onUserInteraction);
       window.removeEventListener('click', onUserInteraction);
       window.removeEventListener('keydown', onUserInteraction);
     };

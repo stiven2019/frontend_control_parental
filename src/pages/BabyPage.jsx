@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { localDay, todayStr } from '../utils/dates';
 import { Link } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, ErrorState } from '../components/States';
@@ -30,7 +31,7 @@ export default function BabyPage() {
   const [saving, setSaving] = useState(false);
 
   // Contador de pataditas del día
-  const todayKey = new Date().toISOString().split('T')[0];
+  const todayKey = todayStr();
   const [kicks, setKicks] = useState(() => {
     try {
       const saved = localStorage.getItem(`mibebe_kicks_${todayKey}`);
@@ -183,7 +184,7 @@ export default function BabyPage() {
 
   // Formatear FPP
   const fppFormatted = pregnancy?.probableDeliveryDate
-    ? new Date(pregnancy.probableDeliveryDate).toLocaleDateString('es-CO', {
+    ? localDay(pregnancy.probableDeliveryDate).toLocaleDateString('es-CO', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',

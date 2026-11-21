@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { todayStr } from '../utils/dates';
 import { Link, useNavigate } from 'react-router-dom';
 import AppLayout from '../components/AppLayout';
 import { LoadingState, EmptyState } from '../components/States';
@@ -7,7 +8,7 @@ import { evaluateFetalHealth } from '../utils/healthEvaluations';
 import FetalHealthModal from '../components/FetalHealthModal';
 
 const EMPTY_BABY_FORM = {
-  date: new Date().toISOString().split('T')[0],
+  date: todayStr(),
   time: '',
   doctorName: '',
   specialty: 'Obstetricia / Ecografía',
